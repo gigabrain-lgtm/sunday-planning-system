@@ -272,11 +272,21 @@ export function BusinessNeedleMovers({
                 <div className="flex gap-2 pt-2">
                   <Button
                     variant="default"
-                    onClick={addNewNeedleMover}
+                    onClick={() => {
+                      // Validate that task name is filled
+                      if (!nm.name || !nm.name.trim()) {
+                        toast.error("Please enter a task name");
+                        return;
+                      }
+                      // Keep this needle mover (it will be saved to ClickUp on complete)
+                      // Add a new blank one at the top
+                      addNewNeedleMover();
+                      toast.success("Needle mover added! Fill in the next one or click Next.");
+                    }}
                     className="flex-1"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Another
+                    Add
                   </Button>
                 </div>
               </div>

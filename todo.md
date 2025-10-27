@@ -30,6 +30,10 @@
 - [x] Fix Add button not working in Manifestation Tracker
 
 ## New Features
+- [x] Show actual workspace members in assignment dropdown
+- [x] Change "Add Another" button to "Add" and immediately add to active needle movers list
+
+## Completed Features
 - [x] Update Manifestation Tracker UI to match reference design (https://manifestation-tracker.netlify.app/)
 - [x] Add ability to edit manifestation states inline
 - [x] Add ability to remove individual manifestation states
