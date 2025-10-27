@@ -326,6 +326,26 @@ export const appRouter = router({
       }),
   }),
 
+  okr: router({ 
+    fetchObjectives: publicProcedure.query(async () => {
+      try {
+        return await clickup.fetchObjectives();
+      } catch (error) {
+        console.error("[OKR] Error fetching objectives:", error);
+        throw new Error("Failed to fetch objectives");
+      }
+    }),
+
+    fetchKeyResults: publicProcedure.query(async () => {
+      try {
+        return await clickup.fetchKeyResults();
+      } catch (error) {
+        console.error("[OKR] Error fetching key results:", error);
+        throw new Error("Failed to fetch key results");
+      }
+    }),
+  }),
+
   slack: router({
     postDaily: publicProcedure.mutation(async () => {
       const latestManifestation = await getLatestManifestationFromAirtable();

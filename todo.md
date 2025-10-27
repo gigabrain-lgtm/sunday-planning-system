@@ -57,12 +57,22 @@
 - [x] Keep tasks always expanded in list view (remove collapse functionality)
 - [x] Display next 12 weeks in Timeline View with date ranges
 - [x] Color-code tasks by priority in Timeline View
-- [x] Group tasks by target week in Timeline Viewn states
+- [x] Group tasks by target week in Timeline View
 - [x] Match the exact layout and styling from reference
 - [x] Simplify rating colors - all blue when selected
 - [x] Remove colorful borders on state inputs
 - [x] Remove character counters
 - [x] Split current state into two textboxes: Reflection and Actionables
+- [x] Create OKR Review component as new planning step
+- [x] Fetch Objectives and Key Results from ClickUp
+- [x] Display Objectives with descriptions (why it's important)
+- [x] Show Key Results under each Objective with progress details
+- [x] Add action buttons for each Key Result (This Week, Automate, Delegate, Eliminate, Roadmap)
+- [x] Integrate OKR Review as step 4 (between Personal Planning and Needle Movers)
+- [x] Update progress calculation to include OKR Review step (6 steps total)
+- [x] Add backend router for OKR operations
+- [x] Add Strategic Thinking prompts to guide OKR review process
+- [x] Make objectives expandable/collapsible
 
 ## Testing & Verification
 - [ ] Test database operations
@@ -81,4 +91,8 @@
 
 
 ## Bugs
+
+
+
+
 

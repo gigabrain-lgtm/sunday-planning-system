@@ -5,12 +5,13 @@ import { ManifestationTracker } from "@/components/planning/ManifestationTracker
 import { PersonalPlanning } from "@/components/planning/PersonalPlanning";
 import { BusinessNeedleMovers } from "@/components/planning/BusinessNeedleMovers";
 import Roadmap from "@/components/planning/Roadmap";
+import OKRReview from "@/components/planning/OKRReview";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "business" | "manifestation" | "personal" | "needleMovers" | "roadmap";
+type Step = "business" | "manifestation" | "personal" | "okr" | "needleMovers" | "roadmap";
 
 export default function SundayPlanning() {
   const [currentStep, setCurrentStep] = useState<Step>("business");
@@ -153,10 +154,11 @@ export default function SundayPlanning() {
   };
 
   const steps: { key: Step; label: string; progress: number }[] = [
-    { key: "business", label: "Business Planning", progress: 20 },
-    { key: "manifestation", label: "Manifestation Tracker", progress: 40 },
-    { key: "personal", label: "Personal Planning", progress: 60 },
-    { key: "needleMovers", label: "Needle Movers", progress: 80 },
+    { key: "business", label: "Business Planning", progress: 16 },
+    { key: "manifestation", label: "Manifestation Tracker", progress: 33 },
+    { key: "personal", label: "Personal Planning", progress: 50 },
+    { key: "okr", label: "OKR Review", progress: 66 },
+    { key: "needleMovers", label: "Needle Movers", progress: 83 },
     { key: "roadmap", label: "Roadmap", progress: 100 },
   ];
 
@@ -234,6 +236,9 @@ export default function SundayPlanning() {
           )}
           {currentStep === "personal" && (
             <PersonalPlanning values={personalPlanning} onChange={handlePersonalChange} />
+          )}
+          {currentStep === "okr" && (
+            <OKRReview />
           )}
           {currentStep === "needleMovers" && (
             <BusinessNeedleMovers 

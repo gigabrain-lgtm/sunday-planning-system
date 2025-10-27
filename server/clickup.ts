@@ -41,6 +41,27 @@ export interface NeedleMover {
   assigneeName?: string;
 }
 
+export interface Objective {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+}
+
+export interface KeyResult {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  target?: number;
+  actual?: number;
+  baseline?: number;
+  assignees: Array<{
+    id: number;
+    username: string;
+  }>;
+}
+
 function mapPriorityToClickUp(priority: string): number {
   const map: Record<string, number> = {
     urgent: 1,
@@ -48,22 +69,22 @@ function mapPriorityToClickUp(priority: string): number {
     normal: 3,
     low: 4,
   };
-  return map[priority.toLowerCase()] || 3;
+  return map[priority] || 3;
 }
 
-function mapClickUpPriority(priority: any): "urgent" | "high" | "normal" | "low" {
+function mapClickUpPriority(priority: ClickUpTask["priority"]): NeedleMover["priority"] {
   if (!priority) return "normal";
-  const p = priority.priority?.toLowerCase() || "";
-  if (p.includes("urgent")) return "urgent";
-  if (p.includes("high")) return "high";
-  if (p.includes("low")) return "low";
-  return "normal";
+  const map: Record<string, NeedleMover["priority"]> = {
+    "1": "urgent",
+    "2": "high",
+    "3": "normal",
+    "4": "low",
+  };
+  return map[priority.id] || "normal";
 }
 
 function getCustomFieldValue(task: ClickUpTask, fieldName: string): any {
-  const field = task.custom_fields?.find(
-    (f) => f.name.toLowerCase() === fieldName.toLowerCase()
-  );
+  const field = task.custom_fields?.find((f) => f.name === fieldName);
   return field?.value;
 }
 
@@ -104,11 +125,17 @@ export async function fetchNeedleMovers(listId: string): Promise<NeedleMover[]> 
 
 export async function createNeedleMover(
   listId: string,
-  needleMover: NeedleMover
-): Promise<string> {
+  data: {
+    name: string;
+    description?: string;
+    priority: string;
+    confidenceLevel?: number;
+    lastWeekConfidence?: number;
+    assigneeId?: number;
+  }
+): Promise<NeedleMover> {
   if (!ENV.clickupApiKey) {
-    console.warn("[ClickUp] API key not configured, skipping task creation");
-    return "";
+    throw new Error("[ClickUp] API key not configured");
   }
 
   const response = await fetch(`${CLICKUP_API_URL}/list/${listId}/task`, {
@@ -118,10 +145,10 @@ export async function createNeedleMover(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: needleMover.name,
-      description: needleMover.description || "",
-      priority: mapPriorityToClickUp(needleMover.priority),
-      ...(needleMover.assigneeId && { assignees: [needleMover.assigneeId] }),
+      name: data.name,
+      description: data.description || "",
+      priority: mapPriorityToClickUp(data.priority),
+      assignees: data.assigneeId ? [data.assigneeId] : [],
     }),
   });
 
@@ -129,56 +156,23 @@ export async function createNeedleMover(
     throw new Error(`ClickUp API error: ${await response.text()}`);
   }
 
-  const data = await response.json();
-  return data.id;
+  const task = await response.json();
+  return {
+    id: task.id,
+    name: task.name,
+    description: task.description || "",
+    priority: data.priority as NeedleMover["priority"],
+    assigneeId: data.assigneeId,
+  };
 }
 
 export async function fetchRoadmapTasks(): Promise<NeedleMover[]> {
-  if (!ENV.clickupApiKey) {
-    console.warn('[ClickUp] API key not configured');
-    return [];
-  }
-
   if (!ENV.clickupRoadmapListId) {
-    console.warn('[ClickUp] Roadmap list ID not configured');
+    console.warn("[ClickUp] Roadmap list ID not configured");
     return [];
   }
 
-  try {
-    const response = await fetch(
-      `${CLICKUP_API_URL}/list/${ENV.clickupRoadmapListId}/task`,
-      {
-        headers: {
-          Authorization: ENV.clickupApiKey,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`ClickUp API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.tasks.map((task: any) => ({
-      id: task.id,
-      name: task.name,
-      priority: mapClickUpPriorityToLocal(task.priority?.priority),
-      assigneeId: task.assignees?.[0]?.id,
-      assigneeName: task.assignees?.[0]?.username,
-    }));
-  } catch (error) {
-    console.error('[ClickUp] Failed to fetch roadmap tasks:', error);
-    return [];
-  }
-}
-
-function mapClickUpPriorityToLocal(priority: any): "urgent" | "high" | "normal" | "low" {
-  if (!priority) return 'normal';
-  const priorityNum = typeof priority === 'number' ? priority : parseInt(priority, 10);
-  if (priorityNum === 1) return 'urgent';
-  if (priorityNum === 2) return 'high';
-  if (priorityNum === 4) return 'low';
-  return 'normal';
+  return fetchNeedleMovers(ENV.clickupRoadmapListId);
 }
 
 export async function moveTaskToList(
@@ -186,8 +180,7 @@ export async function moveTaskToList(
   targetListId: string
 ): Promise<void> {
   if (!ENV.clickupApiKey) {
-    console.warn("[ClickUp] API key not configured, skipping operation");
-    return;
+    throw new Error("[ClickUp] API key not configured");
   }
 
   const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}`, {
@@ -202,24 +195,33 @@ export async function moveTaskToList(
   });
 
   if (!response.ok) {
-    throw new Error(`ClickUp API error: ${await response.text()}`);
+    const errorText = await response.text();
+    throw new Error(`Failed to move task: ${errorText}`);
   }
 }
 
 export async function updateNeedleMover(
   taskId: string,
-  updates: Partial<NeedleMover>
+  updates: {
+    name?: string;
+    description?: string;
+    priority?: string;
+    confidenceLevel?: number;
+    lastWeekConfidence?: number;
+    assigneeId?: number;
+  }
 ): Promise<void> {
   if (!ENV.clickupApiKey) {
-    console.warn("[ClickUp] API key not configured, skipping operation");
-    return;
+    throw new Error("[ClickUp] API key not configured");
   }
 
   const body: any = {};
-
   if (updates.name) body.name = updates.name;
   if (updates.description !== undefined) body.description = updates.description;
   if (updates.priority) body.priority = mapPriorityToClickUp(updates.priority);
+  if (updates.assigneeId !== undefined) {
+    body.assignees = updates.assigneeId ? [{ add: updates.assigneeId }] : [];
+  }
 
   const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}`, {
     method: "PUT",
@@ -237,8 +239,7 @@ export async function updateNeedleMover(
 
 export async function markTaskComplete(taskId: string): Promise<void> {
   if (!ENV.clickupApiKey) {
-    console.warn("[ClickUp] API key not configured, skipping operation");
-    return;
+    throw new Error("[ClickUp] API key not configured");
   }
 
   const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}`, {
@@ -259,35 +260,97 @@ export async function markTaskComplete(taskId: string): Promise<void> {
 
 export async function getTeamMembers(listId: string): Promise<TeamMember[]> {
   if (!ENV.clickupApiKey) {
-    console.warn("[ClickUp] API key not configured, returning empty team list");
+    console.warn("[ClickUp] API key not configured");
     return [];
   }
 
-  // Get list members (those with access to this specific list)
   const response = await fetch(`${CLICKUP_API_URL}/list/${listId}/member`, {
     headers: {
       Authorization: ENV.clickupApiKey,
+      "Content-Type": "application/json",
     },
   });
 
   if (!response.ok) {
-    console.warn(`[ClickUp] Failed to fetch list members: ${await response.text()}`);
+    console.error("[ClickUp] Failed to fetch team members:", await response.text());
     return [];
   }
 
   const data = await response.json();
+  return data.members || [];
+}
+
+// OKR Functions
+export async function fetchObjectives(): Promise<Objective[]> {
+  const OBJECTIVES_LIST_ID = "901315739969";
   
-  if (!data.members || !Array.isArray(data.members)) {
+  if (!ENV.clickupApiKey) {
+    console.warn("[ClickUp] API key not configured, returning empty list");
     return [];
   }
 
-  return data.members
-    .filter((m: any) => m.user && m.user.username) // Filter out users without usernames
-    .map((m: any) => ({
-      id: m.user.id,
-      username: m.user.username,
-      email: m.user.email,
-      initials: m.user.initials || "",
-    }));
+  const response = await fetch(
+    `${CLICKUP_API_URL}/list/${OBJECTIVES_LIST_ID}/task?include_closed=false`,
+    {
+      headers: {
+        Authorization: ENV.clickupApiKey,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`ClickUp API error: ${await response.text()}`);
+  }
+
+  const data = await response.json();
+  const tasks: ClickUpTask[] = data.tasks;
+
+  return tasks.map((task) => ({
+    id: task.id,
+    name: task.name,
+    description: task.description || "",
+    status: task.priority?.priority || "to do",
+  }));
+}
+
+export async function fetchKeyResults(): Promise<KeyResult[]> {
+  const KEY_RESULTS_LIST_ID = "901315739968";
+  
+  if (!ENV.clickupApiKey) {
+    console.warn("[ClickUp] API key not configured, returning empty list");
+    return [];
+  }
+
+  const response = await fetch(
+    `${CLICKUP_API_URL}/list/${KEY_RESULTS_LIST_ID}/task?include_closed=false`,
+    {
+      headers: {
+        Authorization: ENV.clickupApiKey,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`ClickUp API error: ${await response.text()}`);
+  }
+
+  const data = await response.json();
+  const tasks: ClickUpTask[] = data.tasks;
+
+  return tasks.map((task) => ({
+    id: task.id,
+    name: task.name,
+    description: task.description || "",
+    status: task.priority?.priority || "to do",
+    target: getCustomFieldValue(task, "Target"),
+    actual: getCustomFieldValue(task, "Actual"),
+    baseline: getCustomFieldValue(task, "Baseline"),
+    assignees: task.assignees?.map((a) => ({
+      id: a.id,
+      username: a.username,
+    })) || [],
+  }));
 }
 
