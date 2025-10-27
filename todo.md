@@ -26,6 +26,16 @@
 
 ## Bugs
 - [x] Fix ClickUp API key not configured error
+- [x] Fix team member assignment dropdown showing only Unassigned
+
+## New Features
+- [x] Update Manifestation Tracker UI to match reference design (https://manifestation-tracker.netlify.app/)
+- [x] Add ability to edit manifestation states inline
+- [x] Add ability to remove individual manifestation states
+- [x] Match the exact layout and styling from reference
+- [x] Simplify rating colors - all blue when selected
+- [x] Remove colorful borders on state inputs
+- [x] Remove character counters
 
 ## Testing & Verification
 - [ ] Test database operations
