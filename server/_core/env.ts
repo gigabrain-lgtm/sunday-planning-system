@@ -7,4 +7,12 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  airtableApiKey: process.env.AIRTABLE_API_KEY ?? "",
+  airtableBaseId: process.env.AIRTABLE_BASE_ID ?? "",
+  airtableManifestationsTable: process.env.AIRTABLE_MANIFESTATIONS_TABLE ?? "",
+  slackBotToken: process.env.SLACK_BOT_TOKEN ?? "",
+  slackChannelId: process.env.SLACK_CHANNEL_ID ?? "",
+  clickupApiKey: process.env.CLICKUP_API_KEY ?? "",
+  clickupBusinessListId: process.env.CLICKUP_BUSINESS_LIST_ID ?? "",
+  clickupPersonalListId: process.env.CLICKUP_PERSONAL_LIST_ID ?? "",
 };

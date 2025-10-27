@@ -1,0 +1,386 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { trpc } from "@/lib/trpc";
+import { Loader2, Plus, Trash2, Check } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/_core/hooks/useAuth";
+
+interface NeedleMover {
+  id?: string;
+  name: string;
+  description?: string;
+  priority: "urgent" | "high" | "normal" | "low";
+  confidenceLevel?: number;
+  lastWeekConfidence?: number;
+  assigneeId?: number;
+  assigneeName?: string;
+}
+
+interface BusinessNeedleMoversProps {
+  businessPlanningNotes?: Record<string, string>;
+  onCompletedTasksChange?: (taskIds: string[]) => void;
+  onNewNeedleMoversChange?: (needleMovers: NeedleMover[]) => void;
+}
+
+export function BusinessNeedleMovers({ 
+  businessPlanningNotes, 
+  onCompletedTasksChange,
+  onNewNeedleMoversChange 
+}: BusinessNeedleMoversProps) {
+  const { user } = useAuth();
+  const [newNeedleMovers, setNewNeedleMovers] = useState<NeedleMover[]>([]);
+  const [editingPriorities, setEditingPriorities] = useState<Record<string, string>>({});
+  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
+
+  const { data: existingNeedleMovers, isLoading, refetch } = trpc.needleMovers.fetchBusiness.useQuery();
+
+  // Extract unique assignees from existing needle movers
+  const availableAssignees = existingNeedleMovers
+    ? Array.from(
+        new Map(
+          existingNeedleMovers
+            .filter(nm => nm.assigneeId && nm.assigneeName)
+            .map(nm => [nm.assigneeId, { 
+              id: nm.assigneeId!, 
+              username: nm.assigneeName!
+            }])
+        ).values()
+      )
+    : [];
+
+  const updateMutation = trpc.needleMovers.update.useMutation({
+    onSuccess: () => {
+      toast.success("Priority updated!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update: ${error.message}`);
+    },
+  });
+
+  // Notify parent component of completed tasks
+  useEffect(() => {
+    if (onCompletedTasksChange) {
+      onCompletedTasksChange(completedTaskIds);
+    }
+  }, [completedTaskIds, onCompletedTasksChange]);
+
+  // Notify parent of new needle movers
+  useEffect(() => {
+    if (onNewNeedleMoversChange) {
+      onNewNeedleMoversChange(newNeedleMovers);
+    }
+  }, [newNeedleMovers, onNewNeedleMoversChange]);
+
+  // Auto-populate from business planning notes
+  useEffect(() => {
+    if (businessPlanningNotes && Object.keys(businessPlanningNotes).length > 0) {
+      const populated: NeedleMover[] = [];
+      Object.entries(businessPlanningNotes).forEach(([category, notes]) => {
+        if (notes && notes.trim()) {
+          // Split by newlines to get individual tasks
+          const tasks = notes.split('\n').filter(t => t.trim());
+          tasks.forEach(task => {
+            if (task.trim()) {
+              populated.push({
+                name: task.trim(),
+                description: `From ${category}`,
+                priority: "normal",
+                confidenceLevel: 5,
+              });
+            }
+          });
+        }
+      });
+      if (populated.length > 0) {
+        setNewNeedleMovers(populated);
+      }
+    }
+  }, [businessPlanningNotes]);
+
+  const addNewNeedleMover = () => {
+    setNewNeedleMovers([
+      { name: "", priority: "normal", confidenceLevel: 5 },
+      ...newNeedleMovers,
+    ]);
+  };
+
+  const updateNewNeedleMover = (index: number, field: keyof NeedleMover, value: any) => {
+    const updated = [...newNeedleMovers];
+    updated[index] = { ...updated[index], [field]: value };
+    setNewNeedleMovers(updated);
+  };
+
+  const removeNewNeedleMover = (index: number) => {
+    setNewNeedleMovers(newNeedleMovers.filter((_, i) => i !== index));
+  };
+
+  const updatePriority = async (taskId: string, priority: string) => {
+    await updateMutation.mutateAsync({
+      taskId,
+      priority: priority as "urgent" | "high" | "normal" | "low",
+    });
+  };
+
+  const toggleComplete = (taskId: string) => {
+    setCompletedTaskIds(prev => {
+      if (prev.includes(taskId)) {
+        // Unmark as complete
+        return prev.filter(id => id !== taskId);
+      } else {
+        // Mark as complete
+        return [...prev, taskId];
+      }
+    });
+  };
+
+  // Get current user's email to match with ClickUp assignee
+  const currentUserEmail = user?.email;
+
+  // Check if a task is assigned to current user
+  const isAssignedToMe = (needleMover: NeedleMover) => {
+    if (!currentUserEmail || !availableAssignees) return false;
+    // For now, show confidence for all tasks assigned to anyone
+    // The Monday check-in bot will handle assignee-specific confidence
+    return true;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const activeTasks = existingNeedleMovers?.filter(nm => !completedTaskIds.includes(nm.id!)) || [];
+  const completedTasksList = existingNeedleMovers?.filter(nm => completedTaskIds.includes(nm.id!)) || [];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Weekly Business Needle Movers</h2>
+        <p className="text-muted-foreground mt-2">
+          Review existing needle movers and add new ones from your business planning.
+        </p>
+      </div>
+
+      {/* Add Button at Top */}
+      <Button onClick={addNewNeedleMover} variant="default" className="w-full">
+        <Plus className="w-4 h-4 mr-2" />
+        Add New Needle Mover
+      </Button>
+
+      {/* New Needle Movers */}
+      {newNeedleMovers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>New Needle Movers ({newNeedleMovers.length})</CardTitle>
+            <CardDescription>Will be saved to ClickUp when you complete planning</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {newNeedleMovers.map((nm, index) => (
+              <div key={index} className="p-4 border rounded-lg space-y-4 bg-muted/30 relative">
+                {/* Trash icon in top-right */}
+                <button
+                  onClick={() => removeNewNeedleMover(index)}
+                  className="absolute top-3 right-3 p-2 hover:bg-destructive/10 rounded-md transition-colors"
+                  aria-label="Remove needle mover"
+                >
+                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                </button>
+                <div className="space-y-2">
+                  <Label>Task Name *</Label>
+                  <Input
+                    placeholder="Enter needle mover name..."
+                    value={nm.name}
+                    onChange={(e) => updateNewNeedleMover(index, "name", e.target.value)}
+                  />
+                </div>
+
+                {nm.description && (
+                  <div className="text-sm text-muted-foreground">
+                    {nm.description}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Priority</Label>
+                    <Select
+                      value={nm.priority}
+                      onValueChange={(value) => updateNewNeedleMover(index, "priority", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                        <SelectItem value="high">🟠 High</SelectItem>
+                        <SelectItem value="normal">🔵 Normal</SelectItem>
+                        <SelectItem value="low">⚪ Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Assign To</Label>
+                    <Select
+                      key={`assignee-${index}-${nm.assigneeId || 'none'}`}
+                      value={nm.assigneeId?.toString() || "unassigned"}
+                      onValueChange={(value) => {
+                        console.log('Assignee selected:', value);
+                        if (value === "unassigned") {
+                          const updated = [...newNeedleMovers];
+                          updated[index] = { ...updated[index], assigneeId: undefined, assigneeName: undefined };
+                          setNewNeedleMovers(updated);
+                        } else {
+                          const assignee = availableAssignees?.find(m => m.id.toString() === value);
+                          console.log('Found assignee:', assignee);
+                          if (assignee) {
+                            const updated = [...newNeedleMovers];
+                            updated[index] = { ...updated[index], assigneeId: assignee.id, assigneeName: assignee.username };
+                            setNewNeedleMovers(updated);
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select team member" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {availableAssignees?.map((member) => (
+                          <SelectItem key={member.id} value={member.id.toString()}>
+                            {member.username}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Confidence level will be filled by assignee in Monday check-in */}
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="default"
+                    onClick={addNewNeedleMover}
+                    className="flex-1"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Another
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Needle Movers */}
+      {activeTasks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Needle Movers ({activeTasks.length})</CardTitle>
+            <CardDescription>From ClickUp - Update priorities or mark complete</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {activeTasks.map((nm) => (
+              <div
+                key={nm.id}
+                className="flex items-start justify-between p-4 border rounded-lg bg-card gap-4"
+              >
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium mb-2">{nm.name}</h4>
+                  <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
+                    {nm.assigneeName && (
+                      <span className="font-medium">Assigned: {nm.assigneeName}</span>
+                    )}
+                    {nm.confidenceLevel !== undefined && (
+                      <span>Confidence: {nm.confidenceLevel}/10</span>
+                    )}
+                    {nm.lastWeekConfidence !== undefined && nm.lastWeekConfidence !== null && (
+                      <span>Last Week: {nm.lastWeekConfidence}/10</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 flex-shrink-0">
+                  <Select
+                    value={editingPriorities[nm.id!] || nm.priority}
+                    onValueChange={(value) => {
+                      setEditingPriorities({ ...editingPriorities, [nm.id!]: value });
+                      updatePriority(nm.id!, value);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                      <SelectItem value="high">🟠 High</SelectItem>
+                      <SelectItem value="normal">🔵 Normal</SelectItem>
+                      <SelectItem value="low">⚪ Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => toggleComplete(nm.id!)}
+                  >
+                    <Check className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Completed Needle Movers */}
+      {completedTasksList.length > 0 && (
+        <Card className="border-green-200 dark:border-green-900">
+          <CardHeader>
+            <CardTitle className="text-green-700 dark:text-green-400">
+              Completed This Week ({completedTasksList.length})
+            </CardTitle>
+            <CardDescription>Will be marked complete in ClickUp when you finish planning</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {completedTasksList.map((nm) => (
+              <div
+                key={nm.id}
+                className="flex items-center justify-between p-4 border rounded-lg bg-green-50 dark:bg-green-950/20"
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium line-through">{nm.name}</h4>
+                    {nm.assigneeName && (
+                      <p className="text-sm text-muted-foreground">Assigned: {nm.assigneeName}</p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => toggleComplete(nm.id!)}
+                  className="flex-shrink-0"
+                >
+                  Undo
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+

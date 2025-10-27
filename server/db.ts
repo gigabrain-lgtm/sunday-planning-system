@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,49 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Weekly Planning queries
+export async function saveWeeklyPlanning(data: InsertWeeklyPlanning) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(weeklyPlannings).values(data);
+  return result;
+}
+
+export async function getLatestWeeklyPlanning(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(weeklyPlannings)
+    .where(eq(weeklyPlannings.userId, userId))
+    .orderBy(desc(weeklyPlannings.weekOf))
+    .limit(1);
+    
+  return result.length > 0 ? result[0] : null;
+}
+
+// Manifestation queries
+export async function saveManifestation(data: InsertManifestation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(manifestations).values(data);
+  return result;
+}
+
+export async function getLatestManifestation(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(manifestations)
+    .where(eq(manifestations.userId, userId))
+    .orderBy(desc(manifestations.weekOf))
+    .limit(1);
+    
+  return result.length > 0 ? result[0] : null;
+}
+
