@@ -69,7 +69,8 @@ function getCustomFieldValue(task: ClickUpTask, fieldName: string): any {
 
 export async function fetchNeedleMovers(listId: string): Promise<NeedleMover[]> {
   if (!ENV.clickupApiKey) {
-    throw new Error("ClickUp API key not configured");
+    console.warn("[ClickUp] API key not configured, returning empty list");
+    return [];
   }
 
   const response = await fetch(
@@ -106,7 +107,8 @@ export async function createNeedleMover(
   needleMover: NeedleMover
 ): Promise<string> {
   if (!ENV.clickupApiKey) {
-    throw new Error("ClickUp API key not configured");
+    console.warn("[ClickUp] API key not configured, skipping task creation");
+    return "";
   }
 
   const response = await fetch(`${CLICKUP_API_URL}/list/${listId}/task`, {
@@ -135,7 +137,8 @@ export async function updateNeedleMover(
   updates: Partial<NeedleMover>
 ): Promise<void> {
   if (!ENV.clickupApiKey) {
-    throw new Error("ClickUp API key not configured");
+    console.warn("[ClickUp] API key not configured, skipping operation");
+    return;
   }
 
   const body: any = {};
@@ -160,7 +163,8 @@ export async function updateNeedleMover(
 
 export async function markTaskComplete(taskId: string): Promise<void> {
   if (!ENV.clickupApiKey) {
-    throw new Error("ClickUp API key not configured");
+    console.warn("[ClickUp] API key not configured, skipping operation");
+    return;
   }
 
   const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}`, {
@@ -181,7 +185,8 @@ export async function markTaskComplete(taskId: string): Promise<void> {
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
   if (!ENV.clickupApiKey) {
-    throw new Error("ClickUp API key not configured");
+    console.warn("[ClickUp] API key not configured, returning empty team list");
+    return [];
   }
 
   const response = await fetch(`${CLICKUP_API_URL}/team`, {
