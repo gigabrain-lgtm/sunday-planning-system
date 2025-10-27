@@ -9,16 +9,20 @@ import { X } from "lucide-react";
 
 interface ManifestationTrackerProps {
   ratings: Record<string, number>;
-  currentStates: Record<string, string>;
+  reflections: Record<string, string>;
+  actionables: Record<string, string>;
   onRatingChange: (pillar: string, rating: number) => void;
-  onCurrentStateChange: (pillar: string, state: string) => void;
+  onReflectionChange: (pillar: string, reflection: string) => void;
+  onActionablesChange: (pillar: string, actionables: string) => void;
 }
 
 export function ManifestationTracker({
   ratings,
-  currentStates,
+  reflections,
+  actionables,
   onRatingChange,
-  onCurrentStateChange,
+  onReflectionChange,
+  onActionablesChange,
 }: ManifestationTrackerProps) {
   const [editingPillar, setEditingPillar] = useState<string | null>(null);
   const [editedStates, setEditedStates] = useState<Record<string, string[]>>({});
@@ -170,6 +174,21 @@ export function ManifestationTracker({
                     ) : (
                       // Edit mode - editable inputs with X buttons
                       <>
+                        {/* New state input */}
+                        <div className="flex gap-2 items-center pb-2">
+                          <Input
+                            value={newState}
+                            onChange={(e) => setNewState(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                addState(pillarKey);
+                              }
+                            }}
+                            placeholder="Type new state and click Add..."
+                            className="flex-1 border-2 border-dashed border-gray-400"
+                          />
+                        </div>
+                        
                         {states.map((state, index) => (
                           <div key={index} className="flex gap-2 items-start">
                             <Input
@@ -201,21 +220,39 @@ export function ManifestationTracker({
                   </div>
                 </div>
 
-                {/* Current State */}
+                {/* Reflection */}
                 <div className="space-y-3">
                   <Label 
-                    htmlFor={`current-${pillarKey}`}
-                    className="text-base font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-1 inline-block rounded"
+                    htmlFor={`reflection-${pillarKey}`}
+                    className="text-base font-semibold"
                   >
-                    Your Current State for {pillar}
+                    Reflect on how you are performing this week
                   </Label>
                   <Textarea
-                    id={`current-${pillarKey}`}
-                    placeholder={`Write your current state for this pillar...`}
-                    value={currentStates[pillarKey] || ""}
-                    onChange={(e) => onCurrentStateChange(pillarKey, e.target.value)}
-                    rows={4}
-                    className="resize-none border-2 border-green-400"
+                    id={`reflection-${pillarKey}`}
+                    placeholder={`Reflect on your performance this week...`}
+                    value={reflections[pillarKey] || ""}
+                    onChange={(e) => onReflectionChange(pillarKey, e.target.value)}
+                    rows={3}
+                    className="resize-none border-2 border-blue-400"
+                  />
+                </div>
+
+                {/* Actionables */}
+                <div className="space-y-3">
+                  <Label 
+                    htmlFor={`actionables-${pillarKey}`}
+                    className="text-base font-semibold"
+                  >
+                    Actionables that you can implement moving forward
+                  </Label>
+                  <Textarea
+                    id={`actionables-${pillarKey}`}
+                    placeholder={`List actionable steps you can take...`}
+                    value={actionables[pillarKey] || ""}
+                    onChange={(e) => onActionablesChange(pillarKey, e.target.value)}
+                    rows={3}
+                    className="resize-none border-2 border-blue-400"
                   />
                 </div>
               </CardContent>

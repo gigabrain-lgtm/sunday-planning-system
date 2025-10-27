@@ -16,18 +16,30 @@ interface ManifestationRecord {
   Skills?: number;
   Health?: number;
   Affirmations?: number;
-  "Spiritual Current State"?: string;
-  "Social Current State"?: string;
-  "Relationship Current State"?: string;
-  "Status Current State"?: string;
-  "Team Current State"?: string;
-  "Business Current State"?: string;
-  "Travel Current State"?: string;
-  "Environment Current State"?: string;
-  "Family Current State"?: string;
-  "Skills Current State"?: string;
-  "Health Current State"?: string;
-  "Affirmations Current State"?: string;
+  "Spiritual Reflection"?: string;
+  "Social Reflection"?: string;
+  "Relationship Reflection"?: string;
+  "Status Reflection"?: string;
+  "Team Reflection"?: string;
+  "Business Reflection"?: string;
+  "Travel Reflection"?: string;
+  "Environment Reflection"?: string;
+  "Family Reflection"?: string;
+  "Skills Reflection"?: string;
+  "Health Reflection"?: string;
+  "Affirmations Reflection"?: string;
+  "Spiritual Actionables"?: string;
+  "Social Actionables"?: string;
+  "Relationship Actionables"?: string;
+  "Status Actionables"?: string;
+  "Team Actionables"?: string;
+  "Business Actionables"?: string;
+  "Travel Actionables"?: string;
+  "Environment Actionables"?: string;
+  "Family Actionables"?: string;
+  "Skills Actionables"?: string;
+  "Health Actionables"?: string;
+  "Affirmations Actionables"?: string;
 }
 
 export async function saveManifestationToAirtable(data: ManifestationRecord) {

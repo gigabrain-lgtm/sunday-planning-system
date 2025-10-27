@@ -80,7 +80,7 @@ export const manifestations = mysqlTable("manifestations", {
   healthRating: int("healthRating"),
   affirmationsRating: int("affirmationsRating"),
   
-  // Current States
+  // Reflections (stored as currentState for backward compatibility)
   spiritualCurrentState: text("spiritualCurrentState"),
   socialCurrentState: text("socialCurrentState"),
   relationshipCurrentState: text("relationshipCurrentState"),
@@ -93,6 +93,20 @@ export const manifestations = mysqlTable("manifestations", {
   skillsCurrentState: text("skillsCurrentState"),
   healthCurrentState: text("healthCurrentState"),
   affirmationsCurrentState: text("affirmationsCurrentState"),
+  
+  // Actionables
+  spiritualActionables: text("spiritualActionables"),
+  socialActionables: text("socialActionables"),
+  relationshipActionables: text("relationshipActionables"),
+  statusActionables: text("statusActionables"),
+  teamActionables: text("teamActionables"),
+  businessActionables: text("businessActionables"),
+  travelActionables: text("travelActionables"),
+  environmentActionables: text("environmentActionables"),
+  familyActionables: text("familyActionables"),
+  skillsActionables: text("skillsActionables"),
+  healthActionables: text("healthActionables"),
+  affirmationsActionables: text("affirmationsActionables"),
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

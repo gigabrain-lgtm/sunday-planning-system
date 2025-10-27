@@ -39,7 +39,8 @@ export default function SundayPlanning() {
     affirmations: 5,
   });
 
-  const [currentStates, setCurrentStates] = useState<Record<string, string>>({});
+  const [reflections, setReflections] = useState<Record<string, string>>({});
+  const [actionables, setActionables] = useState<Record<string, string>>({});
 
   // Personal Planning State
   const [personalPlanning, setPersonalPlanning] = useState({
@@ -95,7 +96,8 @@ export default function SundayPlanning() {
         personalPlanning,
         manifestations: {
           ratings: manifestationRatings,
-          currentStates,
+          reflections,
+          actionables,
         },
       });
 
@@ -133,7 +135,8 @@ export default function SundayPlanning() {
         health: 5,
         affirmations: 5,
       });
-      setCurrentStates({});
+      setReflections({});
+      setActionables({});
       setPersonalPlanning({
         eaTasks: "",
         paTasks: "",
@@ -213,12 +216,16 @@ export default function SundayPlanning() {
           {currentStep === "manifestation" && (
             <ManifestationTracker
               ratings={manifestationRatings}
-              currentStates={currentStates}
-              onRatingChange={(pillar, rating) =>
+              reflections={reflections}
+              actionables={actionables}
+              onRatingChange={(pillar: string, rating: number) =>
                 setManifestationRatings((prev) => ({ ...prev, [pillar]: rating }))
               }
-              onCurrentStateChange={(pillar, state) =>
-                setCurrentStates((prev) => ({ ...prev, [pillar]: state }))
+              onReflectionChange={(pillar: string, reflection: string) =>
+                setReflections((prev) => ({ ...prev, [pillar]: reflection }))
+              }
+              onActionablesChange={(pillar: string, actionablesText: string) =>
+                setActionables((prev) => ({ ...prev, [pillar]: actionablesText }))
               }
             />
           )}

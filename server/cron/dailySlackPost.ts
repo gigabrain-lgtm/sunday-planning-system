@@ -17,17 +17,17 @@ export async function runDailySlackPost() {
     }
 
     await postDailyManifestationToSlack({
-      spiritual: latestManifestation["Spiritual Current State"],
-      social: latestManifestation["Social Current State"],
-      relationship: latestManifestation["Relationship Current State"],
-      status: latestManifestation["Status Current State"],
-      team: latestManifestation["Team Current State"],
-      business: latestManifestation["Business Current State"],
-      travel: latestManifestation["Travel Current State"],
-      environment: latestManifestation["Environment Current State"],
-      family: latestManifestation["Family Current State"],
-      skills: latestManifestation["Skills Current State"],
-      health: latestManifestation["Health Current State"],
+      spiritual: latestManifestation["Spiritual Reflection"],
+      social: latestManifestation["Social Reflection"],
+      relationship: latestManifestation["Relationship Reflection"],
+      status: latestManifestation["Status Reflection"],
+      team: latestManifestation["Team Reflection"],
+      business: latestManifestation["Business Reflection"],
+      travel: latestManifestation["Travel Reflection"],
+      environment: latestManifestation["Environment Reflection"],
+      family: latestManifestation["Family Reflection"],
+      skills: latestManifestation["Skills Reflection"],
+      health: latestManifestation["Health Reflection"],
     });
 
     console.log("[Cron] Daily Slack post completed successfully");
