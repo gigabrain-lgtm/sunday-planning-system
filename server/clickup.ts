@@ -183,36 +183,37 @@ export async function markTaskComplete(taskId: string): Promise<void> {
   }
 }
 
-export async function getTeamMembers(): Promise<TeamMember[]> {
+export async function getTeamMembers(listId: string): Promise<TeamMember[]> {
   if (!ENV.clickupApiKey) {
     console.warn("[ClickUp] API key not configured, returning empty team list");
     return [];
   }
 
-  const response = await fetch(`${CLICKUP_API_URL}/team`, {
+  // Get list members (those with access to this specific list)
+  const response = await fetch(`${CLICKUP_API_URL}/list/${listId}/member`, {
     headers: {
       Authorization: ENV.clickupApiKey,
     },
   });
 
   if (!response.ok) {
-    throw new Error(`ClickUp API error: ${await response.text()}`);
-  }
-
-  const data = await response.json();
-  const team = data.teams.find((t: any) => t.id === "9013324406");
-  
-  if (!team || !team.members) {
+    console.warn(`[ClickUp] Failed to fetch list members: ${await response.text()}`);
     return [];
   }
 
-  return team.members
-    .filter((m: any) => m.user.username) // Filter out users without usernames
+  const data = await response.json();
+  
+  if (!data.members || !Array.isArray(data.members)) {
+    return [];
+  }
+
+  return data.members
+    .filter((m: any) => m.user && m.user.username) // Filter out users without usernames
     .map((m: any) => ({
       id: m.user.id,
       username: m.user.username,
       email: m.user.email,
-      initials: m.user.initials,
+      initials: m.user.initials || "",
     }));
 }
 

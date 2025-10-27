@@ -25,9 +25,12 @@
 - [x] Update App.tsx with proper routing
 
 ## Bugs
+
+## Fixed Bugs
 - [x] Fix ClickUp API key not configured error
 - [x] Fix team member assignment dropdown showing only Unassigned
 - [x] Fix Add button not working in Manifestation Tracker
+- [x] Filter team members to only show those with access to the specific ClickUp list (not entire workspace)
 
 ## New Features
 - [x] Show actual workspace members in assignment dropdown

@@ -7,6 +7,7 @@ import * as db from "./db";
 import { saveManifestationToAirtable, getLatestManifestation as getLatestManifestationFromAirtable } from "./airtable";
 import { postDailyManifestationToSlack } from "./slack";
 import * as clickup from "./clickup";
+import { ENV } from "./_core/env";
 
 export const appRouter = router({
   system: systemRouter,
@@ -266,9 +267,14 @@ export const appRouter = router({
         return { success: true, count: input.taskIds.length };
       }),
 
-    getTeamMembers: protectedProcedure.query(async () => {
-      return await clickup.getTeamMembers();
-    }),
+    getTeamMembers: protectedProcedure
+      .input(z.object({ listType: z.enum(["business", "personal"]) }))
+      .query(async ({ input }) => {
+        const listId = input.listType === "business" 
+          ? ENV.clickupBusinessListId 
+          : ENV.clickupPersonalListId;
+        return await clickup.getTeamMembers(listId);
+      }),
   }),
 
   slack: router({

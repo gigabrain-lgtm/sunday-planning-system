@@ -37,7 +37,7 @@ export function BusinessNeedleMovers({
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
 
   const { data: existingNeedleMovers, isLoading, refetch } = trpc.needleMovers.fetchBusiness.useQuery();
-  const { data: teamMembers } = trpc.needleMovers.getTeamMembers.useQuery();
+  const { data: teamMembers } = trpc.needleMovers.getTeamMembers.useQuery({ listType: "business" });
 
   // Use team members from ClickUp API, fallback to extracting from existing tasks
   const availableAssignees = teamMembers && teamMembers.length > 0
