@@ -122,7 +122,7 @@ export default function Roadmap({ movedTasks }: RoadmapProps) {
     }
   };
 
-  // Generate next 12 weeks starting from current week
+  // Generate next 12 weeks starting from NEXT week (current week is for Needle Movers)
   const generateWeeks = () => {
     const weeks = [];
     const today = new Date();
@@ -130,7 +130,7 @@ export default function Roadmap({ movedTasks }: RoadmapProps) {
     const diff = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1); // Get Monday
     const monday = new Date(today.setDate(diff));
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 1; i <= 12; i++) {
       const weekStart = new Date(monday);
       weekStart.setDate(monday.getDate() + i * 7);
       const weekEnd = new Date(weekStart);
@@ -146,8 +146,7 @@ export default function Roadmap({ movedTasks }: RoadmapProps) {
         year,
         startDate: new Date(weekStart),
         endDate: new Date(weekEnd),
-        label: `Week ${weekNumber}`,
-        dateRange: `${formatDate(weekStart)} - ${formatDate(weekEnd)}`,
+        label: `Week ${weekNumber}, ${year}`,
       });
     }
     return weeks;
@@ -317,8 +316,7 @@ export default function Roadmap({ movedTasks }: RoadmapProps) {
               <CardHeader className="py-3 bg-accent/50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base">{week.label}, {week.year}</CardTitle>
-                    <CardDescription className="text-xs">{week.dateRange}</CardDescription>
+                    <CardTitle className="text-base">{week.label}</CardTitle>
                   </div>
                   <div className="text-sm font-medium text-muted-foreground">
                     {weekTasks.length} {weekTasks.length === 1 ? "task" : "tasks"}

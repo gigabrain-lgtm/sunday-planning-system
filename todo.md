@@ -32,6 +32,8 @@
 - [x] Fix Add button not working in Manifestation Tracker
 - [x] Filter team members to only show those with access to the specific ClickUp list (not entire workspace)
 - [x] Fix Add button to immediately create task in ClickUp and show in Active Needle Movers
+- [x] Timeline view should start from next week (not current week)
+- [x] Remove specific date ranges from week headers in timeline view
 
 ## New Features
 - [ ] Make tasks draggable between weeks in Gantt chart (future enhancement)
@@ -75,4 +77,8 @@
 - [x] Allow adding notes/details to roadmap tasks
 - [x] Add target date or week selection for roadmap tasks
 - [x] Make roadmap tasks editable (priority, assignee, notes)
+
+
+
+## Bugs
 
