@@ -121,6 +121,7 @@ export async function createNeedleMover(
       name: needleMover.name,
       description: needleMover.description || "",
       priority: mapPriorityToClickUp(needleMover.priority),
+      ...(needleMover.assigneeId && { assignees: [needleMover.assigneeId] }),
     }),
   });
 

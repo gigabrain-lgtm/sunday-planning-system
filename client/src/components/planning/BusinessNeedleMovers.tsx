@@ -65,6 +65,16 @@ export function BusinessNeedleMovers({
     },
   });
 
+  const createMutation = trpc.needleMovers.createBusiness.useMutation({
+    onSuccess: () => {
+      toast.success("Needle mover added to ClickUp!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to create: ${error.message}`);
+    },
+  });
+
   // Notify parent component of completed tasks
   useEffect(() => {
     if (onCompletedTasksChange) {
@@ -272,21 +282,36 @@ export function BusinessNeedleMovers({
                 <div className="flex gap-2 pt-2">
                   <Button
                     variant="default"
-                    onClick={() => {
+                    onClick={async () => {
                       // Validate that task name is filled
                       if (!nm.name || !nm.name.trim()) {
                         toast.error("Please enter a task name");
                         return;
                       }
-                      // Keep this needle mover (it will be saved to ClickUp on complete)
-                      // Add a new blank one at the top
-                      addNewNeedleMover();
-                      toast.success("Needle mover added! Fill in the next one or click Next.");
+                      // Create in ClickUp immediately
+                      await createMutation.mutateAsync({
+                        name: nm.name,
+                        description: nm.description,
+                        priority: nm.priority,
+                        assigneeId: nm.assigneeId,
+                      });
+                      // Remove from new needle movers list
+                      removeNewNeedleMover(index);
                     }}
+                    disabled={createMutation.isPending}
                     className="flex-1"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add
+                    {createMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>

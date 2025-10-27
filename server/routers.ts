@@ -210,6 +210,7 @@ export const appRouter = router({
         description: z.string().optional(),
         priority: z.enum(["urgent", "high", "normal", "low"]),
         confidenceLevel: z.number().min(0).max(10).optional(),
+        assigneeId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         const taskId = await clickup.createNeedleMover(

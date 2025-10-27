@@ -31,6 +31,7 @@
 - [x] Fix team member assignment dropdown showing only Unassigned
 - [x] Fix Add button not working in Manifestation Tracker
 - [x] Filter team members to only show those with access to the specific ClickUp list (not entire workspace)
+- [x] Fix Add button to immediately create task in ClickUp and show in Active Needle Movers
 
 ## New Features
 - [x] Show actual workspace members in assignment dropdown
