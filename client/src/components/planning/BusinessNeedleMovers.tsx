@@ -35,6 +35,7 @@ export function BusinessNeedleMovers({
   const [newNeedleMovers, setNewNeedleMovers] = useState<NeedleMover[]>([]);
   const [editingPriorities, setEditingPriorities] = useState<Record<string, string>>({});
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
+  const [movedToRoadmapIds, setMovedToRoadmapIds] = useState<string[]>([]);
 
   const { data: existingNeedleMovers, isLoading, refetch } = trpc.needleMovers.fetchBusiness.useQuery();
   const { data: teamMembers } = trpc.needleMovers.getTeamMembers.useQuery({ listType: "business" });
@@ -76,8 +77,9 @@ export function BusinessNeedleMovers({
   });
 
   const moveToRoadmapMutation = trpc.needleMovers.moveToRoadmap.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast.success("Moved to Roadmap!");
+      setMovedToRoadmapIds([...movedToRoadmapIds, variables.taskId]);
       refetch();
     },
     onError: (error) => {
@@ -180,8 +182,9 @@ export function BusinessNeedleMovers({
     );
   }
 
-  const activeTasks = existingNeedleMovers?.filter(nm => !completedTaskIds.includes(nm.id!)) || [];
+  const activeTasks = existingNeedleMovers?.filter(nm => !completedTaskIds.includes(nm.id!) && !movedToRoadmapIds.includes(nm.id!)) || [];
   const completedTasksList = existingNeedleMovers?.filter(nm => completedTaskIds.includes(nm.id!)) || [];
+  const movedToRoadmapList = existingNeedleMovers?.filter(nm => movedToRoadmapIds.includes(nm.id!)) || [];
 
   return (
     <div className="space-y-6">
@@ -387,7 +390,7 @@ export function BusinessNeedleMovers({
                     {moveToRoadmapMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <span>📋</span>
+                      <span>🗺️</span>
                     )}
                   </Button>
 
@@ -400,6 +403,47 @@ export function BusinessNeedleMovers({
                     <Check className="w-4 h-4" />
                   </Button>
                 </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Moved to Roadmap */}
+      {movedToRoadmapList.length > 0 && (
+        <Card className="border-blue-200 dark:border-blue-900">
+          <CardHeader>
+            <CardTitle className="text-blue-700 dark:text-blue-400">
+              Moved to Roadmap ({movedToRoadmapList.length})
+            </CardTitle>
+            <CardDescription>These tasks have been moved to your ClickUp Roadmap</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {movedToRoadmapList.map((nm) => (
+              <div
+                key={nm.id}
+                className="flex items-center justify-between p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20"
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <span className="text-xl flex-shrink-0">🗺️</span>
+                  <div>
+                    <h4 className="font-medium">{nm.name}</h4>
+                    {nm.assigneeName && (
+                      <p className="text-sm text-muted-foreground">Assigned: {nm.assigneeName}</p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setMovedToRoadmapIds(movedToRoadmapIds.filter(id => id !== nm.id));
+                    toast.info("Task restored to Active list");
+                  }}
+                  className="flex-shrink-0"
+                >
+                  Undo
+                </Button>
               </div>
             ))}
           </CardContent>
