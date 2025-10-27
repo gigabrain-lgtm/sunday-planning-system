@@ -79,6 +79,12 @@
 - [x] Move action buttons from Key Results to individual subtasks
 - [x] Update backend to fetch subtasks for Key Results
 - [x] Make Key Results expandable to show Strategic Thinking and subtasks
+- [x] Add text inputs for Strategic Thinking questions (What did we do last week, What did we learn, What's the 20%)
+- [x] Add "Add Task" button under each Key Result to create new subtasks
+- [x] Add delete/remove button for each subtask
+- [x] Create backend mutation to add new subtasks to ClickUp
+- [x] Create backend mutation to delete subtasks from ClickUp
+- [x] Fix addSubtask to fetch parent task's list ID before creating subtask
 
 ## Testing & Verification
 - [ ] Test database operations
@@ -97,6 +103,10 @@
 
 
 ## Bugs
+
+
+
+
 
 
 

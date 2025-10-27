@@ -344,6 +344,87 @@ export const appRouter = router({
         throw new Error("Failed to fetch key results");
       }
     }),
+
+    addSubtask: publicProcedure
+      .input(z.object({
+        parentId: z.string(),
+        name: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          // First, get the parent task to find its list_id
+          const parentResponse = await fetch(
+            `https://api.clickup.com/api/v2/task/${input.parentId}`,
+            {
+              headers: {
+                'Authorization': process.env.CLICKUP_API_KEY!,
+              },
+            }
+          );
+
+          if (!parentResponse.ok) {
+            throw new Error(`Failed to fetch parent task: ${parentResponse.statusText}`);
+          }
+
+          const parentData = await parentResponse.json();
+          const listId = parentData.list.id;
+
+          // Now create the subtask in the same list as the parent
+          const response = await fetch(
+            `https://api.clickup.com/api/v2/list/${listId}/task`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': process.env.CLICKUP_API_KEY!,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: input.name,
+                parent: input.parentId,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[OKR] ClickUp API error response:', errorText);
+            throw new Error(`ClickUp API error: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          return { success: true, taskId: data.id };
+        } catch (error) {
+          console.error("[OKR] Error adding subtask:", error);
+          throw new Error("Failed to add subtask");
+        }
+      }),
+
+    deleteSubtask: publicProcedure
+      .input(z.object({
+        taskId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const response = await fetch(
+            `https://api.clickup.com/api/v2/task/${input.taskId}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'Authorization': process.env.CLICKUP_API_KEY!,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`ClickUp API error: ${response.statusText}`);
+          }
+
+          return { success: true };
+        } catch (error) {
+          console.error("[OKR] Error deleting subtask:", error);
+          throw new Error("Failed to delete subtask");
+        }
+      }),
   }),
 
   slack: router({
