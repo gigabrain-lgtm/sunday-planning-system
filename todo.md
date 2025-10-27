@@ -36,6 +36,7 @@
 ## New Features
 - [x] Show actual workspace members in assignment dropdown
 - [x] Change "Add Another" button to "Add" and immediately add to active needle movers list
+- [x] Add "Move to Roadmap" button in Active Needle Movers section
 
 ## Completed Features
 - [x] Update Manifestation Tracker UI to match reference design (https://manifestation-tracker.netlify.app/)

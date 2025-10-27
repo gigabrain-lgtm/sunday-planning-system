@@ -133,6 +133,31 @@ export async function createNeedleMover(
   return data.id;
 }
 
+export async function moveTaskToList(
+  taskId: string,
+  targetListId: string
+): Promise<void> {
+  if (!ENV.clickupApiKey) {
+    console.warn("[ClickUp] API key not configured, skipping operation");
+    return;
+  }
+
+  const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: ENV.clickupApiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      list_id: targetListId,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`ClickUp API error: ${await response.text()}`);
+  }
+}
+
 export async function updateNeedleMover(
   taskId: string,
   updates: Partial<NeedleMover>

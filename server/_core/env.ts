@@ -15,4 +15,5 @@ export const ENV = {
   clickupApiKey: process.env.CLICKUP_API_KEY ?? "",
   clickupBusinessListId: process.env.CLICKUP_BUSINESS_LIST_ID ?? "",
   clickupPersonalListId: process.env.CLICKUP_PERSONAL_LIST_ID ?? "",
+  clickupRoadmapListId: process.env.CLICKUP_ROADMAP_LIST_ID ?? "",
 };

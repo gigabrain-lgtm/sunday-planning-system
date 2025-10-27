@@ -75,6 +75,16 @@ export function BusinessNeedleMovers({
     },
   });
 
+  const moveToRoadmapMutation = trpc.needleMovers.moveToRoadmap.useMutation({
+    onSuccess: () => {
+      toast.success("Moved to Roadmap!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to move: ${error.message}`);
+    },
+  });
+
   // Notify parent component of completed tasks
   useEffect(() => {
     if (onCompletedTasksChange) {
@@ -370,7 +380,22 @@ export function BusinessNeedleMovers({
                   <Button
                     size="sm"
                     variant="outline"
+                    onClick={() => moveToRoadmapMutation.mutate({ taskId: nm.id! })}
+                    disabled={moveToRoadmapMutation.isPending}
+                    title="Move to Roadmap"
+                  >
+                    {moveToRoadmapMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <span>📋</span>
+                    )}
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => toggleComplete(nm.id!)}
+                    title="Mark Complete"
                   >
                     <Check className="w-4 h-4" />
                   </Button>

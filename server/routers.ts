@@ -257,6 +257,15 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    moveToRoadmap: protectedProcedure
+      .input(z.object({
+        taskId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await clickup.moveTaskToList(input.taskId, ENV.clickupRoadmapListId);
+        return { success: true };
+      }),
+
     batchMarkComplete: protectedProcedure
       .input(z.object({
         taskIds: z.array(z.string()),
