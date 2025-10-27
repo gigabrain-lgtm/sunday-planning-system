@@ -133,6 +133,54 @@ export async function createNeedleMover(
   return data.id;
 }
 
+export async function fetchRoadmapTasks(): Promise<NeedleMover[]> {
+  if (!ENV.clickupApiKey) {
+    console.warn('[ClickUp] API key not configured');
+    return [];
+  }
+
+  if (!ENV.clickupRoadmapListId) {
+    console.warn('[ClickUp] Roadmap list ID not configured');
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${CLICKUP_API_URL}/list/${ENV.clickupRoadmapListId}/task`,
+      {
+        headers: {
+          Authorization: ENV.clickupApiKey,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`ClickUp API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.tasks.map((task: any) => ({
+      id: task.id,
+      name: task.name,
+      priority: mapClickUpPriorityToLocal(task.priority?.priority),
+      assigneeId: task.assignees?.[0]?.id,
+      assigneeName: task.assignees?.[0]?.username,
+    }));
+  } catch (error) {
+    console.error('[ClickUp] Failed to fetch roadmap tasks:', error);
+    return [];
+  }
+}
+
+function mapClickUpPriorityToLocal(priority: any): "urgent" | "high" | "normal" | "low" {
+  if (!priority) return 'normal';
+  const priorityNum = typeof priority === 'number' ? priority : parseInt(priority, 10);
+  if (priorityNum === 1) return 'urgent';
+  if (priorityNum === 2) return 'high';
+  if (priorityNum === 4) return 'low';
+  return 'normal';
+}
+
 export async function moveTaskToList(
   taskId: string,
   targetListId: string

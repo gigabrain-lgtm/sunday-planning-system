@@ -24,12 +24,14 @@ interface BusinessNeedleMoversProps {
   businessPlanningNotes?: Record<string, string>;
   onCompletedTasksChange?: (taskIds: string[]) => void;
   onNewNeedleMoversChange?: (needleMovers: NeedleMover[]) => void;
+  onMovedToRoadmapChange?: (movedTasks: NeedleMover[]) => void;
 }
 
 export function BusinessNeedleMovers({ 
   businessPlanningNotes, 
   onCompletedTasksChange,
-  onNewNeedleMoversChange 
+  onNewNeedleMoversChange,
+  onMovedToRoadmapChange
 }: BusinessNeedleMoversProps) {
   const { user } = useAuth();
   const [newNeedleMovers, setNewNeedleMovers] = useState<NeedleMover[]>([]);
@@ -79,7 +81,13 @@ export function BusinessNeedleMovers({
   const moveToRoadmapMutation = trpc.needleMovers.moveToRoadmap.useMutation({
     onSuccess: (_, variables) => {
       toast.success("Moved to Roadmap!");
-      setMovedToRoadmapIds([...movedToRoadmapIds, variables.taskId]);
+      const updatedIds = [...movedToRoadmapIds, variables.taskId];
+      setMovedToRoadmapIds(updatedIds);
+      
+      // Update parent with moved tasks
+      const movedTasks = existingNeedleMovers?.filter(nm => updatedIds.includes(nm.id!)) || [];
+      onMovedToRoadmapChange?.(movedTasks);
+      
       refetch();
     },
     onError: (error) => {

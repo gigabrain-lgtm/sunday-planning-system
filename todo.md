@@ -38,6 +38,11 @@
 - [x] Change "Add Another" button to "Add" and immediately add to active needle movers list
 - [x] Add "Move to Roadmap" button in Active Needle Movers section
 - [x] Add separate "Moved to Roadmap" section to show tasks that were moved
+- [x] Create Roadmap page as 5th step after Needle Movers
+- [x] Fetch and display roadmap tasks from ClickUp Roadmap list
+- [x] Update progress calculation to include Roadmap step
+- [x] Show "New Roadmap" section with tasks moved during current session
+- [x] Show "Existing Roadmap" section with tasks from ClickUp list
 
 ## Completed Features
 - [x] Update Manifestation Tracker UI to match reference design (https://manifestation-tracker.netlify.app/)

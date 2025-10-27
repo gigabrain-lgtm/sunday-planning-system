@@ -257,6 +257,10 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    fetchRoadmap: protectedProcedure.query(async () => {
+      return await clickup.fetchRoadmapTasks();
+    }),
+
     moveToRoadmap: protectedProcedure
       .input(z.object({
         taskId: z.string(),

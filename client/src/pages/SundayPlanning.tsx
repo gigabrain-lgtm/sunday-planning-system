@@ -4,12 +4,13 @@ import { BusinessPlanning } from "@/components/planning/BusinessPlanning";
 import { ManifestationTracker } from "@/components/planning/ManifestationTracker";
 import { PersonalPlanning } from "@/components/planning/PersonalPlanning";
 import { BusinessNeedleMovers } from "@/components/planning/BusinessNeedleMovers";
+import Roadmap from "@/components/planning/Roadmap";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "business" | "manifestation" | "personal" | "needleMovers";
+type Step = "business" | "manifestation" | "personal" | "needleMovers" | "roadmap";
 
 export default function SundayPlanning() {
   const [currentStep, setCurrentStep] = useState<Step>("business");
@@ -52,6 +53,7 @@ export default function SundayPlanning() {
   // Needle Movers State
   const [completedNeedleMovers, setCompletedNeedleMovers] = useState<string[]>([]);
   const [newNeedleMovers, setNewNeedleMovers] = useState<any[]>([]);
+  const [movedToRoadmap, setMovedToRoadmap] = useState<any[]>([]);
 
   const saveMutation = trpc.planning.save.useMutation({
     onSuccess: () => {
@@ -151,10 +153,11 @@ export default function SundayPlanning() {
   };
 
   const steps: { key: Step; label: string; progress: number }[] = [
-    { key: "business", label: "Business Planning", progress: 25 },
-    { key: "manifestation", label: "Manifestation Tracker", progress: 50 },
-    { key: "personal", label: "Personal Planning", progress: 75 },
-    { key: "needleMovers", label: "Needle Movers", progress: 100 },
+    { key: "business", label: "Business Planning", progress: 20 },
+    { key: "manifestation", label: "Manifestation Tracker", progress: 40 },
+    { key: "personal", label: "Personal Planning", progress: 60 },
+    { key: "needleMovers", label: "Needle Movers", progress: 80 },
+    { key: "roadmap", label: "Roadmap", progress: 100 },
   ];
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
@@ -237,7 +240,11 @@ export default function SundayPlanning() {
               businessPlanningNotes={businessPlanning}
               onCompletedTasksChange={setCompletedNeedleMovers}
               onNewNeedleMoversChange={setNewNeedleMovers}
+              onMovedToRoadmapChange={setMovedToRoadmap}
             />
+          )}
+          {currentStep === "roadmap" && (
+            <Roadmap movedTasks={movedToRoadmap} />
           )}
         </div>
 
