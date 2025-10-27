@@ -289,6 +289,41 @@ export const appRouter = router({
           : ENV.clickupPersonalListId;
         return await clickup.getTeamMembers(listId);
       }),
+
+    updateRoadmapTask: protectedProcedure
+      .input(z.object({
+        taskId: z.string(),
+        notes: z.string().optional(),
+        targetWeek: z.string().optional(),
+        priority: z.enum(["urgent", "high", "normal", "low"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { taskId, notes, targetWeek, priority } = input;
+        const updates: Record<string, any> = {};
+        
+        if (priority) {
+          updates.priority = priority;
+        }
+        
+        // Combine notes and target week into description
+        let description = "";
+        if (notes) {
+          description += `**Planning Notes:**\n${notes}\n\n`;
+        }
+        if (targetWeek) {
+          description += `**Target Week:** ${targetWeek}`;
+        }
+        
+        if (description) {
+          updates.description = description;
+        }
+        
+        if (Object.keys(updates).length > 0) {
+          await clickup.updateNeedleMover(taskId, updates);
+        }
+        
+        return { success: true };
+      }),
   }),
 
   slack: router({

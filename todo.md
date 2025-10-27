@@ -34,6 +34,9 @@
 - [x] Fix Add button to immediately create task in ClickUp and show in Active Needle Movers
 
 ## New Features
+- [ ] Make tasks draggable between weeks in Gantt chart (future enhancement)
+
+## Completed New Features
 - [x] Show actual workspace members in assignment dropdown
 - [x] Change "Add Another" button to "Add" and immediately add to active needle movers list
 - [x] Add "Move to Roadmap" button in Active Needle Movers section
@@ -43,11 +46,16 @@
 - [x] Update progress calculation to include Roadmap step
 - [x] Show "New Roadmap" section with tasks moved during current session
 - [x] Show "Existing Roadmap" section with tasks from ClickUp list
-
-## Completed Features
-- [x] Update Manifestation Tracker UI to match reference design (https://manifestation-tracker.netlify.app/)
-- [x] Add ability to edit manifestation states inline
-- [x] Add ability to remove individual manifestation states
+- [x] Add planning capability to Roadmap page with expandable tasks
+- [x] Allow adding notes/details to roadmap tasks
+- [x] Add target date or week selection for roadmap tasks
+- [x] Make roadmap tasks editable (priority, assignee, notes)
+- [x] Add weekly Gantt chart view to Roadmap page
+- [x] Add toggle to switch between List View and Timeline View
+- [x] Keep tasks always expanded in list view (remove collapse functionality)
+- [x] Display next 12 weeks in Timeline View with date ranges
+- [x] Color-code tasks by priority in Timeline View
+- [x] Group tasks by target week in Timeline Viewn states
 - [x] Match the exact layout and styling from reference
 - [x] Simplify rating colors - all blue when selected
 - [x] Remove colorful borders on state inputs
@@ -61,4 +69,10 @@
 - [ ] Test ClickUp integration
 - [ ] Test complete Sunday planning workflow
 - [ ] Verify cron scheduler
+
+
+- [x] Add planning capability to Roadmap page with expandable tasks
+- [x] Allow adding notes/details to roadmap tasks
+- [x] Add target date or week selection for roadmap tasks
+- [x] Make roadmap tasks editable (priority, assignee, notes)
 
