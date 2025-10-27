@@ -48,6 +48,17 @@ export interface Objective {
   status: string;
 }
 
+export interface Subtask {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  assignees: Array<{
+    id: number;
+    username: string;
+  }>;
+}
+
 export interface KeyResult {
   id: string;
   name: string;
@@ -56,10 +67,12 @@ export interface KeyResult {
   target?: number;
   actual?: number;
   baseline?: number;
+  objectiveIds?: string[];
   assignees: Array<{
     id: number;
     username: string;
   }>;
+  subtasks: Subtask[];
 }
 
 function mapPriorityToClickUp(priority: string): number {
@@ -322,8 +335,9 @@ export async function fetchKeyResults(): Promise<KeyResult[]> {
     return [];
   }
 
+  // Fetch all tasks including subtasks
   const response = await fetch(
-    `${CLICKUP_API_URL}/list/${KEY_RESULTS_LIST_ID}/task?include_closed=false`,
+    `${CLICKUP_API_URL}/list/${KEY_RESULTS_LIST_ID}/task?subtasks=true&include_closed=false`,
     {
       headers: {
         Authorization: ENV.clickupApiKey,
@@ -337,20 +351,45 @@ export async function fetchKeyResults(): Promise<KeyResult[]> {
   }
 
   const data = await response.json();
-  const tasks: ClickUpTask[] = data.tasks;
+  const allTasks: ClickUpTask[] = data.tasks;
+  
+  // Separate parent tasks (key results) from subtasks
+  const parentTasks = allTasks.filter(t => !(t as any).parent);
+  const subtasksList = allTasks.filter(t => (t as any).parent);
 
-  return tasks.map((task) => ({
-    id: task.id,
-    name: task.name,
-    description: task.description || "",
-    status: task.priority?.priority || "to do",
-    target: getCustomFieldValue(task, "Target"),
-    actual: getCustomFieldValue(task, "Actual"),
-    baseline: getCustomFieldValue(task, "Baseline"),
-    assignees: task.assignees?.map((a) => ({
-      id: a.id,
-      username: a.username,
-    })) || [],
-  }));
+  return parentTasks.map((task) => {
+    // Find subtasks for this key result
+    const taskSubtasks = subtasksList
+      .filter(st => (st as any).parent === task.id)
+      .map(st => ({
+        id: st.id,
+        name: st.name,
+        description: st.description || "",
+        status: st.priority?.priority || "to do",
+        assignees: st.assignees?.map((a) => ({
+          id: a.id,
+          username: a.username,
+        })) || [],
+      }));
+    
+    const objectivesField = getCustomFieldValue(task, "Objectives");
+    const objectiveIds = objectivesField ? (Array.isArray(objectivesField) ? objectivesField : [objectivesField]) : [];
+    
+    return {
+      id: task.id,
+      name: task.name,
+      description: task.description || "",
+      status: task.priority?.priority || "to do",
+      target: getCustomFieldValue(task, "Target"),
+      actual: getCustomFieldValue(task, "Actual"),
+      baseline: getCustomFieldValue(task, "Baseline"),
+      objectiveIds,
+      assignees: task.assignees?.map((a) => ({
+        id: a.id,
+        username: a.username,
+      })) || [],
+      subtasks: taskSubtasks,
+    };
+  });
 }
 

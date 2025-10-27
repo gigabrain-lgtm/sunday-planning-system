@@ -73,6 +73,12 @@
 - [x] Add backend router for OKR operations
 - [x] Add Strategic Thinking prompts to guide OKR review process
 - [x] Make objectives expandable/collapsible
+- [x] Move Strategic Thinking questions from objective level to under each Key Result
+- [x] Fetch subtasks for each Key Result from ClickUp
+- [x] Display subtasks under each Key Result
+- [x] Move action buttons from Key Results to individual subtasks
+- [x] Update backend to fetch subtasks for Key Results
+- [x] Make Key Results expandable to show Strategic Thinking and subtasks
 
 ## Testing & Verification
 - [ ] Test database operations
@@ -91,6 +97,10 @@
 
 
 ## Bugs
+
+
+
+
 
 
 
