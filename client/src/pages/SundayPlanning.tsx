@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { BusinessPlanning } from "@/components/planning/BusinessPlanning";
 import { ManifestationTracker } from "@/components/planning/ManifestationTracker";
@@ -21,6 +21,23 @@ export default function SundayPlanning() {
     sunday.setDate(today.getDate() - today.getDay());
     return sunday.toISOString().split("T")[0];
   });
+
+  const queryClient = trpc.useContext();
+
+  // Prefetch all ClickUp data when component mounts for instant navigation
+  useEffect(() => {
+    // Prefetch OKR data
+    queryClient.okr.fetchObjectives.prefetch();
+    queryClient.okr.fetchKeyResults.prefetch();
+    
+    // Prefetch Needle Movers
+    queryClient.needleMovers.fetchBusiness.prefetch();
+    queryClient.needleMovers.fetchPersonal.prefetch();
+    queryClient.needleMovers.getTeamMembers.prefetch({ listType: 'business' });
+    
+    // Prefetch Roadmap
+    queryClient.needleMovers.fetchRoadmap.prefetch();
+  }, [queryClient]);
 
   // Business Planning State
   const [businessPlanning, setBusinessPlanning] = useState<Record<string, string>>({});
