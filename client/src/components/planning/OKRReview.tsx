@@ -36,6 +36,16 @@ export default function OKRReview() {
     },
   });
 
+  const moveToNeedleMoversMutation = trpc.okr.moveToNeedleMovers.useMutation({
+    onSuccess: () => {
+      toast.success("✅ Task moved to Weekly Needle Movers!");
+      refetchKeyResults();
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to move task: ${error.message}`);
+    },
+  });
+
   const toggleObjective = (id: string) => {
     const newExpanded = new Set(expandedObjectives);
     if (newExpanded.has(id)) {
@@ -56,18 +66,26 @@ export default function OKRReview() {
     setExpandedKeyResults(newExpanded);
   };
 
-  const handleAction = (subtaskId: string, action: string) => {
+  const handleAction = (subtaskId: string, action: string, keyResultId: string) => {
     setSelectedActions((prev) => ({ ...prev, [subtaskId]: action }));
     
-    const actionLabels: Record<string, string> = {
-      needle_mover: "NEEDLE_MOVER",
-      automate: "AUTOMATE",
-      delegate: "DELEGATE",
-      eliminate: "ELIMINATE",
-      roadmap: "ROADMAP",
-    };
-    
-    toast.success(`✓ Marked as: ${actionLabels[action]}`);
+    if (action === 'needle_mover') {
+      // Actually move the task to Needle Movers list
+      moveToNeedleMoversMutation.mutate({
+        taskId: subtaskId,
+        keyResultId: keyResultId,
+      });
+    } else {
+      // For other actions, just show confirmation for now
+      const actionLabels: Record<string, string> = {
+        automate: "AUTOMATE",
+        delegate: "DELEGATE",
+        eliminate: "ELIMINATE",
+        roadmap: "ROADMAP",
+      };
+      
+      toast.success(`✓ Marked as: ${actionLabels[action]}`);
+    }
   };
 
   const handleAddSubtask = (keyResultId: string) => {
@@ -288,15 +306,16 @@ export default function OKRReview() {
                                         <div className="grid grid-cols-2 gap-2">
                                           <Button
                                             variant={selectedAction === "needle_mover" ? "default" : "outline"}
-                                            onClick={() => handleAction(subtask.id, "needle_mover")}
+                                            onClick={() => handleAction(subtask.id, "needle_mover", kr.id)}
                                             className="justify-start"
+                                            disabled={moveToNeedleMoversMutation.isPending}
                                           >
                                             <span className="mr-2">✓</span> This Week
                                           </Button>
                                           
                                           <Button
                                             variant={selectedAction === "automate" ? "default" : "outline"}
-                                            onClick={() => handleAction(subtask.id, "automate")}
+                                            onClick={() => handleAction(subtask.id, "automate", kr.id)}
                                             className="justify-start"
                                           >
                                             <span className="mr-2">🤖</span> Automate
@@ -304,7 +323,7 @@ export default function OKRReview() {
                                           
                                           <Button
                                             variant={selectedAction === "delegate" ? "default" : "outline"}
-                                            onClick={() => handleAction(subtask.id, "delegate")}
+                                            onClick={() => handleAction(subtask.id, "delegate", kr.id)}
                                             className="justify-start"
                                           >
                                             <span className="mr-2">👥</span> Delegate
@@ -312,7 +331,7 @@ export default function OKRReview() {
                                           
                                           <Button
                                             variant={selectedAction === "eliminate" ? "default" : "outline"}
-                                            onClick={() => handleAction(subtask.id, "eliminate")}
+                                            onClick={() => handleAction(subtask.id, "eliminate", kr.id)}
                                             className="justify-start"
                                           >
                                             <span className="mr-2">❌</span> Eliminate
@@ -320,7 +339,7 @@ export default function OKRReview() {
                                           
                                           <Button
                                             variant={selectedAction === "roadmap" ? "default" : "outline"}
-                                            onClick={() => handleAction(subtask.id, "roadmap")}
+                                            onClick={() => handleAction(subtask.id, "roadmap", kr.id)}
                                             className="justify-start col-span-2"
                                           >
                                             <span className="mr-2">🗺️</span> Roadmap

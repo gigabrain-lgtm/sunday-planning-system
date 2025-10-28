@@ -204,6 +204,7 @@ export async function moveTaskToList(
     },
     body: JSON.stringify({
       list_id: targetListId,
+      parent: null, // Remove parent relationship to convert subtask to standalone task
     }),
   });
 
@@ -392,4 +393,5 @@ export async function fetchKeyResults(): Promise<KeyResult[]> {
     };
   });
 }
+
 

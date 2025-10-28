@@ -425,6 +425,26 @@ export const appRouter = router({
           throw new Error("Failed to delete subtask");
         }
       }),
+
+    moveToNeedleMovers: publicProcedure
+      .input(z.object({
+        taskId: z.string(),
+        keyResultId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          // Move task to Weekly Business Needle Movers list
+          await clickup.moveTaskToList(input.taskId, ENV.clickupBusinessListId);
+          
+          // Store the Key Result relationship in custom field
+          // TODO: Add custom field update when we have the field ID
+          
+          return { success: true };
+        } catch (error) {
+          console.error("[OKR] Error moving to needle movers:", error);
+          throw new Error("Failed to move task to needle movers");
+        }
+      }),
   }),
 
   slack: router({
