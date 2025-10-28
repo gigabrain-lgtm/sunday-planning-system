@@ -16,8 +16,21 @@ export async function createContext(
   try {
     user = await sdk.authenticateRequest(opts.req);
   } catch (error) {
-    // Authentication is optional for public procedures.
-    user = null;
+    // Public access mode - create a mock user from environment variables
+    const ownerName = process.env.OWNER_NAME || 'Guest User';
+    const ownerOpenId = process.env.OWNER_OPEN_ID || 'public-user';
+    
+    user = {
+      id: 1,
+      openId: ownerOpenId,
+      name: ownerName,
+      email: null,
+      loginMethod: 'public',
+      role: 'admin',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSignedIn: new Date(),
+    } as User;
   }
 
   return {
