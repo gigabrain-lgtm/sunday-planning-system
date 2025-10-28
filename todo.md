@@ -140,13 +140,18 @@
 ## New Features - Refined OKR-Driven Workflow
 - [x] Implement "This Week" action in OKR Review to move subtasks to Needle Movers list
 - [x] Fix moveTaskToList to remove parent relationship when moving subtasks
-- [ ] Add OKR linkage display to all Needle Mover tasks (show parent Key Result and Objective)
-- [ ] Add OKR linkage display to all Roadmap tasks
-- [ ] Implement "Promote to This Week" button in Roadmap to move tasks to Needle Movers
-- [ ] Implement "Snooze to Next Week" button in Roadmap to push target week +1
-- [ ] Color-code tasks by Objective for visual grouping
-- [ ] Show Key Result progress bars in task cards
-- [ ] Update Roadmap to focus on "next week" tasks at the top
-- [ ] Add visual indicators showing OKR → Key Result → Task hierarchy
-- [ ] Store OKR relationships in ClickUp custom fields when creating tasks
+- [ ] Find or create "Key Result" custom field in ClickUp for storing OKR relationships
+- [ ] Update moveToNeedleMovers to store Key Result ID in custom field
+- [ ] Fetch Key Result custom field data when loading Needle Movers
+- [ ] Fetch Key Result custom field data when loading Roadmap tasks
+- [ ] Create OKR badge component showing "🎯 Objective → Key Result"
+- [ ] Display OKR badges in Needle Movers task cards
+- [ ] Display OKR badges in Roadmap task cards
+- [ ] Color-code tasks by Objective (assign colors to objectives)
+- [ ] Add "Promote to This Week" button in Roadmap to move to Needle Movers
+- [ ] Add "Snooze to Next Week" button in Roadmap to increment target week
+- [ ] Group Needle Movers by Objective
+- [ ] Group Roadmap tasks by Objective
+- [ ] Add OKR progress dashboard showing task distribution
+- [ ] Calculate Key Result completion percentage based on completed tasks
 

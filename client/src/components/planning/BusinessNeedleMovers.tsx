@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { Loader2, Plus, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { OKRBadge } from "@/components/OKRBadge";
 
 interface NeedleMover {
   id?: string;
@@ -18,6 +19,10 @@ interface NeedleMover {
   lastWeekConfidence?: number;
   assigneeId?: number;
   assigneeName?: string;
+  linkedKeyResultId?: string;
+  linkedKeyResultName?: string;
+  linkedObjectiveId?: string;
+  linkedObjectiveName?: string;
 }
 
 interface BusinessNeedleMoversProps {
@@ -356,6 +361,15 @@ export function BusinessNeedleMovers({
               >
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium mb-2">{nm.name}</h4>
+                  {(nm.linkedObjectiveName || nm.linkedKeyResultName) && (
+                    <div className="mb-2">
+                      <OKRBadge 
+                        objectiveName={nm.linkedObjectiveName}
+                        keyResultName={nm.linkedKeyResultName}
+                        compact
+                      />
+                    </div>
+                  )}
                   <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
                     {nm.assigneeName && (
                       <span className="font-medium">Assigned: {nm.assigneeName}</span>

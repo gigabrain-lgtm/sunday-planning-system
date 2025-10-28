@@ -39,6 +39,10 @@ export interface NeedleMover {
   lastWeekConfidence?: number;
   assigneeId?: number;
   assigneeName?: string;
+  linkedKeyResultId?: string;
+  linkedKeyResultName?: string;
+  linkedObjectiveId?: string;
+  linkedObjectiveName?: string;
 }
 
 export interface Objective {
@@ -394,4 +398,105 @@ export async function fetchKeyResults(): Promise<KeyResult[]> {
   });
 }
 
+
+
+
+export async function linkTasks(
+  taskId: string,
+  linkedTaskId: string,
+  linkType: string = 'relates to'
+): Promise<void> {
+  if (!ENV.clickupApiKey) {
+    throw new Error("[ClickUp] API key not configured");
+  }
+
+  // ClickUp API endpoint for adding task dependencies/links
+  const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}/link/${linkedTaskId}`, {
+    method: "POST",
+    headers: {
+      Authorization: ENV.clickupApiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      link_type: linkType,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to link tasks: ${errorText}`);
+  }
+}
+
+
+
+export async function getTaskRelationships(taskId: string): Promise<any[]> {
+  if (!ENV.clickupApiKey) {
+    throw new Error("[ClickUp] API key not configured");
+  }
+
+  // Fetch task details which includes relationships
+  const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}`, {
+    headers: {
+      Authorization: ENV.clickupApiKey,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch task relationships: ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.relationships || [];
+}
+
+export async function enrichWithOKRLinkage(
+  tasks: NeedleMover[],
+  keyResults: KeyResult[],
+  objectives: Objective[]
+): Promise<NeedleMover[]> {
+  // For each task, check if it has a linked Key Result
+  const enrichedTasks = await Promise.all(
+    tasks.map(async (task) => {
+      if (!task.id) return task;
+
+      try {
+        const relationships = await getTaskRelationships(task.id);
+        
+        // Find relationship to a Key Result
+        const keyResultLink = relationships.find((rel: any) => {
+          const linkedTaskId = rel.task?.id || rel.linked_task_id;
+          return keyResults.some(kr => kr.id === linkedTaskId);
+        });
+
+        if (keyResultLink) {
+          const linkedTaskId = keyResultLink.task?.id || keyResultLink.linked_task_id;
+          const keyResult = keyResults.find(kr => kr.id === linkedTaskId);
+          
+          if (keyResult) {
+            // Find the parent objective
+            const objective = objectives.find(obj => 
+              keyResult.objectiveIds?.includes(obj.id)
+            );
+
+            return {
+              ...task,
+              linkedKeyResultId: keyResult.id,
+              linkedKeyResultName: keyResult.name,
+              linkedObjectiveId: objective?.id,
+              linkedObjectiveName: objective?.name,
+            };
+          }
+        }
+      } catch (error) {
+        console.error(`[ClickUp] Error fetching relationships for task ${task.id}:`, error);
+      }
+
+      return task;
+    })
+  );
+
+  return enrichedTasks;
+}
 

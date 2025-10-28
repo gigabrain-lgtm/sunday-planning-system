@@ -197,7 +197,16 @@ export const appRouter = router({
 
   needleMovers: router({
     fetchBusiness: protectedProcedure.query(async () => {
-      return await clickup.fetchNeedleMovers(process.env.CLICKUP_BUSINESS_LIST_ID || "");
+      const tasks = await clickup.fetchNeedleMovers(process.env.CLICKUP_BUSINESS_LIST_ID || "");
+      
+      // Fetch OKRs for enrichment
+      const [keyResults, objectives] = await Promise.all([
+        clickup.fetchKeyResults(),
+        clickup.fetchObjectives(),
+      ]);
+      
+      // Enrich tasks with OKR linkage
+      return await clickup.enrichWithOKRLinkage(tasks, keyResults, objectives);
     }),
 
     fetchPersonal: protectedProcedure.query(async () => {
@@ -436,8 +445,8 @@ export const appRouter = router({
           // Move task to Weekly Business Needle Movers list
           await clickup.moveTaskToList(input.taskId, ENV.clickupBusinessListId);
           
-          // Store the Key Result relationship in custom field
-          // TODO: Add custom field update when we have the field ID
+          // Create linked task relationship to Key Result
+          await clickup.linkTasks(input.taskId, input.keyResultId, 'relates to');
           
           return { success: true };
         } catch (error) {
