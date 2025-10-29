@@ -506,51 +506,13 @@ export async function enrichWithOKRLinkage(
   console.log(`[OKR Enrichment] ${keyResults.length} Key Results available`);
   console.log(`[OKR Enrichment] ${objectives.length} Objectives available`);
   
-  // For each task, check if it has a linked Key Result
-  const enrichedTasks = await Promise.all(
-    tasks.map(async (task) => {
-      if (!task.id) return task;
-
-      try {
-        const relationships = await getTaskRelationships(task.id);
-        console.log(`[OKR Enrichment] Task "${task.name}" (${task.id}) has ${relationships.length} relationships`);
-        
-        // Find relationship to a Key Result
-        const keyResultLink = relationships.find((rel: any) => {
-          const linkedTaskId = rel.task_id; // ClickUp API returns task_id field
-          return keyResults.some(kr => kr.id === linkedTaskId);
-        });
-
-        if (keyResultLink) {
-          const linkedTaskId = keyResultLink.task_id;
-          console.log(`[OKR Enrichment] Found Key Result link for task "${task.name}": ${linkedTaskId}`);
-          const keyResult = keyResults.find(kr => kr.id === linkedTaskId);
-          
-          if (keyResult) {
-            // Find the parent objective
-            const objective = objectives.find(obj => 
-              keyResult.objectiveIds?.includes(obj.id)
-            );
-
-            console.log(`[OKR Enrichment] Enriched task "${task.name}" with KR: "${keyResult.name}" and Objective: "${objective?.name}"`);
-            
-            return {
-              ...task,
-              linkedKeyResultId: keyResult.id,
-              linkedKeyResultName: keyResult.name,
-              linkedObjectiveId: objective?.id,
-              linkedObjectiveName: objective?.name,
-            };
-          }
-        }
-      } catch (error) {
-        console.error(`[ClickUp] Error fetching relationships for task ${task.id}:`, error);
-      }
-
-      return task;
-    })
-  );
-
-  return enrichedTasks;
+  // OPTIMIZATION: Skip individual API calls for now - they're too slow
+  // Instead, rely on database mappings which are much faster
+  // Tasks without linkedObjectiveName will be available for Auto-Categorize
+  
+  console.log(`[OKR Enrichment] Skipping relationship API calls for performance`);
+  console.log(`[OKR Enrichment] Tasks without OKR linkage will be available for categorization`);
+  
+  return tasks;
 }
 

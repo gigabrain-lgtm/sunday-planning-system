@@ -396,6 +396,28 @@ export function BusinessNeedleMovers({
 
                 <div className="flex gap-2 flex-shrink-0">
                   <Select
+                    value={nm.assigneeId?.toString() || "unassigned"}
+                    onValueChange={async (value) => {
+                      const newAssigneeId = value === "unassigned" ? undefined : parseInt(value);
+                      await updateMutation.mutateAsync({
+                        taskId: nm.id!,
+                        assigneeId: newAssigneeId,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-40">
+                      <SelectValue placeholder="Assign to..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {availableAssignees?.map((member) => (
+                        <SelectItem key={member.id} value={member.id.toString()}>
+                          {member.username}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
                     value={editingPriorities[nm.id!] || nm.priority}
                     onValueChange={(value) => {
                       setEditingPriorities({ ...editingPriorities, [nm.id!]: value });

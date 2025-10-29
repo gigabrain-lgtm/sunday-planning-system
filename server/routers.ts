@@ -272,6 +272,7 @@ export const appRouter = router({
         name: z.string().optional(),
         description: z.string().optional(),
         priority: z.enum(["urgent", "high", "normal", "low"]).optional(),
+        assigneeId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         const { taskId, ...updates } = input;
