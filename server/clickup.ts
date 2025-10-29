@@ -89,7 +89,7 @@ function mapPriorityToClickUp(priority: string): number {
   return map[priority] || 3;
 }
 
-function mapClickUpPriority(priority: ClickUpTask["priority"]): NeedleMover["priority"] {
+export function mapClickUpPriority(priority: ClickUpTask["priority"]): NeedleMover["priority"] {
   if (!priority) return "normal";
   const map: Record<string, NeedleMover["priority"]> = {
     "1": "urgent",
@@ -190,6 +190,32 @@ export async function fetchRoadmapTasks(): Promise<NeedleMover[]> {
   }
 
   return fetchNeedleMovers(ENV.clickupRoadmapListId);
+}
+
+export async function getTask(taskId: string): Promise<any> {
+  if (!ENV.clickupApiKey) {
+    throw new Error("[ClickUp] API key not configured");
+  }
+
+  const url = `${CLICKUP_API_URL}/task/${taskId}`;
+  console.log(`[ClickUp] Fetching task: ${url}`);
+  
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: ENV.clickupApiKey,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[ClickUp] Failed to fetch task: ${response.status} ${errorText}`);
+    throw new Error(`Failed to fetch task: ${errorText}`);
+  }
+  
+  const task = await response.json();
+  console.log(`[ClickUp] Fetched task: ${task.name} (${task.id})`);
+  return task;
 }
 
 export async function moveTaskToList(
@@ -406,37 +432,48 @@ export async function linkTasks(
   linkedTaskId: string,
   linkType: string = 'relates to'
 ): Promise<void> {
+  console.log(`[ClickUp] linkTasks called: taskId=${taskId}, linkedTaskId=${linkedTaskId}, linkType=${linkType}`);
+  
   if (!ENV.clickupApiKey) {
     throw new Error("[ClickUp] API key not configured");
   }
 
   // ClickUp API endpoint for adding task dependencies/links
-  const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}/link/${linkedTaskId}`, {
+  const url = `${CLICKUP_API_URL}/task/${taskId}/link/${linkedTaskId}`;
+  console.log(`[ClickUp] Making POST request to: ${url}`);
+  
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: ENV.clickupApiKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      link_type: linkType,
-    }),
+    // No body required for Add Task Link endpoint
   });
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`[ClickUp] Failed to link tasks: ${response.status} ${errorText}`);
     throw new Error(`Failed to link tasks: ${errorText}`);
   }
+  
+  console.log(`[ClickUp] Successfully linked task ${taskId} to ${linkedTaskId}`);
 }
 
 
 
 export async function getTaskRelationships(taskId: string): Promise<any[]> {
+  console.log(`[ClickUp] getTaskRelationships called for taskId: ${taskId}`);
+  
   if (!ENV.clickupApiKey) {
     throw new Error("[ClickUp] API key not configured");
   }
 
   // Fetch task details which includes relationships
-  const response = await fetch(`${CLICKUP_API_URL}/task/${taskId}`, {
+  const url = `${CLICKUP_API_URL}/task/${taskId}`;
+  console.log(`[ClickUp] Fetching task details from: ${url}`);
+  
+  const response = await fetch(url, {
     headers: {
       Authorization: ENV.clickupApiKey,
     },
@@ -444,11 +481,20 @@ export async function getTaskRelationships(taskId: string): Promise<any[]> {
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`[ClickUp] Failed to fetch task: ${response.status} ${errorText}`);
     throw new Error(`Failed to fetch task relationships: ${errorText}`);
   }
 
   const data = await response.json();
-  return data.relationships || [];
+  console.log(`[ClickUp] Task data keys:`, Object.keys(data));
+  console.log(`[ClickUp] Relationships field:`, data.relationships);
+  console.log(`[ClickUp] Linked tasks field:`, data.linked_tasks);
+  
+  // Check both possible field names
+  const relationships = data.relationships || data.linked_tasks || [];
+  console.log(`[ClickUp] Returning ${relationships.length} relationships`);
+  
+  return relationships;
 }
 
 export async function enrichWithOKRLinkage(
@@ -456,6 +502,10 @@ export async function enrichWithOKRLinkage(
   keyResults: KeyResult[],
   objectives: Objective[]
 ): Promise<NeedleMover[]> {
+  console.log(`[OKR Enrichment] Starting enrichment for ${tasks.length} tasks`);
+  console.log(`[OKR Enrichment] ${keyResults.length} Key Results available`);
+  console.log(`[OKR Enrichment] ${objectives.length} Objectives available`);
+  
   // For each task, check if it has a linked Key Result
   const enrichedTasks = await Promise.all(
     tasks.map(async (task) => {
@@ -463,15 +513,17 @@ export async function enrichWithOKRLinkage(
 
       try {
         const relationships = await getTaskRelationships(task.id);
+        console.log(`[OKR Enrichment] Task "${task.name}" (${task.id}) has ${relationships.length} relationships`);
         
         // Find relationship to a Key Result
         const keyResultLink = relationships.find((rel: any) => {
-          const linkedTaskId = rel.task?.id || rel.linked_task_id;
+          const linkedTaskId = rel.task_id; // ClickUp API returns task_id field
           return keyResults.some(kr => kr.id === linkedTaskId);
         });
 
         if (keyResultLink) {
-          const linkedTaskId = keyResultLink.task?.id || keyResultLink.linked_task_id;
+          const linkedTaskId = keyResultLink.task_id;
+          console.log(`[OKR Enrichment] Found Key Result link for task "${task.name}": ${linkedTaskId}`);
           const keyResult = keyResults.find(kr => kr.id === linkedTaskId);
           
           if (keyResult) {
@@ -480,6 +532,8 @@ export async function enrichWithOKRLinkage(
               keyResult.objectiveIds?.includes(obj.id)
             );
 
+            console.log(`[OKR Enrichment] Enriched task "${task.name}" with KR: "${keyResult.name}" and Objective: "${objective?.name}"`);
+            
             return {
               ...task,
               linkedKeyResultId: keyResult.id,

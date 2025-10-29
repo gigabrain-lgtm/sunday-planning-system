@@ -140,13 +140,15 @@
 ## New Features - Refined OKR-Driven Workflow
 - [x] Implement "This Week" action in OKR Review to move subtasks to Needle Movers list
 - [x] Fix moveTaskToList to remove parent relationship when moving subtasks
-- [ ] Find or create "Key Result" custom field in ClickUp for storing OKR relationships
-- [ ] Update moveToNeedleMovers to store Key Result ID in custom field
-- [ ] Fetch Key Result custom field data when loading Needle Movers
-- [ ] Fetch Key Result custom field data when loading Roadmap tasks
-- [ ] Create OKR badge component showing "🎯 Objective → Key Result"
-- [ ] Display OKR badges in Needle Movers task cards
-- [ ] Display OKR badges in Roadmap task cards
+- [x] Fix moveToNeedleMovers to CREATE new task instead of moving (ClickUp API limitation: cannot convert subtasks to tasks)
+- [x] Add getTask function to fetch subtask details from ClickUp
+- [x] Update moveToNeedleMovers to copy subtask data to new Needle Mover task
+- [x] Implement task linking using ClickUp's Task Links API (instead of custom fields)
+- [x] Create linkTasks function to link Needle Mover tasks to Key Results
+- [x] Fix enrichWithOKRLinkage to use correct field name (task_id) from ClickUp API
+- [x] Fetch linked_tasks data when loading Needle Movers
+- [x] Create OKR badge component showing "🎯 Objective Name"
+- [x] Display OKR badges in Needle Movers task cards
 - [ ] Color-code tasks by Objective (assign colors to objectives)
 - [ ] Add "Promote to This Week" button in Roadmap to move to Needle Movers
 - [ ] Add "Snooze to Next Week" button in Roadmap to increment target week

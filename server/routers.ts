@@ -441,16 +441,37 @@ export const appRouter = router({
         keyResultId: z.string(),
       }))
       .mutation(async ({ input }) => {
+        console.log(`[OKR] moveToNeedleMovers called with taskId=${input.taskId}, keyResultId=${input.keyResultId}`);
         try {
-          // Move task to Weekly Business Needle Movers list
-          await clickup.moveTaskToList(input.taskId, ENV.clickupBusinessListId);
+          // Fetch the original subtask details
+          console.log(`[OKR] Fetching subtask details...`);
+          const subtask = await clickup.getTask(input.taskId);
+          console.log(`[OKR] Subtask fetched: ${subtask.name}`);
           
-          // Create linked task relationship to Key Result
-          await clickup.linkTasks(input.taskId, input.keyResultId, 'relates to');
+          // Create a NEW task in Needle Movers list (copying subtask data)
+          console.log(`[OKR] Creating new task in Needle Movers list: ${ENV.clickupBusinessListId}`);
+          const newTask = await clickup.createNeedleMover(ENV.clickupBusinessListId, {
+            name: subtask.name,
+            description: subtask.description || "",
+            priority: clickup.mapClickUpPriority(subtask.priority) || "normal",
+          });
+          console.log(`[OKR] New task created: ${newTask.id}`);
           
-          return { success: true };
+          if (!newTask.id) {
+            throw new Error("Failed to create task: no task ID returned");
+          }
+          
+          // Link the NEW task to the Key Result
+          console.log(`[OKR] Linking new task ${newTask.id} to Key Result ${input.keyResultId}`);
+          await clickup.linkTasks(newTask.id, input.keyResultId, 'relates to');
+          console.log(`[OKR] Link created successfully`);
+          
+          // TODO: Optionally mark the original subtask as "moved" or "in progress"
+          
+          return { success: true, newTaskId: newTask.id };
         } catch (error) {
           console.error("[OKR] Error moving to needle movers:", error);
+          console.error("[OKR] Error details:", JSON.stringify(error, null, 2));
           throw new Error("Failed to move task to needle movers");
         }
       }),
