@@ -1,7 +1,5 @@
-import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { sql } from "drizzle-orm";
 
 export async function runMigrations() {
   if (!process.env.DATABASE_URL) {
@@ -16,11 +14,9 @@ export async function runMigrations() {
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
   });
 
-  const db = drizzle(pool);
-
   try {
     // Create role enum if it doesn't exist
-    await db.execute(sql`
+    await pool.query(`
       DO $$ BEGIN
         CREATE TYPE role AS ENUM ('user', 'admin');
       EXCEPTION
@@ -29,7 +25,7 @@ export async function runMigrations() {
     `);
 
     // Create users table
-    await db.execute(sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         "openId" varchar(64) NOT NULL UNIQUE,
@@ -44,7 +40,7 @@ export async function runMigrations() {
     `);
 
     // Create weekly_plannings table
-    await db.execute(sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS weekly_plannings (
         id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         "userId" integer NOT NULL,
@@ -69,7 +65,7 @@ export async function runMigrations() {
     `);
 
     // Create manifestations table
-    await db.execute(sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS manifestations (
         id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         "userId" integer NOT NULL,
@@ -116,7 +112,7 @@ export async function runMigrations() {
     `);
 
     // Create key_result_objective_mappings table
-    await db.execute(sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS key_result_objective_mappings (
         id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         "keyResultId" varchar(64) NOT NULL UNIQUE,
