@@ -1,4 +1,10 @@
 import "dotenv/config";
+
+// Disable TLS certificate validation for Digital Ocean PostgreSQL in production
+if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+  console.log('[Server] Disabled TLS certificate validation for PostgreSQL connection');
+}
 import express from "express";
 import { createServer } from "http";
 import net from "net";
