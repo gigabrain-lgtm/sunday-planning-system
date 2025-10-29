@@ -48,6 +48,8 @@ export function BusinessNeedleMovers({
 
   const { data: existingNeedleMovers, isLoading, refetch } = trpc.needleMovers.fetchBusiness.useQuery();
   const { data: teamMembers } = trpc.needleMovers.getTeamMembers.useQuery({ listType: "business" });
+  const { data: objectives } = trpc.okr.fetchObjectives.useQuery();
+  const { data: keyResults } = trpc.okr.fetchKeyResults.useQuery();
 
   // Use team members from ClickUp API, fallback to extracting from existing tasks
   const availableAssignees = teamMembers && teamMembers.length > 0
@@ -101,6 +103,42 @@ export function BusinessNeedleMovers({
       toast.error(`Failed to move: ${error.message}`);
     },
   });
+
+  const linkOKRMutation = trpc.okr.linkNeedleMoverToOKR.useMutation({
+    onSuccess: () => {
+      toast.success("OKR linkage saved!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to link OKR: ${error.message}`);
+    },
+  });
+
+  // State to track selected OKRs for each task
+  const [selectedObjectives, setSelectedObjectives] = useState<Record<string, string>>({});
+  const [selectedKeyResults, setSelectedKeyResults] = useState<Record<string, string>>({});
+
+  // Filter key results based on selected objective
+  const getKeyResultsForObjective = (objectiveId: string) => {
+    if (!keyResults) return [];
+    return keyResults.filter(kr => kr.objectiveId === objectiveId);
+  };
+
+  const handleLinkOKR = async (taskId: string) => {
+    const objectiveId = selectedObjectives[taskId];
+    const keyResultId = selectedKeyResults[taskId];
+    
+    if (!objectiveId || !keyResultId) {
+      toast.error("Please select both an Objective and Key Result");
+      return;
+    }
+    
+    await linkOKRMutation.mutateAsync({
+      taskId,
+      keyResultId,
+      objectiveId,
+    });
+  };
 
   // Notify parent component of completed tasks
   useEffect(() => {
@@ -381,6 +419,70 @@ export function BusinessNeedleMovers({
                       />
                     </div>
                   )}
+                  
+                  {/* Manual OKR Linkage */}
+                  {!nm.linkedObjectiveName && objectives && objectives.length > 0 && (
+                    <div className="mb-3 p-3 bg-muted/50 rounded-md">
+                      <div className="text-xs font-medium mb-2">Link to OKR:</div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Select
+                          value={selectedObjectives[nm.id!] || ""}
+                          onValueChange={(value) => {
+                            setSelectedObjectives({ ...selectedObjectives, [nm.id!]: value });
+                            // Clear key result when objective changes
+                            setSelectedKeyResults({ ...selectedKeyResults, [nm.id!]: "" });
+                          }}
+                        >
+                          <SelectTrigger className="h-8 w-48">
+                            <SelectValue placeholder="Select Objective..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {objectives.map((obj) => (
+                              <SelectItem key={obj.id} value={obj.id}>
+                                {obj.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        {selectedObjectives[nm.id!] && (
+                          <Select
+                            value={selectedKeyResults[nm.id!] || ""}
+                            onValueChange={(value) => {
+                              setSelectedKeyResults({ ...selectedKeyResults, [nm.id!]: value });
+                            }}
+                          >
+                            <SelectTrigger className="h-8 w-48">
+                              <SelectValue placeholder="Select Key Result..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getKeyResultsForObjective(selectedObjectives[nm.id!]).map((kr) => (
+                                <SelectItem key={kr.id} value={kr.id}>
+                                  {kr.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        
+                        {selectedKeyResults[nm.id!] && (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleLinkOKR(nm.id!)}
+                            disabled={linkOKRMutation.isPending}
+                          >
+                            {linkOKRMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              "Link"
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
                     {nm.assigneeName && (
                       <span className="font-medium">Assigned: {nm.assigneeName}</span>

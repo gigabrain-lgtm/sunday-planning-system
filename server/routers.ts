@@ -560,6 +560,28 @@ export const appRouter = router({
         }
       }),
 
+    linkNeedleMoverToOKR: publicProcedure
+      .input(z.object({
+        taskId: z.string(),
+        keyResultId: z.string(),
+        objectiveId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        console.log(`[OKR] Linking needle mover ${input.taskId} to KR ${input.keyResultId} and Objective ${input.objectiveId}`);
+        
+        // Save the key result → objective mapping to database
+        await db.saveKeyResultObjectiveMapping(input.keyResultId, input.objectiveId);
+        
+        // Optionally link in ClickUp (this creates a task relationship)
+        try {
+          await clickup.linkTasks(input.taskId, input.keyResultId, "relates to");
+        } catch (error) {
+          console.warn("[OKR] Failed to link in ClickUp, but database mapping saved:", error);
+        }
+        
+        return { success: true };
+      }),
+
     suggestTaskMappings: publicProcedure.query(async () => {
       console.log('[OKR] Starting AI task categorization');
       
