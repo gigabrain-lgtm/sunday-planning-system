@@ -9,6 +9,7 @@ import { Loader2, Plus, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { OKRBadge } from "@/components/OKRBadge";
+import TaskCategorizationReview from "../TaskCategorizationReview";
 
 interface NeedleMover {
   id?: string;
@@ -43,6 +44,7 @@ export function BusinessNeedleMovers({
   const [editingPriorities, setEditingPriorities] = useState<Record<string, string>>({});
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const [movedToRoadmapIds, setMovedToRoadmapIds] = useState<string[]>([]);
+  const [showCategorizationReview, setShowCategorizationReview] = useState(false);
 
   const { data: existingNeedleMovers, isLoading, refetch } = trpc.needleMovers.fetchBusiness.useQuery();
   const { data: teamMembers } = trpc.needleMovers.getTeamMembers.useQuery({ listType: "business" });
@@ -208,11 +210,20 @@ export function BusinessNeedleMovers({
         </p>
       </div>
 
-      {/* Add Button at Top */}
-      <Button onClick={addNewNeedleMover} variant="default" className="w-full">
-        <Plus className="w-4 h-4 mr-2" />
-        Add New Needle Mover
-      </Button>
+      {/* Action Buttons at Top */}
+      <div className="flex gap-3">
+        <Button onClick={addNewNeedleMover} variant="default" className="flex-1">
+          <Plus className="w-4 h-4 mr-2" />
+          Add New Needle Mover
+        </Button>
+        <Button 
+          onClick={() => setShowCategorizationReview(true)} 
+          variant="secondary"
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          🤖 Auto-Categorize
+        </Button>
+      </div>
 
       {/* New Needle Movers */}
       {newNeedleMovers.length > 0 && (
@@ -508,6 +519,18 @@ export function BusinessNeedleMovers({
             ))}
           </CardContent>
         </Card>
+      )}
+
+      {/* Auto-Categorization Modal */}
+      {showCategorizationReview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <TaskCategorizationReview onClose={() => {
+              setShowCategorizationReview(false);
+              refetch(); // Refresh to show updated OKR badges
+            }} />
+          </div>
+        </div>
       )}
     </div>
   );

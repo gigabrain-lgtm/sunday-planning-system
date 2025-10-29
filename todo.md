@@ -196,3 +196,13 @@
 
 
 
+
+
+## Bug Fixes
+- [x] Investigated React error: "button cannot contain a nested button" - unable to reproduce in current version, functionality working correctly
+
+
+
+## New Feature Request
+- [x] Add "Auto-Categorize" button to Needle Movers page for easy task categorization
+
