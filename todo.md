@@ -157,3 +157,27 @@
 - [ ] Add OKR progress dashboard showing task distribution
 - [ ] Calculate Key Result completion percentage based on completed tasks
 
+
+
+## OKR Dashboard - New Interactive View
+- [x] Create OKR Dashboard component as new page/tab
+- [x] Display all Objectives with expandable Key Results
+- [x] Create database table to store Key Result → Objective mappings
+- [x] Add backend mutations to save/update Key Result-Objective mappings
+- [x] Create UI to assign Key Results to Objectives (dropdown selection)
+- [x] Update fetchKeyResults to include mapped Objective IDs from database
+- [x] Add OKR Dashboard to navigation (between OKR Review and Needle Movers)
+- [ ] BUG: Mappings not saving to database (saveKeyResultObjectiveMapping mutation returns success but 0 rows in table)
+- [ ] Fix Key Results not showing under Objectives in OKR Dashboard
+- [ ] Update OKR Review to filter Key Results by Objective using database mappings
+- [ ] Under each Key Result, show "This Week" section with tasks from Needle Movers list
+- [ ] Under each Key Result, show "Roadmap" section with tasks from Roadmap list, grouped by week
+- [ ] Filter Needle Movers tasks by linked Key Result ID
+- [ ] Filter Roadmap tasks by linked Key Result ID
+- [ ] Add OKR Dashboard to navigation (between OKR Review and Needle Movers)
+- [ ] Set default week for Needle Movers tasks to current week
+- [ ] Set default week for Roadmap tasks to next week
+- [ ] Ensure bidirectional sync: tasks appear in both OKR Dashboard and original pages
+- [ ] Add week picker for Roadmap tasks in OKR Dashboard
+- [ ] Style OKR Dashboard to match existing design system
+

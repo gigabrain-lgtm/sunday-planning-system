@@ -6,12 +6,13 @@ import { PersonalPlanning } from "@/components/planning/PersonalPlanning";
 import { BusinessNeedleMovers } from "@/components/planning/BusinessNeedleMovers";
 import Roadmap from "@/components/planning/Roadmap";
 import OKRReview from "@/components/planning/OKRReview";
+import { OKRDashboard } from "@/components/planning/OKRDashboard";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "business" | "manifestation" | "personal" | "okr" | "needleMovers" | "roadmap";
+type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap";
 
 export default function SundayPlanning() {
   const [currentStep, setCurrentStep] = useState<Step>("business");
@@ -171,11 +172,12 @@ export default function SundayPlanning() {
   };
 
   const steps: { key: Step; label: string; progress: number }[] = [
-    { key: "business", label: "Business Planning", progress: 16 },
-    { key: "manifestation", label: "Manifestation Tracker", progress: 33 },
-    { key: "personal", label: "Personal Planning", progress: 50 },
-    { key: "okr", label: "OKR Review", progress: 66 },
-    { key: "needleMovers", label: "Needle Movers", progress: 83 },
+    { key: "business", label: "Business Planning", progress: 14 },
+    { key: "manifestation", label: "Manifestation Tracker", progress: 28 },
+    { key: "personal", label: "Personal Planning", progress: 42 },
+    { key: "okr", label: "OKR Review", progress: 57 },
+    { key: "okrDashboard", label: "OKR Dashboard", progress: 71 },
+    { key: "needleMovers", label: "Needle Movers", progress: 85 },
     { key: "roadmap", label: "Roadmap", progress: 100 },
   ];
 
@@ -256,6 +258,9 @@ export default function SundayPlanning() {
           )}
           {currentStep === "okr" && (
             <OKRReview />
+          )}
+          {currentStep === "okrDashboard" && (
+            <OKRDashboard />
           )}
           {currentStep === "needleMovers" && (
             <BusinessNeedleMovers 

@@ -115,3 +115,18 @@ export const manifestations = mysqlTable("manifestations", {
 export type Manifestation = typeof manifestations.$inferSelect;
 export type InsertManifestation = typeof manifestations.$inferInsert;
 
+/**
+ * Key Result to Objective mappings
+ * Stores which Key Results belong to which Objectives
+ */
+export const keyResultObjectiveMappings = mysqlTable("key_result_objective_mappings", {
+  id: int("id").autoincrement().primaryKey(),
+  keyResultId: varchar("keyResultId", { length: 64 }).notNull().unique(),
+  objectiveId: varchar("objectiveId", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type KeyResultObjectiveMapping = typeof keyResultObjectiveMappings.$inferSelect;
+export type InsertKeyResultObjectiveMapping = typeof keyResultObjectiveMappings.$inferInsert;
+

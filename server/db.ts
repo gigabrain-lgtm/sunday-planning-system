@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -133,5 +133,42 @@ export async function getLatestManifestation(userId: number) {
     .limit(1);
     
   return result.length > 0 ? result[0] : null;
+}
+
+// Key Result-Objective Mapping queries
+export async function saveKeyResultObjectiveMapping(keyResultId: string, objectiveId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const data: InsertKeyResultObjectiveMapping = {
+    keyResultId,
+    objectiveId,
+  };
+  
+  // Use ON DUPLICATE KEY UPDATE to handle upserts
+  await db.insert(keyResultObjectiveMappings).values(data).onDuplicateKeyUpdate({
+    set: { objectiveId, updatedAt: new Date() },
+  });
+}
+
+export async function getKeyResultObjectiveMappings() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select().from(keyResultObjectiveMappings);
+  return result;
+}
+
+export async function getObjectiveIdForKeyResult(keyResultId: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(keyResultObjectiveMappings)
+    .where(eq(keyResultObjectiveMappings.keyResultId, keyResultId))
+    .limit(1);
+    
+  return result.length > 0 ? result[0].objectiveId : null;
 }
 

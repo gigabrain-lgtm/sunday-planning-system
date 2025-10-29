@@ -347,7 +347,22 @@ export const appRouter = router({
 
     fetchKeyResults: publicProcedure.query(async () => {
       try {
-        return await clickup.fetchKeyResults();
+        const keyResults = await clickup.fetchKeyResults();
+        
+        // Fetch mappings from database
+        const mappings = await db.getKeyResultObjectiveMappings();
+        
+        // Enrich key results with mapped objective IDs
+        return keyResults.map(kr => {
+          const mapping = mappings.find(m => m.keyResultId === kr.id);
+          if (mapping) {
+            return {
+              ...kr,
+              objectiveIds: [mapping.objectiveId],
+            };
+          }
+          return kr;
+        });
       } catch (error) {
         console.error("[OKR] Error fetching key results:", error);
         throw new Error("Failed to fetch key results");
@@ -434,6 +449,30 @@ export const appRouter = router({
           throw new Error("Failed to delete subtask");
         }
       }),
+
+    saveKeyResultObjectiveMapping: publicProcedure
+      .input(z.object({
+        keyResultId: z.string(),
+        objectiveId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await db.saveKeyResultObjectiveMapping(input.keyResultId, input.objectiveId);
+          return { success: true };
+        } catch (error) {
+          console.error("[OKR] Error saving mapping:", error);
+          throw new Error("Failed to save Key Result-Objective mapping");
+        }
+      }),
+
+    getKeyResultObjectiveMappings: publicProcedure.query(async () => {
+      try {
+        return await db.getKeyResultObjectiveMappings();
+      } catch (error) {
+        console.error("[OKR] Error fetching mappings:", error);
+        throw new Error("Failed to fetch Key Result-Objective mappings");
+      }
+    }),
 
     moveToNeedleMovers: publicProcedure
       .input(z.object({
