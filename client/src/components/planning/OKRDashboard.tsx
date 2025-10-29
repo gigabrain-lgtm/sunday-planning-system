@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { trpc } from "../../lib/trpc";
 import { OKRMappingSettings } from "./OKRMappingSettings";
+import TaskCategorizationReview from "../TaskCategorizationReview";
 
 export function OKRDashboard() {
   const [expandedObjectives, setExpandedObjectives] = useState<Set<string>>(new Set());
   const [expandedKeyResults, setExpandedKeyResults] = useState<Set<string>>(new Set());
-  const [showMappingSettings, setShowMappingSettings] = useState(false); // Fetch Objectives and Key Results
+  const [showMappingSettings, setShowMappingSettings] = useState(false);
+  const [showCategorizationReview, setShowCategorizationReview] = useState(false); // Fetch Objectives and Key Results
   const { data: objectives = [] } = trpc.okr.fetchObjectives.useQuery();
   const { data: keyResults = [] } = trpc.okr.fetchKeyResults.useQuery();
 
@@ -97,12 +99,20 @@ export function OKRDashboard() {
         <p className="text-sm text-gray-500 mt-2">
           Debug: {objectives.length} objectives, {keyResults.length} key results, {needleMovers.length} needle movers, {roadmapTasks.length} roadmap tasks
         </p>
-        <button
-          onClick={() => setShowMappingSettings(true)}
-          className="absolute top-0 right-0 px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-md flex items-center gap-2"
-        >
-          ⚙️ Configure Mappings
-        </button>
+        <div className="absolute top-0 right-0 flex gap-2">
+          <button
+            onClick={() => setShowCategorizationReview(true)}
+            className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md flex items-center gap-2"
+          >
+            🤖 Auto-Categorize
+          </button>
+          <button
+            onClick={() => setShowMappingSettings(true)}
+            className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-md flex items-center gap-2"
+          >
+            ⚙️ Configure Mappings
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -293,6 +303,14 @@ export function OKRDashboard() {
 
       {showMappingSettings && (
         <OKRMappingSettings onClose={() => setShowMappingSettings(false)} />
+      )}
+      
+      {showCategorizationReview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <TaskCategorizationReview onClose={() => setShowCategorizationReview(false)} />
+          </div>
+        </div>
       )}
     </div>
   );

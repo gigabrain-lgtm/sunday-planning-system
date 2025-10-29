@@ -9,6 +9,28 @@ import { postDailyManifestationToSlack } from "./slack";
 import * as clickup from "./clickup";
 import { ENV } from "./_core/env";
 
+// Helper function to calculate match score between task and Key Result
+function calculateMatchScore(task: any, keyResult: any, objective: any): number {
+  let score = 0;
+  const taskText = `${task.name} ${task.description || ""}`.toLowerCase();
+  const krText = `${keyResult.name} ${keyResult.description || ""}`.toLowerCase();
+  const objText = `${objective.name} ${objective.description || ""}`.toLowerCase();
+  
+  // Keyword matching
+  const taskWords = taskText.split(/\s+/);
+  const krWords = new Set(krText.split(/\s+/));
+  const objWords = new Set(objText.split(/\s+/));
+  
+  for (const word of taskWords) {
+    if (word.length > 3) { // Ignore short words
+      if (krWords.has(word)) score += 2;
+      if (objWords.has(word)) score += 1;
+    }
+  }
+  
+  return score;
+}
+
 export const appRouter = router({
   system: systemRouter,
 
@@ -516,6 +538,102 @@ export const appRouter = router({
           throw new Error("Failed to move task to needle movers");
         }
       }),
+
+    linkTaskToKeyResult: publicProcedure
+      .input(z.object({
+        taskId: z.string(),
+        keyResultId: z.string(),
+        linkType: z.enum(["blocking", "waiting on", "relates to"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await clickup.linkTasks(
+            input.taskId,
+            input.keyResultId,
+            input.linkType || "relates to"
+          );
+          return { success: true };
+        } catch (error) {
+          console.error("[OKR] Error linking task to key result:", error);
+          throw new Error("Failed to link task to key result");
+        }
+      }),
+
+    suggestTaskMappings: publicProcedure.query(async () => {
+      console.log('[OKR] Starting AI task categorization');
+      
+      // Fetch all data
+      const objectives = await clickup.fetchObjectives();
+      const keyResults = await clickup.fetchKeyResults();
+      const needleMovers = await clickup.fetchNeedleMovers(process.env.CLICKUP_BUSINESS_LIST_ID || "");
+      
+      // Fetch existing mappings from database
+      const existingMappings = await db.getKeyResultObjectiveMappings();
+      
+      // Enrich key results with mapped objective IDs
+      const enrichedKeyResults = keyResults.map(kr => {
+        const mapping = existingMappings.find(m => m.keyResultId === kr.id);
+        if (mapping) {
+          return {
+            ...kr,
+            objectiveIds: [mapping.objectiveId],
+          };
+        }
+        return kr;
+      });
+      
+      console.log(`[OKR] Loaded ${objectives.length} objectives, ${enrichedKeyResults.length} key results, ${needleMovers.length} needle movers`);
+      
+      // Build context for AI
+      const context = objectives.map(obj => {
+        const objKeyResults = enrichedKeyResults.filter(kr => 
+          kr.objectiveIds?.includes(obj.id || "")
+        );
+        return {
+          objective: obj,
+          keyResults: objKeyResults
+        };
+      });
+      
+      // For each task, suggest the best Key Result
+      const suggestions = [];
+      
+      for (const task of needleMovers) {
+        // Skip if already has OKR linkage
+        if (task.linkedObjectiveName) {
+          continue;
+        }
+        
+        // Simple keyword matching for now (can be enhanced with actual AI later)
+        let bestMatch = null;
+        let bestScore = 0;
+        
+        for (const ctx of context) {
+          for (const kr of ctx.keyResults) {
+            const score = calculateMatchScore(task, kr, ctx.objective);
+            if (score > bestScore) {
+              bestScore = score;
+              bestMatch = {
+                taskId: task.id,
+                taskName: task.name,
+                keyResultId: kr.id,
+                keyResultName: kr.name,
+                objectiveId: ctx.objective.id,
+                objectiveName: ctx.objective.name,
+                confidence: Math.min(score / 5, 1) // Normalize to 0-1
+              };
+            }
+          }
+        }
+        
+        if (bestMatch && bestMatch.confidence > 0.2) { // Only suggest if confidence > 20%
+          suggestions.push(bestMatch);
+        }
+      }
+      
+      console.log(`[OKR] Generated ${suggestions.length} mapping suggestions`);
+      return suggestions;
+    }),
   }),
 
   slack: router({

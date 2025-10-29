@@ -182,3 +182,17 @@
 - [ ] Add week picker for Roadmap tasks in OKR Dashboard
 - [ ] Style OKR Dashboard to match existing design system
 
+
+
+## AI-Powered Task Categorization
+- [x] Create backend endpoint to analyze tasks and suggest Key Result mappings using AI
+- [x] Fetch all Needle Movers tasks, Key Results, and Objectives
+- [x] Use keyword matching to suggest most relevant Key Result for each task
+- [x] Create review UI showing AI suggestions with accept/edit/skip options
+- [x] Implement bulk save for approved mappings
+- [x] Add "Auto-Categorize" button in OKR Dashboard
+- [ ] Apply same AI categorization to Roadmap tasks (future enhancement)
+- [ ] Enhance matching algorithm with actual LLM integration (future enhancement)
+
+
+
