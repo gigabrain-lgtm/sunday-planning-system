@@ -27,6 +27,7 @@ export function OKRMappingSettings({ onClose }: { onClose: () => void }) {
   };
 
   const handleSave = async () => {
+    alert("handleSave called! localMappings keys: " + Object.keys(localMappings).length);
     try {
       console.log("[OKR Mappings] Saving mappings:", localMappings);
       // Save all mappings
@@ -87,13 +88,18 @@ export function OKRMappingSettings({ onClose }: { onClose: () => void }) {
 
         <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
           >
             Cancel
           </button>
           <button
-            onClick={handleSave}
+            type="button"
+            onClick={async () => {
+              alert("Button clicked! localMappings: " + JSON.stringify(localMappings));
+              await handleSave();
+            }}
             disabled={saveMappingMutation.isPending}
             className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
           >

@@ -1,0 +1,17 @@
+{
+  "query": "SELECT * FROM key_result_objective_mappings;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4FYU6DMBVLKaejL.df528b9b5381 --database C29PavktqUdrzDWgtnhawH --execute SELECT * FROM key_result_objective_mappings;",
+  "rows": [
+    {
+      "id": "1",
+      "keyResultId": "86ac1eqgh",
+      "objectiveId": "86aa0gw19",
+      "createdAt": "2025-10-29 09:51:55",
+      "updatedAt": "2025-10-29 09:51:55"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tkeyResultId\tobjectiveId\tcreatedAt\tupdatedAt\n1\t86ac1eqgh\t86aa0gw19\t2025-10-29 09:51:55\t2025-10-29 09:51:55\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

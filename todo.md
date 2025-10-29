@@ -167,8 +167,9 @@
 - [x] Create UI to assign Key Results to Objectives (dropdown selection)
 - [x] Update fetchKeyResults to include mapped Objective IDs from database
 - [x] Add OKR Dashboard to navigation (between OKR Review and Needle Movers)
-- [ ] BUG: Mappings not saving to database (saveKeyResultObjectiveMapping mutation returns success but 0 rows in table)
-- [ ] Fix Key Results not showing under Objectives in OKR Dashboard
+- [ ] BUG: Configure Mappings modal Save button onClick not triggering (event handler not being called)
+- [ ] WORKAROUND: Manually insert mappings via SQL for now, fix UI later
+- [x] Fix Key Results showing under Objectives in OKR Dashboard (using database mappings)
 - [ ] Update OKR Review to filter Key Results by Objective using database mappings
 - [ ] Under each Key Result, show "This Week" section with tasks from Needle Movers list
 - [ ] Under each Key Result, show "Roadmap" section with tasks from Roadmap list, grouped by week

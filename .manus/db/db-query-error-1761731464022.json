@@ -1,0 +1,8 @@
+{
+  "query": "REPLACE INTO key_result_objective_mappings (key_result_id, objective_id, created_at, updated_at) VALUES ('86ac1eqgh', '86aa0gw19', NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4FYU6DMBVLKaejL.df528b9b5381 --database C29PavktqUdrzDWgtnhawH --execute REPLACE INTO key_result_objective_mappings (key_result_id, objective_id, created_at, updated_at) VALUES ('86ac1eqgh', '86aa0gw19', NOW(), NOW());",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'key_result_id' in 'field list'"
+  ]
+}

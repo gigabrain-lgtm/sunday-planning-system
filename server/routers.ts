@@ -457,7 +457,9 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         try {
-          await db.saveKeyResultObjectiveMapping(input.keyResultId, input.objectiveId);
+          console.log(`[OKR Mapping] Mutation called with:`, input);
+          const result = await db.saveKeyResultObjectiveMapping(input.keyResultId, input.objectiveId);
+          console.log(`[OKR Mapping] DB function returned:`, result);
           return { success: true };
         } catch (error) {
           console.error("[OKR] Error saving mapping:", error);

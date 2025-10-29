@@ -137,18 +137,25 @@ export async function getLatestManifestation(userId: number) {
 
 // Key Result-Objective Mapping queries
 export async function saveKeyResultObjectiveMapping(keyResultId: string, objectiveId: string) {
+  console.log(`[DB] saveKeyResultObjectiveMapping called with keyResultId: ${keyResultId}, objectiveId: ${objectiveId}`);
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  if (!db) {
+    console.error("[DB] Database not available!");
+    throw new Error("Database not available");
+  }
   
   const data: InsertKeyResultObjectiveMapping = {
     keyResultId,
     objectiveId,
   };
   
+  console.log(`[DB] Inserting data:`, data);
   // Use ON DUPLICATE KEY UPDATE to handle upserts
-  await db.insert(keyResultObjectiveMappings).values(data).onDuplicateKeyUpdate({
+  const result = await db.insert(keyResultObjectiveMappings).values(data).onDuplicateKeyUpdate({
     set: { objectiveId, updatedAt: new Date() },
   });
+  console.log(`[DB] Insert result:`, result);
+  return result;
 }
 
 export async function getKeyResultObjectiveMappings() {
