@@ -4,7 +4,7 @@ services:
   github:
     repo: gigabrain-lgtm/sunday-planning-system
     branch: main
-  build_command: pnpm install && pnpm build
+  build_command: pnpm install && pnpm build && pnpm drizzle-kit push
   run_command: pnpm start
   http_port: 3000
   envs:
