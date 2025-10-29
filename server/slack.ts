@@ -111,3 +111,51 @@ export async function postDailyManifestationToSlack(manifestations: Manifestatio
   return data;
 }
 
+export async function postVisualizationToSlack(content: string, channelId: string = "C098KHBJWKW") {
+  const message = {
+    channel: channelId,
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "📍 Your Future Visualization",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Remember where you're going:*\n\n${content}`,
+        },
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `Posted on ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`,
+          },
+        ],
+      },
+    ],
+  };
+
+  const response = await fetch("https://slack.com/api/chat.postMessage", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${ENV.slackBotToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    throw new Error(`Slack API error: ${data.error}`);
+  }
+
+  return data;
+}

@@ -705,6 +705,46 @@ export const appRouter = router({
 
       return { success: true };
     }),
+    
+    postVisualization: publicProcedure
+      .input(z.object({
+        userId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const visualization = await db.getVisualization(input.userId);
+        
+        if (!visualization) {
+          throw new Error("No visualization found for user");
+        }
+        
+        const { postVisualizationToSlack } = await import("./slack");
+        await postVisualizationToSlack(visualization.content);
+        
+        return { success: true };
+      }),
+  }),
+
+  visualization: router({
+    save: protectedProcedure
+      .input(z.object({
+        content: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.saveVisualization(ctx.user.id, input.content);
+        return { success: true };
+      }),
+    
+    get: protectedProcedure.query(async ({ ctx }) => {
+      const visualization = await db.getVisualization(ctx.user.id);
+      return visualization;
+    }),
+  }),
+  
+  cron: router({
+    postDailyVisualization: publicProcedure.mutation(async () => {
+      const { postDailyVisualization } = await import("./cron/post-visualization");
+      return await postDailyVisualization();
+    }),
   }),
 });
 

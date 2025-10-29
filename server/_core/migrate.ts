@@ -126,6 +126,17 @@ export async function runMigrations() {
       );
     `);
 
+    // Create visualizations table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS visualizations (
+        id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+        "userId" integer NOT NULL,
+        content text NOT NULL,
+        "createdAt" timestamp DEFAULT now() NOT NULL,
+        "updatedAt" timestamp DEFAULT now() NOT NULL
+      );
+    `);
+
     console.log("[Migration] ✅ Database migrations completed successfully");
   } catch (error) {
     console.error("[Migration] ❌ Error running migrations:", error);

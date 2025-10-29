@@ -131,3 +131,18 @@ export const keyResultObjectiveMappings = pgTable("key_result_objective_mappings
 
 export type KeyResultObjectiveMapping = typeof keyResultObjectiveMappings.$inferSelect;
 export type InsertKeyResultObjectiveMapping = typeof keyResultObjectiveMappings.$inferInsert;
+
+/**
+ * Visualizations - future vision statements
+ * Users can write about where they want to be in the future
+ */
+export const visualizations = pgTable("visualizations", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Visualization = typeof visualizations.$inferSelect;
+export type InsertVisualization = typeof visualizations.$inferInsert;

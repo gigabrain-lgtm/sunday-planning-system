@@ -7,12 +7,13 @@ import { BusinessNeedleMovers } from "@/components/planning/BusinessNeedleMovers
 import Roadmap from "@/components/planning/Roadmap";
 import OKRReview from "@/components/planning/OKRReview";
 import { OKRDashboard } from "@/components/planning/OKRDashboard";
+import { Visualization } from "@/components/Visualization";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap";
+type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "visualization";
 
 export default function SundayPlanning() {
   const [currentStep, setCurrentStep] = useState<Step>("business");
@@ -172,13 +173,14 @@ export default function SundayPlanning() {
   };
 
   const steps: { key: Step; label: string; progress: number }[] = [
-    { key: "business", label: "Business Planning", progress: 14 },
-    { key: "manifestation", label: "Manifestation Tracker", progress: 28 },
-    { key: "personal", label: "Personal Planning", progress: 42 },
-    { key: "okr", label: "OKR Review", progress: 57 },
-    { key: "okrDashboard", label: "OKR Dashboard", progress: 71 },
-    { key: "needleMovers", label: "Needle Movers", progress: 85 },
-    { key: "roadmap", label: "Roadmap", progress: 100 },
+    { key: "business", label: "Business Planning", progress: 12 },
+    { key: "manifestation", label: "Manifestation Tracker", progress: 25 },
+    { key: "personal", label: "Personal Planning", progress: 37 },
+    { key: "okr", label: "OKR Review", progress: 50 },
+    { key: "okrDashboard", label: "OKR Dashboard", progress: 62 },
+    { key: "needleMovers", label: "Needle Movers", progress: 75 },
+    { key: "roadmap", label: "Roadmap", progress: 87 },
+    { key: "visualization", label: "Visualization", progress: 100 },
   ];
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
@@ -272,6 +274,9 @@ export default function SundayPlanning() {
           )}
           {currentStep === "roadmap" && (
             <Roadmap movedTasks={movedToRoadmap} />
+          )}
+          {currentStep === "visualization" && (
+            <Visualization />
           )}
         </div>
 

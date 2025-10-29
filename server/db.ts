@@ -2,7 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -188,3 +188,48 @@ export async function getObjectiveIdForKeyResult(keyResultId: string): Promise<s
   return result.length > 0 ? result[0].objectiveId : null;
 }
 
+// ============================================================================
+// Visualization Functions
+// ============================================================================
+
+export async function saveVisualization(userId: number, content: string) {
+  const db = await getDb();
+  if (!db) {
+    console.error("[DB] Database not available!");
+    throw new Error("Database not available");
+  }
+  
+  // Check if user already has a visualization
+  const existing = await db
+    .select()
+    .from(visualizations)
+    .where(eq(visualizations.userId, userId))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    // Update existing visualization
+    await db
+      .update(visualizations)
+      .set({ content, updatedAt: new Date() })
+      .where(eq(visualizations.userId, userId));
+  } else {
+    // Insert new visualization
+    await db.insert(visualizations).values({
+      userId,
+      content,
+    });
+  }
+}
+
+export async function getVisualization(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(visualizations)
+    .where(eq(visualizations.userId, userId))
+    .limit(1);
+    
+  return result.length > 0 ? result[0] : null;
+}

@@ -49,6 +49,27 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  // Cron endpoints
+  app.post("/api/cron/post-visualization", async (req, res) => {
+    try {
+      // Optional: Add authentication check
+      const authToken = req.headers["x-cron-secret"];
+      if (process.env.CRON_SECRET && authToken !== process.env.CRON_SECRET) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const { postDailyVisualization } = await import("../cron/post-visualization");
+      const result = await postDailyVisualization();
+      res.json(result);
+    } catch (error) {
+      console.error("[Cron API] Error:", error);
+      res.status(500).json({ 
+        error: "Failed to post visualization",
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",
