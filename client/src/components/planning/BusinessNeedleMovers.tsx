@@ -48,8 +48,16 @@ export function BusinessNeedleMovers({
 
   const { data: existingNeedleMovers, isLoading, refetch } = trpc.needleMovers.fetchBusiness.useQuery();
   const { data: teamMembers } = trpc.needleMovers.getTeamMembers.useQuery({ listType: "business" });
-  const { data: objectives } = trpc.okr.fetchObjectives.useQuery();
-  const { data: keyResults } = trpc.okr.fetchKeyResults.useQuery();
+  const { data: objectives, isLoading: objectivesLoading, error: objectivesError } = trpc.okr.fetchObjectives.useQuery();
+  const { data: keyResults, isLoading: keyResultsLoading } = trpc.okr.fetchKeyResults.useQuery();
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('[NeedleMovers] Objectives:', objectives);
+    console.log('[NeedleMovers] Objectives Loading:', objectivesLoading);
+    console.log('[NeedleMovers] Objectives Error:', objectivesError);
+    console.log('[NeedleMovers] Key Results:', keyResults);
+  }, [objectives, objectivesLoading, objectivesError, keyResults]);
 
   // Use team members from ClickUp API, fallback to extracting from existing tasks
   const availableAssignees = teamMembers && teamMembers.length > 0
@@ -421,65 +429,73 @@ export function BusinessNeedleMovers({
                   )}
                   
                   {/* Manual OKR Linkage */}
-                  {!nm.linkedObjectiveName && objectives && objectives.length > 0 && (
+                  {!nm.linkedObjectiveName && (
                     <div className="mb-3 p-3 bg-muted/50 rounded-md">
                       <div className="text-xs font-medium mb-2">Link to OKR:</div>
-                      <div className="flex gap-2 flex-wrap">
-                        <Select
-                          value={selectedObjectives[nm.id!] || ""}
-                          onValueChange={(value) => {
-                            setSelectedObjectives({ ...selectedObjectives, [nm.id!]: value });
-                            // Clear key result when objective changes
-                            setSelectedKeyResults({ ...selectedKeyResults, [nm.id!]: "" });
-                          }}
-                        >
-                          <SelectTrigger className="h-8 w-48">
-                            <SelectValue placeholder="Select Objective..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {objectives.map((obj) => (
-                              <SelectItem key={obj.id} value={obj.id}>
-                                {obj.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        
-                        {selectedObjectives[nm.id!] && (
+                      {objectivesLoading ? (
+                        <div className="text-sm text-muted-foreground">Loading objectives...</div>
+                      ) : objectivesError ? (
+                        <div className="text-sm text-destructive">Error loading objectives: {objectivesError.message}</div>
+                      ) : !objectives || objectives.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">No objectives found</div>
+                      ) : (
+                        <div className="flex gap-2 flex-wrap">
                           <Select
-                            value={selectedKeyResults[nm.id!] || ""}
+                            value={selectedObjectives[nm.id!] || ""}
                             onValueChange={(value) => {
-                              setSelectedKeyResults({ ...selectedKeyResults, [nm.id!]: value });
+                              setSelectedObjectives({ ...selectedObjectives, [nm.id!]: value });
+                              // Clear key result when objective changes
+                              setSelectedKeyResults({ ...selectedKeyResults, [nm.id!]: "" });
                             }}
                           >
                             <SelectTrigger className="h-8 w-48">
-                              <SelectValue placeholder="Select Key Result..." />
+                              <SelectValue placeholder="Select Objective..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {getKeyResultsForObjective(selectedObjectives[nm.id!]).map((kr) => (
-                                <SelectItem key={kr.id} value={kr.id}>
-                                  {kr.name}
+                              {objectives.map((obj) => (
+                                <SelectItem key={obj.id} value={obj.id}>
+                                  {obj.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                        )}
-                        
-                        {selectedKeyResults[nm.id!] && (
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => handleLinkOKR(nm.id!)}
-                            disabled={linkOKRMutation.isPending}
-                          >
-                            {linkOKRMutation.isPending ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              "Link"
-                            )}
-                          </Button>
-                        )}
-                      </div>
+                          
+                          {selectedObjectives[nm.id!] && (
+                            <Select
+                              value={selectedKeyResults[nm.id!] || ""}
+                              onValueChange={(value) => {
+                                setSelectedKeyResults({ ...selectedKeyResults, [nm.id!]: value });
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-48">
+                                <SelectValue placeholder="Select Key Result..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getKeyResultsForObjective(selectedObjectives[nm.id!]).map((kr) => (
+                                  <SelectItem key={kr.id} value={kr.id}>
+                                    {kr.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                          
+                          {selectedKeyResults[nm.id!] && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleLinkOKR(nm.id!)}
+                              disabled={linkOKRMutation.isPending}
+                            >
+                              {linkOKRMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                "Link"
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   
