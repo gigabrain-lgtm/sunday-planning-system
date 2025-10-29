@@ -8,10 +8,14 @@ export async function runMigrations() {
   }
 
   console.log("[Migration] Running database migrations...");
+  console.log("[Migration] NODE_ENV:", process.env.NODE_ENV);
   
+  // Always use SSL with rejectUnauthorized: false for Digital Ocean PostgreSQL
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: {
+      rejectUnauthorized: false
+    }
   });
 
   try {
