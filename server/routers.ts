@@ -562,10 +562,16 @@ export const appRouter = router({
     suggestTaskMappings: publicProcedure.query(async () => {
       console.log('[OKR] Starting AI task categorization');
       
+      // Check if CLICKUP_BUSINESS_LIST_ID is configured
+      if (!process.env.CLICKUP_BUSINESS_LIST_ID) {
+        console.warn('[OKR] CLICKUP_BUSINESS_LIST_ID not configured, returning empty suggestions');
+        return [];
+      }
+      
       // Fetch all data
       const objectives = await clickup.fetchObjectives();
       const keyResults = await clickup.fetchKeyResults();
-      const needleMovers = await clickup.fetchNeedleMovers(process.env.CLICKUP_BUSINESS_LIST_ID || "");
+      const needleMovers = await clickup.fetchNeedleMovers(process.env.CLICKUP_BUSINESS_LIST_ID);
       
       // Fetch existing mappings from database
       const existingMappings = await db.getKeyResultObjectiveMappings();
