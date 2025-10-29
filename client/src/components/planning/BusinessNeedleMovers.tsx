@@ -125,6 +125,7 @@ export function BusinessNeedleMovers({
   // State to track selected OKRs for each task
   const [selectedObjectives, setSelectedObjectives] = useState<Record<string, string>>({});
   const [selectedKeyResults, setSelectedKeyResults] = useState<Record<string, string>>({});
+  const [selectedKeyTargets, setSelectedKeyTargets] = useState<Record<string, string>>({});
 
   // Filter key results based on selected objective
   const getKeyResultsForObjective = (objectiveId: string) => {
@@ -135,20 +136,42 @@ export function BusinessNeedleMovers({
     );
   };
 
+  // Get key targets (subtasks) for a selected key result
+  const getKeyTargetsForKeyResult = (keyResultId: string) => {
+    if (!keyResults) return [];
+    const keyResult = keyResults.find(kr => kr.id === keyResultId);
+    return keyResult?.subtasks || [];
+  };
+
   const handleLinkOKR = async (taskId: string) => {
     const objectiveId = selectedObjectives[taskId];
     const keyResultId = selectedKeyResults[taskId];
+    const keyTargetId = selectedKeyTargets[taskId];
     
     if (!objectiveId || !keyResultId) {
       toast.error("Please select both an Objective and Key Result");
       return;
     }
     
-    await linkOKRMutation.mutateAsync({
-      taskId,
-      keyResultId,
-      objectiveId,
-    });
+    try {
+      await linkOKRMutation.mutateAsync({
+        taskId,
+        keyResultId,
+        objectiveId,
+        keyTargetId, // Optional: link to specific key target if selected
+      });
+      
+      toast.success("Successfully linked to OKR!");
+      refetch(); // Refresh to show the OKR badge
+      
+      // Clear selections
+      setSelectedObjectives(prev => ({ ...prev, [taskId]: "" }));
+      setSelectedKeyResults(prev => ({ ...prev, [taskId]: "" }));
+      setSelectedKeyTargets(prev => ({ ...prev, [taskId]: "" }));
+    } catch (error) {
+      toast.error("Failed to link OKR");
+      console.error(error);
+    }
   };
 
   // Notify parent component of completed tasks
@@ -468,6 +491,8 @@ export function BusinessNeedleMovers({
                               value={selectedKeyResults[nm.id!] || ""}
                               onValueChange={(value) => {
                                 setSelectedKeyResults({ ...selectedKeyResults, [nm.id!]: value });
+                                // Clear key target when key result changes
+                                setSelectedKeyTargets({ ...selectedKeyTargets, [nm.id!]: "" });
                               }}
                             >
                               <SelectTrigger className="h-8 w-48">
@@ -477,6 +502,26 @@ export function BusinessNeedleMovers({
                                 {getKeyResultsForObjective(selectedObjectives[nm.id!]).map((kr) => (
                                   <SelectItem key={kr.id} value={kr.id}>
                                     {kr.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                          
+                          {selectedKeyResults[nm.id!] && getKeyTargetsForKeyResult(selectedKeyResults[nm.id!]).length > 0 && (
+                            <Select
+                              value={selectedKeyTargets[nm.id!] || ""}
+                              onValueChange={(value) => {
+                                setSelectedKeyTargets({ ...selectedKeyTargets, [nm.id!]: value });
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-48">
+                                <SelectValue placeholder="Select Key Target (optional)..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getKeyTargetsForKeyResult(selectedKeyResults[nm.id!]).map((kt) => (
+                                  <SelectItem key={kt.id} value={kt.id}>
+                                    {kt.name}
                                   </SelectItem>
                                 ))}
                               </SelectContent>

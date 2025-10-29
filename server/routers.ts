@@ -565,16 +565,26 @@ export const appRouter = router({
         taskId: z.string(),
         keyResultId: z.string(),
         objectiveId: z.string(),
+        keyTargetId: z.string().optional(), // Optional key target (subtask) ID
       }))
       .mutation(async ({ input }) => {
         console.log(`[OKR] Linking needle mover ${input.taskId} to KR ${input.keyResultId} and Objective ${input.objectiveId}`);
+        if (input.keyTargetId) {
+          console.log(`[OKR] Also linking to Key Target ${input.keyTargetId}`);
+        }
         
         // Save the key result → objective mapping to database
         await db.saveKeyResultObjectiveMapping(input.keyResultId, input.objectiveId);
         
-        // Optionally link in ClickUp (this creates a task relationship)
+        // Link in ClickUp (this creates a task relationship)
         try {
+          // Link to key result
           await clickup.linkTasks(input.taskId, input.keyResultId, "relates to");
+          
+          // If key target is specified, also link to it
+          if (input.keyTargetId) {
+            await clickup.linkTasks(input.taskId, input.keyTargetId, "relates to");
+          }
         } catch (error) {
           console.warn("[OKR] Failed to link in ClickUp, but database mapping saved:", error);
         }
@@ -628,8 +638,9 @@ export const appRouter = router({
       const suggestions = [];
       
       for (const task of needleMovers) {
-        // Skip if already has OKR linkage
-        if (task.linkedObjectiveName) {
+        // Skip if already has OKR linkage (check both objective and key result links)
+        if (task.linkedObjectiveName || task.linkedKeyResultId) {
+          console.log(`[OKR] Skipping task "${task.name}" - already linked`);
           continue;
         }
         
