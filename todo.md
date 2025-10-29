@@ -206,3 +206,9 @@
 ## New Feature Request
 - [x] Add "Auto-Categorize" button to Needle Movers page for easy task categorization
 
+
+
+## Critical Bugs to Fix
+- [ ] Fix React hydration error: "button cannot be a descendant of button" in TaskCategorizationReview
+- [ ] Fix ClickUp API error: SHARD_006 "Not found" error
+
