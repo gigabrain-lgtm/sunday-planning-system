@@ -129,7 +129,10 @@ export function BusinessNeedleMovers({
   // Filter key results based on selected objective
   const getKeyResultsForObjective = (objectiveId: string) => {
     if (!keyResults) return [];
-    return keyResults.filter(kr => kr.objectiveId === objectiveId);
+    // Key results have objectiveIds as an array
+    return keyResults.filter(kr => 
+      kr.objectiveIds && kr.objectiveIds.includes(objectiveId)
+    );
   };
 
   const handleLinkOKR = async (taskId: string) => {
