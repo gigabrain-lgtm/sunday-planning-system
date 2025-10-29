@@ -1,0 +1,48 @@
+name: sunday-planning-system
+services:
+- name: web
+  github:
+    repo: gigabrain-lgtm/sunday-planning-system
+    branch: main
+  build_command: pnpm install && pnpm build
+  run_command: pnpm start
+  http_port: 3000
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    value: ${db.DATABASE_URL}
+  - key: VITE_APP_TITLE
+    value: Sunday Planning System
+  - key: VITE_APP_ID
+    value: sunday-planning-system
+  - key: CLICKUP_API_KEY
+    scope: RUN_AND_BUILD_TIME
+    value: ${CLICKUP_API_KEY}
+  - key: SLACK_BOT_TOKEN
+    scope: RUN_AND_BUILD_TIME
+    value: ${SLACK_BOT_TOKEN}
+  - key: AIRTABLE_API_KEY
+    scope: RUN_AND_BUILD_TIME
+    value: ${AIRTABLE_API_KEY}
+  - key: AIRTABLE_BASE_ID
+    scope: RUN_AND_BUILD_TIME
+    value: ${AIRTABLE_BASE_ID}
+  - key: JWT_SECRET
+    scope: RUN_AND_BUILD_TIME
+    value: ${JWT_SECRET}
+  - key: OAUTH_SERVER_URL
+    scope: RUN_AND_BUILD_TIME
+    value: ${OAUTH_SERVER_URL}
+  health_check:
+    http_path: /
+  http_port: 3000
+  instance_count: 1
+  instance_size_slug: basic-s
+databases:
+- name: db
+  engine: PG
+  version: "14"
+  production: true
+
