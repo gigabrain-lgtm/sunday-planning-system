@@ -111,22 +111,45 @@ export async function fetchNeedleMovers(listId: string): Promise<NeedleMover[]> 
     return [];
   }
 
-  const response = await fetch(
-    `${CLICKUP_API_URL}/list/${listId}/task?include_closed=false`,
-    {
-      headers: {
-        Authorization: ENV.clickupApiKey,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  // Fetch all tasks with pagination
+  let allTasks: ClickUpTask[] = [];
+  let page = 0;
+  let hasMore = true;
 
-  if (!response.ok) {
-    throw new Error(`ClickUp API error: ${await response.text()}`);
+  while (hasMore) {
+    const response = await fetch(
+      `${CLICKUP_API_URL}/list/${listId}/task?include_closed=false&page=${page}`,
+      {
+        headers: {
+          Authorization: ENV.clickupApiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`ClickUp API error: ${await response.text()}`);
+    }
+
+    const data = await response.json();
+    const tasks: ClickUpTask[] = data.tasks;
+    
+    if (tasks.length === 0) {
+      hasMore = false;
+    } else {
+      allTasks = allTasks.concat(tasks);
+      page++;
+      
+      // Safety check: stop after 10 pages (1000 tasks) to prevent infinite loops
+      if (page >= 10) {
+        console.warn(`[ClickUp] Reached maximum page limit (10) for list ${listId}`);
+        hasMore = false;
+      }
+    }
   }
 
-  const data = await response.json();
-  const tasks: ClickUpTask[] = data.tasks;
+  console.log(`[ClickUp] Fetched ${allTasks.length} tasks from list ${listId}`);
+  const tasks = allTasks;
 
   return tasks.map((task: ClickUpTask) => ({
     id: task.id,
