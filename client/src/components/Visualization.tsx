@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { trpc } from "../trpc";
-import { toast } from "react-hot-toast";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export function Visualization() {
   const [content, setContent] = useState("");
