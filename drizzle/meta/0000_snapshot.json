@@ -1,53 +1,396 @@
 {
-  "version": "5",
-  "dialect": "mysql",
-  "id": "8a76caec-0162-4ac6-8e83-62e894b498a6",
+  "id": "9254aa60-e543-4d5b-bd25-626664a33f52",
   "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "users": {
-      "name": "users",
+    "public.key_result_objective_mappings": {
+      "name": "key_result_objective_mappings",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "key_result_objective_mappings_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "keyResultId": {
+          "name": "keyResultId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objectiveId": {
+          "name": "objectiveId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "key_result_objective_mappings_keyResultId_unique": {
+          "name": "key_result_objective_mappings_keyResultId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "keyResultId"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.manifestations": {
+      "name": "manifestations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "manifestations_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weekOf": {
+          "name": "weekOf",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spiritualRating": {
+          "name": "spiritualRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "socialRating": {
+          "name": "socialRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "relationshipRating": {
+          "name": "relationshipRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "statusRating": {
+          "name": "statusRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "teamRating": {
+          "name": "teamRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "businessRating": {
+          "name": "businessRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "travelRating": {
+          "name": "travelRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "environmentRating": {
+          "name": "environmentRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "familyRating": {
+          "name": "familyRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skillsRating": {
+          "name": "skillsRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "healthRating": {
+          "name": "healthRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "affirmationsRating": {
+          "name": "affirmationsRating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spiritualCurrentState": {
+          "name": "spiritualCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "socialCurrentState": {
+          "name": "socialCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "relationshipCurrentState": {
+          "name": "relationshipCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "statusCurrentState": {
+          "name": "statusCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "teamCurrentState": {
+          "name": "teamCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "businessCurrentState": {
+          "name": "businessCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "travelCurrentState": {
+          "name": "travelCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "environmentCurrentState": {
+          "name": "environmentCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "familyCurrentState": {
+          "name": "familyCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skillsCurrentState": {
+          "name": "skillsCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "healthCurrentState": {
+          "name": "healthCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "affirmationsCurrentState": {
+          "name": "affirmationsCurrentState",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spiritualActionables": {
+          "name": "spiritualActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "socialActionables": {
+          "name": "socialActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "relationshipActionables": {
+          "name": "relationshipActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "statusActionables": {
+          "name": "statusActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "teamActionables": {
+          "name": "teamActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "businessActionables": {
+          "name": "businessActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "travelActionables": {
+          "name": "travelActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "environmentActionables": {
+          "name": "environmentActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "familyActionables": {
+          "name": "familyActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skillsActionables": {
+          "name": "skillsActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "healthActionables": {
+          "name": "healthActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "affirmationsActionables": {
+          "name": "affirmationsActionables",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "users_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
         },
         "openId": {
           "name": "openId",
           "type": "varchar(64)",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "email": {
           "name": "email",
           "type": "varchar(320)",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "loginMethod": {
           "name": "loginMethod",
           "type": "varchar(64)",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "role": {
           "name": "role",
-          "type": "enum('user','admin')",
+          "type": "role",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
           "default": "'user'"
         },
         "createdAt": {
@@ -55,56 +398,198 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
+          "default": "now()"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
-          "default": "(now())"
+          "default": "now()"
         },
         "lastSignedIn": {
           "name": "lastSignedIn",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "users_id": {
-          "name": "users_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "users_openId_unique": {
           "name": "users_openId_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "openId"
           ]
         }
       },
-      "checkConstraint": {}
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.weekly_plannings": {
+      "name": "weekly_plannings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "weekly_plannings_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weekOf": {
+          "name": "weekOf",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "companyWide": {
+          "name": "companyWide",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "marketing": {
+          "name": "marketing",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sales": {
+          "name": "sales",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "churn": {
+          "name": "churn",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creatives": {
+          "name": "creatives",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dsp": {
+          "name": "dsp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finance": {
+          "name": "finance",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recruiting": {
+          "name": "recruiting",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "systems": {
+          "name": "systems",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fulfilment": {
+          "name": "fulfilment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pendingRoadmap": {
+          "name": "pendingRoadmap",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "eaTasks": {
+          "name": "eaTasks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paTasks": {
+          "name": "paTasks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "personalTasks": {
+          "name": "personalTasks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
+  "enums": {
+    "public.role": {
+      "name": "role",
+      "schema": "public",
+      "values": [
+        "user",
+        "admin"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
   "views": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "internal": {
-    "tables": {},
-    "indexes": {}
+    "tables": {}
   }
 }

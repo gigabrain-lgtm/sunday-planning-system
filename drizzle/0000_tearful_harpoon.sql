@@ -1,0 +1,88 @@
+CREATE TYPE "public"."role" AS ENUM('user', 'admin');--> statement-breakpoint
+CREATE TABLE "key_result_objective_mappings" (
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "key_result_objective_mappings_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
+	"keyResultId" varchar(64) NOT NULL,
+	"objectiveId" varchar(64) NOT NULL,
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	"updatedAt" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "key_result_objective_mappings_keyResultId_unique" UNIQUE("keyResultId")
+);
+--> statement-breakpoint
+CREATE TABLE "manifestations" (
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "manifestations_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
+	"userId" integer NOT NULL,
+	"weekOf" timestamp NOT NULL,
+	"spiritualRating" integer,
+	"socialRating" integer,
+	"relationshipRating" integer,
+	"statusRating" integer,
+	"teamRating" integer,
+	"businessRating" integer,
+	"travelRating" integer,
+	"environmentRating" integer,
+	"familyRating" integer,
+	"skillsRating" integer,
+	"healthRating" integer,
+	"affirmationsRating" integer,
+	"spiritualCurrentState" text,
+	"socialCurrentState" text,
+	"relationshipCurrentState" text,
+	"statusCurrentState" text,
+	"teamCurrentState" text,
+	"businessCurrentState" text,
+	"travelCurrentState" text,
+	"environmentCurrentState" text,
+	"familyCurrentState" text,
+	"skillsCurrentState" text,
+	"healthCurrentState" text,
+	"affirmationsCurrentState" text,
+	"spiritualActionables" text,
+	"socialActionables" text,
+	"relationshipActionables" text,
+	"statusActionables" text,
+	"teamActionables" text,
+	"businessActionables" text,
+	"travelActionables" text,
+	"environmentActionables" text,
+	"familyActionables" text,
+	"skillsActionables" text,
+	"healthActionables" text,
+	"affirmationsActionables" text,
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	"updatedAt" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "users" (
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "users_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
+	"openId" varchar(64) NOT NULL,
+	"name" text,
+	"email" varchar(320),
+	"loginMethod" varchar(64),
+	"role" "role" DEFAULT 'user' NOT NULL,
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	"updatedAt" timestamp DEFAULT now() NOT NULL,
+	"lastSignedIn" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "users_openId_unique" UNIQUE("openId")
+);
+--> statement-breakpoint
+CREATE TABLE "weekly_plannings" (
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "weekly_plannings_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
+	"userId" integer NOT NULL,
+	"weekOf" timestamp NOT NULL,
+	"companyWide" text,
+	"marketing" text,
+	"sales" text,
+	"churn" text,
+	"creatives" text,
+	"dsp" text,
+	"finance" text,
+	"recruiting" text,
+	"systems" text,
+	"fulfilment" text,
+	"pendingRoadmap" text,
+	"eaTasks" text,
+	"paTasks" text,
+	"personalTasks" text,
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	"updatedAt" timestamp DEFAULT now() NOT NULL
+);
