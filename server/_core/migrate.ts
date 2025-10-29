@@ -10,12 +10,12 @@ export async function runMigrations() {
   console.log("[Migration] Running database migrations...");
   console.log("[Migration] NODE_ENV:", process.env.NODE_ENV);
   
-  // Always use SSL with rejectUnauthorized: false for Digital Ocean PostgreSQL
+  // Temporarily disable TLS certificate validation for this connection
+  const originalRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+  
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
-    }
   });
 
   try {
@@ -132,5 +132,11 @@ export async function runMigrations() {
     throw error;
   } finally {
     await pool.end();
+    // Restore original TLS setting
+    if (originalRejectUnauthorized !== undefined) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalRejectUnauthorized;
+    } else {
+      delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    }
   }
 }
