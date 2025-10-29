@@ -638,9 +638,12 @@ export const appRouter = router({
       const suggestions = [];
       
       for (const task of needleMovers) {
-        // Skip if already has OKR linkage (check both objective and key result links)
-        if (task.linkedObjectiveName || task.linkedKeyResultId) {
-          console.log(`[OKR] Skipping task "${task.name}" - already linked`);
+        // Note: We don't check linkedKeyResultId because the Get Tasks API doesn't return
+        // relationship data. Instead, we'll suggest mappings for all tasks and let users
+        // review them. Tasks that are already linked will show up in the review UI.
+        // Only skip if linkedObjectiveName is explicitly set (from custom fields or enrichment)
+        if (task.linkedObjectiveName) {
+          console.log(`[OKR] Skipping task "${task.name}" - has linkedObjectiveName`);
           continue;
         }
         
@@ -666,7 +669,9 @@ export const appRouter = router({
           }
         }
         
-        if (bestMatch && bestMatch.confidence > 0.2) { // Only suggest if confidence > 20%
+        // Always suggest the best match, even if confidence is low
+        // Users can review and skip suggestions they don't like
+        if (bestMatch) {
           suggestions.push(bestMatch);
         }
       }
