@@ -167,3 +167,42 @@ export const visualizationHistory = pgTable("visualization_history", {
 
 export type VisualizationHistory = typeof visualizationHistory.$inferSelect;
 export type InsertVisualizationHistory = typeof visualizationHistory.$inferInsert;
+
+/**
+ * Sleep Sessions - Eight Sleep data
+ * Stores sleep session data from Eight Sleep API
+ */
+export const sleepSessions = pgTable("sleep_sessions", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
+  
+  // Session identification
+  sessionId: varchar("sessionId", { length: 128 }).notNull().unique(),
+  sessionDate: timestamp("sessionDate").notNull(),
+  
+  // Sleep metrics
+  sleepScore: integer("sleepScore"), // 0-100
+  sleepDuration: integer("sleepDuration"), // minutes
+  
+  // Sleep stages (minutes)
+  lightSleepMinutes: integer("lightSleepMinutes"),
+  deepSleepMinutes: integer("deepSleepMinutes"),
+  remSleepMinutes: integer("remSleepMinutes"),
+  awakeMinutes: integer("awakeMinutes"),
+  
+  // Session timing
+  bedtimeStart: timestamp("bedtimeStart"),
+  bedtimeEnd: timestamp("bedtimeEnd"),
+  
+  // Sleep fitness scores
+  sleepFitnessScore: integer("sleepFitnessScore"),
+  
+  // Raw data for future analysis
+  rawData: text("rawData"), // JSON string of full API response
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type SleepSession = typeof sleepSessions.$inferSelect;
+export type InsertSleepSession = typeof sleepSessions.$inferInsert;

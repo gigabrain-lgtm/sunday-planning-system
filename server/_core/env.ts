@@ -19,4 +19,7 @@ export const ENV = {
   microsoftClientId: process.env.MICROSOFT_CLIENT_ID ?? "",
   microsoftClientSecret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
   microsoftTenantId: process.env.MICROSOFT_TENANT_ID ?? "",
+  eightEmail: process.env.EIGHT_EMAIL ?? "",
+  eightPassword: process.env.EIGHT_PASSWORD ?? "",
+  eightTimezone: process.env.EIGHT_TIMEZONE ?? "America/Sao_Paulo",
 };

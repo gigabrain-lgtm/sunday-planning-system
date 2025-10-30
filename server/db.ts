@@ -2,7 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -344,4 +344,72 @@ export async function getLatestScorecardData(userId: number) {
 export async function getScorecardHistory(userId: number) {
   // TODO: Implement after creating scorecard_data table
   return [];
+}
+
+// ============================================================================
+// Sleep Sessions Functions
+// ============================================================================
+
+export async function getSleepSessions(userId: number, days: number = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+  
+  const result = await db
+    .select()
+    .from(sleepSessions)
+    .where(eq(sleepSessions.userId, userId))
+    .orderBy(desc(sleepSessions.sessionDate));
+    
+  return result;
+}
+
+export async function getWeeklySleepSummary(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Get last 7 days of sleep data
+  const sessions = await getSleepSessions(userId, 7);
+  
+  if (sessions.length === 0) {
+    return null;
+  }
+  
+  // Calculate averages
+  const totalScore = sessions.reduce((sum, s) => sum + (s.sleepScore || 0), 0);
+  const totalDuration = sessions.reduce((sum, s) => sum + (s.sleepDuration || 0), 0);
+  const totalLight = sessions.reduce((sum, s) => sum + (s.lightSleepMinutes || 0), 0);
+  const totalDeep = sessions.reduce((sum, s) => sum + (s.deepSleepMinutes || 0), 0);
+  const totalRem = sessions.reduce((sum, s) => sum + (s.remSleepMinutes || 0), 0);
+  const totalAwake = sessions.reduce((sum, s) => sum + (s.awakeMinutes || 0), 0);
+  
+  const count = sessions.length;
+  
+  // Find best and worst nights
+  const sortedByScore = [...sessions].sort((a, b) => (b.sleepScore || 0) - (a.sleepScore || 0));
+  const bestNight = sortedByScore[0];
+  const worstNight = sortedByScore[sortedByScore.length - 1];
+  
+  return {
+    averageScore: Math.round(totalScore / count),
+    averageDuration: Math.round(totalDuration / count),
+    averageLight: Math.round(totalLight / count),
+    averageDeep: Math.round(totalDeep / count),
+    averageRem: Math.round(totalRem / count),
+    averageAwake: Math.round(totalAwake / count),
+    totalNights: count,
+    bestNight: {
+      date: bestNight.sessionDate,
+      score: bestNight.sleepScore,
+      duration: bestNight.sleepDuration,
+    },
+    worstNight: {
+      date: worstNight.sessionDate,
+      score: worstNight.sleepScore,
+      duration: worstNight.sleepDuration,
+    },
+    sessions: sessions,
+  };
 }

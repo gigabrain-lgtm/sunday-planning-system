@@ -151,6 +151,28 @@ export async function runMigrations() {
       );
     `);
 
+    // Create sleep_sessions table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS sleep_sessions (
+        id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+        "userId" integer NOT NULL,
+        "sessionId" varchar(128) NOT NULL UNIQUE,
+        "sessionDate" timestamp NOT NULL,
+        "sleepScore" integer,
+        "sleepDuration" integer,
+        "lightSleepMinutes" integer,
+        "deepSleepMinutes" integer,
+        "remSleepMinutes" integer,
+        "awakeMinutes" integer,
+        "bedtimeStart" timestamp,
+        "bedtimeEnd" timestamp,
+        "sleepFitnessScore" integer,
+        "rawData" text,
+        "createdAt" timestamp DEFAULT now() NOT NULL,
+        "updatedAt" timestamp DEFAULT now() NOT NULL
+      );
+    `);
+
     console.log("[Migration] ✅ Database migrations completed successfully");
   } catch (error) {
     console.error("[Migration] ❌ Error running migrations:", error);

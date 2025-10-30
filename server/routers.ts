@@ -835,6 +835,43 @@ export const appRouter = router({
     }),
   }),
 
+  sleep: router({
+    fetchData: protectedProcedure.mutation(async ({ ctx }) => {
+      // Trigger Python script to fetch Eight Sleep data
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      try {
+        const scriptPath = '/home/ubuntu/sunday-planning-system/scripts/fetch_eight_sleep.py';
+        const { stdout, stderr } = await execAsync(`python3 ${scriptPath}`);
+        
+        if (stderr) {
+          console.error('[Sleep] Script stderr:', stderr);
+        }
+        
+        console.log('[Sleep] Script output:', stdout);
+        
+        return { success: true, message: 'Sleep data fetched successfully' };
+      } catch (error: any) {
+        console.error('[Sleep] Error fetching data:', error);
+        throw new Error(`Failed to fetch sleep data: ${error.message}`);
+      }
+    }),
+    
+    getWeeklySummary: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getWeeklySleepSummary(ctx.user.id);
+    }),
+    
+    getSessions: protectedProcedure
+      .input(z.object({
+        days: z.number().optional().default(30),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getSleepSessions(ctx.user.id, input.days);
+      }),
+  }),
+
   cron: router({
     postDailyVisualization: publicProcedure.mutation(async () => {
       const { postDailyVisualization } = await import("./cron/post-visualization");

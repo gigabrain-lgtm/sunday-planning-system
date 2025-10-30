@@ -9,12 +9,13 @@ import OKRReview from "@/components/planning/OKRReview";
 import { OKRDashboard } from "@/components/planning/OKRDashboard";
 import { Visualization } from "@/components/Visualization";
 import { Scorecard } from "@/components/planning/Scorecard";
+import { SleepReview } from "@/components/planning/SleepReview";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "scorecard" | "visualization";
+type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "scorecard" | "visualization" | "sleep";
 
 export default function SundayPlanning() {
   const [currentStep, setCurrentStep] = useState<Step>("business");
@@ -174,15 +175,16 @@ export default function SundayPlanning() {
   };
 
   const steps: { key: Step; label: string; progress: number }[] = [
-    { key: "business", label: "Business Planning", progress: 12 },
-    { key: "manifestation", label: "Manifestation Tracker", progress: 25 },
-    { key: "personal", label: "Personal Planning", progress: 37 },
-    { key: "okr", label: "OKR Review", progress: 50 },
-    { key: "okrDashboard", label: "OKR Dashboard", progress: 62 },
-    { key: "needleMovers", label: "Needle Movers", progress: 75 },
+    { key: "business", label: "Business Planning", progress: 11 },
+    { key: "manifestation", label: "Manifestation Tracker", progress: 22 },
+    { key: "personal", label: "Personal Planning", progress: 33 },
+    { key: "okr", label: "OKR Review", progress: 44 },
+    { key: "okrDashboard", label: "OKR Dashboard", progress: 55 },
+    { key: "needleMovers", label: "Needle Movers", progress: 66 },
     { key: "roadmap", label: "Roadmap", progress: 77 },
-    { key: "scorecard", label: "Scorecard", progress: 88 },
-    { key: "visualization", label: "Visualization", progress: 100 },
+    { key: "scorecard", label: "Scorecard", progress: 83 },
+    { key: "visualization", label: "Visualization", progress: 91 },
+    { key: "sleep", label: "Sleep Review", progress: 100 },
   ];
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
@@ -282,6 +284,9 @@ export default function SundayPlanning() {
           )}
           {currentStep === "visualization" && (
             <Visualization />
+          )}
+          {currentStep === "sleep" && (
+            <SleepReview />
           )}
         </div>
 
