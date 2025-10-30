@@ -135,6 +135,7 @@ export type InsertKeyResultObjectiveMapping = typeof keyResultObjectiveMappings.
 /**
  * Visualizations - future vision statements
  * Users can write about where they want to be in the future
+ * This table stores the CURRENT visualization for each user
  */
 export const visualizations = pgTable("visualizations", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -146,3 +147,20 @@ export const visualizations = pgTable("visualizations", {
 
 export type Visualization = typeof visualizations.$inferSelect;
 export type InsertVisualization = typeof visualizations.$inferInsert;
+
+/**
+ * Visualization History - tracks all past versions of visualizations
+ * Every time a user updates their visualization, the old version is saved here
+ */
+export const visualizationHistory = pgTable("visualization_history", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
+  content: text("content").notNull(),
+  // When this version was created (copied from the main visualizations table)
+  versionDate: timestamp("versionDate").notNull(),
+  // When this history record was created
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type VisualizationHistory = typeof visualizationHistory.$inferSelect;
+export type InsertVisualizationHistory = typeof visualizationHistory.$inferInsert;

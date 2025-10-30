@@ -2,7 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -207,6 +207,13 @@ export async function saveVisualization(userId: number, content: string) {
     .limit(1);
   
   if (existing.length > 0) {
+    // Save the old version to history before updating
+    await db.insert(visualizationHistory).values({
+      userId,
+      content: existing[0].content,
+      versionDate: existing[0].updatedAt,
+    });
+    
     // Update existing visualization
     await db
       .update(visualizations)
@@ -232,4 +239,17 @@ export async function getVisualization(userId: number) {
     .limit(1);
     
   return result.length > 0 ? result[0] : null;
+}
+
+export async function getVisualizationHistory(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db
+    .select()
+    .from(visualizationHistory)
+    .where(eq(visualizationHistory.userId, userId))
+    .orderBy(desc(visualizationHistory.versionDate));
+    
+  return result;
 }

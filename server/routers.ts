@@ -738,6 +738,11 @@ export const appRouter = router({
       const visualization = await db.getVisualization(ctx.user.id);
       return visualization;
     }),
+    
+    getHistory: protectedProcedure.query(async ({ ctx }) => {
+      const history = await db.getVisualizationHistory(ctx.user.id);
+      return history;
+    }),
   }),
   
   cron: router({
