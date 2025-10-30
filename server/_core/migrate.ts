@@ -137,6 +137,17 @@ export async function runMigrations() {
       );
     `);
 
+    // Create visualization_history table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS visualization_history (
+        id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+        "userId" integer NOT NULL,
+        content text NOT NULL,
+        "versionDate" timestamp NOT NULL,
+        "createdAt" timestamp DEFAULT now() NOT NULL
+      );
+    `);
+
     console.log("[Migration] ✅ Database migrations completed successfully");
   } catch (error) {
     console.error("[Migration] ❌ Error running migrations:", error);
