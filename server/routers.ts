@@ -837,22 +837,31 @@ export const appRouter = router({
 
   sleep: router({
     fetchData: protectedProcedure.mutation(async ({ ctx }) => {
-      // Trigger Python script to fetch Eight Sleep data
-      const { exec } = await import('child_process');
-      const { promisify } = await import('util');
-      const execAsync = promisify(exec);
+      const { EightSleepClient } = await import('./eightsleep');
       
       try {
-        const scriptPath = '/home/ubuntu/sunday-planning-system/scripts/fetch_eight_sleep.py';
-        const { stdout, stderr } = await execAsync(`python3 ${scriptPath}`);
+        // Initialize Eight Sleep client
+        const client = new EightSleepClient(
+          ENV.EIGHT_EMAIL,
+          ENV.EIGHT_PASSWORD,
+          ENV.EIGHT_TIMEZONE
+        );
         
-        if (stderr) {
-          console.error('[Sleep] Script stderr:', stderr);
+        // Fetch sleep data for past 30 days
+        const { intervals } = await client.getSleepData(30);
+        
+        // Parse and save to database
+        let savedCount = 0;
+        for (const interval of intervals) {
+          const parsed = EightSleepClient.parseSleepSession(interval);
+          await db.saveSleepSession(ctx.user.id, parsed);
+          savedCount++;
         }
         
-        console.log('[Sleep] Script output:', stdout);
-        
-        return { success: true, message: 'Sleep data fetched successfully' };
+        return { 
+          success: true, 
+          message: `Fetched and saved ${savedCount} sleep sessions` 
+        };
       } catch (error: any) {
         console.error('[Sleep] Error fetching data:', error);
         throw new Error(`Failed to fetch sleep data: ${error.message}`);
