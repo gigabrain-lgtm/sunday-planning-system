@@ -8,12 +8,13 @@ import Roadmap from "@/components/planning/Roadmap";
 import OKRReview from "@/components/planning/OKRReview";
 import { OKRDashboard } from "@/components/planning/OKRDashboard";
 import { Visualization } from "@/components/Visualization";
+import { Scorecard } from "@/components/planning/Scorecard";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "visualization";
+type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "scorecard" | "visualization";
 
 export default function SundayPlanning() {
   const [currentStep, setCurrentStep] = useState<Step>("business");
@@ -179,7 +180,8 @@ export default function SundayPlanning() {
     { key: "okr", label: "OKR Review", progress: 50 },
     { key: "okrDashboard", label: "OKR Dashboard", progress: 62 },
     { key: "needleMovers", label: "Needle Movers", progress: 75 },
-    { key: "roadmap", label: "Roadmap", progress: 87 },
+    { key: "roadmap", label: "Roadmap", progress: 77 },
+    { key: "scorecard", label: "Scorecard", progress: 88 },
     { key: "visualization", label: "Visualization", progress: 100 },
   ];
 
@@ -274,6 +276,9 @@ export default function SundayPlanning() {
           )}
           {currentStep === "roadmap" && (
             <Roadmap movedTasks={movedToRoadmap} />
+          )}
+          {currentStep === "scorecard" && (
+            <Scorecard />
           )}
           {currentStep === "visualization" && (
             <Visualization />

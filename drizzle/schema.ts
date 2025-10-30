@@ -22,6 +22,9 @@ export const users = pgTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  microsoftAccessToken: text("microsoftAccessToken"),
+  microsoftRefreshToken: text("microsoftRefreshToken"),
+  microsoftTokenExpiry: timestamp("microsoftTokenExpiry"),
 });
 
 export type User = typeof users.$inferSelect;

@@ -745,6 +745,96 @@ export const appRouter = router({
     }),
   }),
   
+  microsoft: router({
+    getAuthUrl: protectedProcedure.query(({ ctx }) => {
+      const redirectUri = `${ctx.req.protocol}://${ctx.req.get('host')}/api/trpc/microsoft.callback`;
+      const { getMicrosoftAuthUrl } = require('./microsoft');
+      return { url: getMicrosoftAuthUrl(redirectUri) };
+    }),
+    
+    callback: publicProcedure
+      .input(z.object({
+        code: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) {
+          throw new Error('Not authenticated');
+        }
+        
+        const redirectUri = `${ctx.req.protocol}://${ctx.req.get('host')}/api/trpc/microsoft.callback`;
+        const { getMicrosoftAccessToken } = await import('./microsoft');
+        const tokenData = await getMicrosoftAccessToken(input.code, redirectUri);
+        
+        // Store tokens in database
+        await db.saveMicrosoftTokens(
+          ctx.user.id,
+          tokenData.access_token,
+          tokenData.refresh_token,
+          new Date(Date.now() + tokenData.expires_in * 1000)
+        );
+        
+        return { success: true };
+      }),
+    
+    getConnectionStatus: protectedProcedure.query(async ({ ctx }) => {
+      const user = await db.getUserById(ctx.user.id);
+      return {
+        connected: !!user?.microsoftAccessToken,
+        tokenExpiry: user?.microsoftTokenExpiry,
+      };
+    }),
+  }),
+  
+  scorecard: router({
+    fetchData: protectedProcedure.mutation(async ({ ctx }) => {
+      const user = await db.getUserById(ctx.user.id);
+      
+      if (!user?.microsoftAccessToken) {
+        throw new Error('OneDrive not connected');
+      }
+      
+      // Check if token is expired
+      if (user.microsoftTokenExpiry && new Date(user.microsoftTokenExpiry) < new Date()) {
+        // Refresh token
+        const { refreshMicrosoftAccessToken } = await import('./microsoft');
+        const tokenData = await refreshMicrosoftAccessToken(user.microsoftRefreshToken!);
+        
+        await db.saveMicrosoftTokens(
+          ctx.user.id,
+          tokenData.access_token,
+          tokenData.refresh_token,
+          new Date(Date.now() + tokenData.expires_in * 1000)
+        );
+        
+        user.microsoftAccessToken = tokenData.access_token;
+      }
+      
+      // Fetch and parse Excel file
+      const { MicrosoftGraphClient } = await import('./microsoft');
+      const { parseScorecardData } = await import('./scorecard-parser');
+      
+      const client = new MicrosoftGraphClient(user.microsoftAccessToken);
+      const file = await client.findFileByName('GigaBrands PNL');
+      const scorecardData = await client.getWorksheetData(file.id, 'Scorecard');
+      const salesProjectionData = await client.getWorksheetData(file.id, 'Sales projection');
+      
+      const parsed = parseScorecardData(scorecardData, salesProjectionData);
+      
+      // Store in database for historical tracking
+      await db.saveScorecardData(ctx.user.id, parsed);
+      
+      return parsed;
+    }),
+    
+    getLatest: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getLatestScorecardData(ctx.user.id);
+    }),
+    
+    getHistory: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getScorecardHistory(ctx.user.id);
+    }),
+  }),
+
   cron: router({
     postDailyVisualization: publicProcedure.mutation(async () => {
       const { postDailyVisualization } = await import("./cron/post-visualization");

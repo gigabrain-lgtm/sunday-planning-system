@@ -253,3 +253,95 @@ export async function getVisualizationHistory(userId: number) {
     
   return result;
 }
+
+// ============================================================================
+// Microsoft OAuth Functions
+// ============================================================================
+
+export async function saveMicrosoftTokens(
+  userId: number,
+  accessToken: string,
+  refreshToken: string,
+  tokenExpiry: Date
+) {
+  const db = await getDb();
+  if (!db) {
+    console.error("[DB] Database not available!");
+    throw new Error("Database not available");
+  }
+  
+  await db
+    .update(users)
+    .set({
+      microsoftAccessToken: accessToken,
+      microsoftRefreshToken: refreshToken,
+      microsoftTokenExpiry: tokenExpiry,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+}
+
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+    
+  return result.length > 0 ? result[0] : null;
+}
+
+// ============================================================================
+// Scorecard Functions
+// ============================================================================
+
+export async function saveScorecardData(userId: number, data: any) {
+  const db = await getDb();
+  if (!db) {
+    console.error("[DB] Database not available!");
+    throw new Error("Database not available");
+  }
+  
+  // Store scorecard data as JSON in a new table
+  // For now, we'll store it in the weekly_plannings table as a workaround
+  // TODO: Create dedicated scorecard_data table
+  
+  const weekOf = new Date();
+  weekOf.setHours(0, 0, 0, 0);
+  
+  // Check if there's already a planning for this week
+  const existing = await db
+    .select()
+    .from(weeklyPlannings)
+    .where(eq(weeklyPlannings.userId, userId))
+    .where(eq(weeklyPlannings.weekOf, weekOf))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    // Update existing
+    await db
+      .update(weeklyPlannings)
+      .set({
+        // Store scorecard data in a dedicated field (we'll add this to schema)
+        updatedAt: new Date(),
+      })
+      .where(eq(weeklyPlannings.id, existing[0].id));
+  }
+  
+  // For now, just return success
+  // We'll implement proper storage after testing the Excel parsing
+  return { success: true };
+}
+
+export async function getLatestScorecardData(userId: number) {
+  // TODO: Implement after creating scorecard_data table
+  return null;
+}
+
+export async function getScorecardHistory(userId: number) {
+  // TODO: Implement after creating scorecard_data table
+  return [];
+}

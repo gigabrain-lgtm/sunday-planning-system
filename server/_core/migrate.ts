@@ -39,7 +39,10 @@ export async function runMigrations() {
         role role DEFAULT 'user' NOT NULL,
         "createdAt" timestamp DEFAULT now() NOT NULL,
         "updatedAt" timestamp DEFAULT now() NOT NULL,
-        "lastSignedIn" timestamp DEFAULT now() NOT NULL
+        "lastSignedIn" timestamp DEFAULT now() NOT NULL,
+        "microsoftAccessToken" text,
+        "microsoftRefreshToken" text,
+        "microsoftTokenExpiry" timestamp
       );
     `);
 
