@@ -1,0 +1,35 @@
+name: Post Daily Visualization to Slack
+
+on:
+  schedule:
+    # Runs at 8:00 AM EST (13:00 UTC) Monday-Friday
+    # Adjust the time based on your timezone
+    - cron: '0 13 * * 1-5'
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  post-visualization:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Post Visualization to Slack
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            https://sea-turtle-app-tkm98.ondigitalocean.app/api/cron/post-visualization \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "Error: Failed to post visualization"
+            exit 1
+          fi
+          
+          echo "✅ Successfully posted visualization to Slack!"
