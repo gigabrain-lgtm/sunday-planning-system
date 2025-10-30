@@ -106,6 +106,8 @@ function getCustomFieldValue(task: ClickUpTask, fieldName: string): any {
 }
 
 export async function fetchNeedleMovers(listId: string): Promise<NeedleMover[]> {
+  console.log(`[ClickUp] fetchNeedleMovers called with listId: ${listId}`);
+  
   if (!ENV.clickupApiKey) {
     console.warn("[ClickUp] API key not configured, returning empty list");
     return [];
@@ -128,7 +130,9 @@ export async function fetchNeedleMovers(listId: string): Promise<NeedleMover[]> 
     );
 
     if (!response.ok) {
-      throw new Error(`ClickUp API error: ${await response.text()}`);
+      const errorText = await response.text();
+      console.error(`[ClickUp] API error for list ${listId}: ${response.status} - ${errorText}`);
+      throw new Error(`ClickUp API error (${response.status}): ${errorText}`);
     }
 
     const data = await response.json();
