@@ -119,7 +119,7 @@ export async function postVisualizationToSlack(content: string, channelId: strin
         type: "header",
         text: {
           type: "plain_text",
-          text: "📍 Your Future Visualization",
+          text: "Stay focused brother. Remember why we are doing this. Follow the white rabbit.",
           emoji: true,
         },
       },
