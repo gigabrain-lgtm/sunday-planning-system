@@ -216,7 +216,16 @@ export async function fetchRoadmapTasks(): Promise<NeedleMover[]> {
     return [];
   }
 
-  return fetchNeedleMovers(ENV.clickupRoadmapListId);
+  console.log(`[ClickUp] fetchRoadmapTasks - Using list ID: ${ENV.clickupRoadmapListId}`);
+  
+  try {
+    const tasks = await fetchNeedleMovers(ENV.clickupRoadmapListId);
+    console.log(`[ClickUp] fetchRoadmapTasks - Successfully fetched ${tasks.length} tasks`);
+    return tasks;
+  } catch (error) {
+    console.error(`[ClickUp] fetchRoadmapTasks - Error:`, error);
+    return [];
+  }
 }
 
 export async function getTask(taskId: string): Promise<any> {
