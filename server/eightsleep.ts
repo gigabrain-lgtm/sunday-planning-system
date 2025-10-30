@@ -92,7 +92,10 @@ export class EightSleepClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('[EightSleep] Login failed:', response.status, response.statusText);
+      console.error('[EightSleep] Error response:', errorText);
+      throw new Error(`Login failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -138,7 +141,11 @@ export class EightSleepClient {
     });
 
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('[EightSleep] API request failed:', method, endpoint);
+      console.error('[EightSleep] Status:', response.status, response.statusText);
+      console.error('[EightSleep] Error response:', errorText);
+      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     return await response.json();
