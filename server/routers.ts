@@ -837,33 +837,38 @@ export const appRouter = router({
 
   sleep: router({
     fetchData: protectedProcedure.mutation(async ({ ctx }) => {
-      const { EightSleepClient } = await import('./eightsleep');
+      const { spawn } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify((await import('child_process')).exec);
       
       try {
-        // Initialize Eight Sleep client
-        const client = new EightSleepClient(
-          ENV.EIGHT_EMAIL,
-          ENV.EIGHT_PASSWORD,
-          ENV.EIGHT_TIMEZONE
-        );
+        console.log('[Sleep] Starting Python script to fetch Eight Sleep data...');
         
-        // Fetch sleep data for past 30 days
-        const { intervals } = await client.getSleepData(30);
+        // Execute Python script
+        const scriptPath = './scripts/fetch_eight_sleep.py';
+        const { stdout, stderr } = await execAsync(`python3 ${scriptPath}`, {
+          env: {
+            ...process.env,
+            DATABASE_URL: ENV.DATABASE_URL,
+            EIGHT_EMAIL: ENV.EIGHT_EMAIL,
+            EIGHT_PASSWORD: ENV.EIGHT_PASSWORD,
+            EIGHT_TIMEZONE: ENV.EIGHT_TIMEZONE,
+          },
+        });
         
-        // Parse and save to database
-        let savedCount = 0;
-        for (const interval of intervals) {
-          const parsed = EightSleepClient.parseSleepSession(interval);
-          await db.saveSleepSession(ctx.user.id, parsed);
-          savedCount++;
+        console.log('[Sleep] Python script output:', stdout);
+        if (stderr) {
+          console.error('[Sleep] Python script stderr:', stderr);
         }
         
         return { 
           success: true, 
-          message: `Fetched and saved ${savedCount} sleep sessions` 
+          message: 'Successfully fetched sleep data using Python script' 
         };
       } catch (error: any) {
         console.error('[Sleep] Error fetching data:', error);
+        console.error('[Sleep] Error stdout:', error.stdout);
+        console.error('[Sleep] Error stderr:', error.stderr);
         throw new Error(`Failed to fetch sleep data: ${error.message}`);
       }
     }),
