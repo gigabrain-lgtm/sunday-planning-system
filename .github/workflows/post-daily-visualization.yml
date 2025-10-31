@@ -18,6 +18,7 @@ jobs:
         run: |
           response=$(curl -s -w "\n%{http_code}" -X POST \
             https://sea-turtle-app-tkm98.ondigitalocean.app/api/cron/post-visualization \
+            -H "X-Cron-Secret: 61f745d995fa3b4ff1539f5e7e665bac5f5aa912ed9a8a1b766a27551905c6e4" \
             -H "Content-Type: application/json")
           
           http_code=$(echo "$response" | tail -n1)
