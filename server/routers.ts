@@ -899,6 +899,272 @@ export const appRouter = router({
       return await checkPythonAvailability();
     }),
   }),
+
+  lifePlanning: router({
+    // Habit Categories
+    getCategories: publicProcedure.query(async () => {
+      const lifePlanningDb = await import("./db/life-planning");
+      return await lifePlanningDb.getHabitCategories();
+    }),
+
+    // Life Mission
+    getMission: protectedProcedure
+      .input(z.object({ year: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getLifeMission(ctx.user.id, input.year);
+      }),
+
+    saveMission: protectedProcedure
+      .input(z.object({
+        year: z.number(),
+        title: z.string(),
+        missionStatements: z.string(), // JSON string
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.upsertLifeMission({
+          userId: ctx.user.id,
+          ...input,
+        });
+      }),
+
+    // Habits
+    getHabits: protectedProcedure
+      .input(z.object({ activeOnly: z.boolean().optional().default(true) }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getHabits(ctx.user.id, input.activeOnly);
+      }),
+
+    createHabit: protectedProcedure
+      .input(z.object({
+        categoryId: z.number(),
+        name: z.string(),
+        description: z.string().optional(),
+        frequency: z.enum(['daily', 'weekly', 'monthly']),
+        targetValue: z.number().optional(),
+        unit: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.createHabit({
+          userId: ctx.user.id,
+          ...input,
+        });
+      }),
+
+    updateHabit: protectedProcedure
+      .input(z.object({
+        habitId: z.number(),
+        data: z.object({
+          name: z.string().optional(),
+          description: z.string().optional(),
+          frequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
+          targetValue: z.number().optional(),
+          unit: z.string().optional(),
+          isActive: z.boolean().optional(),
+        }),
+      }))
+      .mutation(async ({ input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.updateHabit(input.habitId, input.data);
+      }),
+
+    deleteHabit: protectedProcedure
+      .input(z.object({ habitId: z.number() }))
+      .mutation(async ({ input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.deleteHabit(input.habitId);
+      }),
+
+    // Habit Completions
+    getCompletions: protectedProcedure
+      .input(z.object({
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getHabitCompletions(
+          ctx.user.id,
+          new Date(input.startDate),
+          new Date(input.endDate)
+        );
+      }),
+
+    toggleCompletion: protectedProcedure
+      .input(z.object({
+        habitId: z.number(),
+        date: z.string(),
+        completed: z.boolean(),
+        value: z.number().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        const completion = await lifePlanningDb.upsertHabitCompletion({
+          habitId: input.habitId,
+          userId: ctx.user.id,
+          completedDate: new Date(input.date),
+          completed: input.completed,
+          value: input.value,
+          notes: input.notes,
+        });
+
+        // Award XP if completing
+        if (input.completed) {
+          await lifePlanningDb.addXP(
+            ctx.user.id,
+            10,
+            'Completed habit',
+            'habit_completion',
+            input.habitId
+          );
+          await lifePlanningDb.incrementHabitsCompleted(ctx.user.id);
+        }
+
+        return completion;
+      }),
+
+    // Quests
+    getQuests: protectedProcedure
+      .input(z.object({ questType: z.string().optional() }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getQuests(ctx.user.id, input.questType);
+      }),
+
+    getActiveQuests: protectedProcedure.query(async ({ ctx }) => {
+      const lifePlanningDb = await import("./db/life-planning");
+      return await lifePlanningDb.getActiveQuests(ctx.user.id, new Date());
+    }),
+
+    createQuest: protectedProcedure
+      .input(z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        questType: z.enum(['weekly', 'monthly', 'specific_monthly']),
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.createQuest({
+          userId: ctx.user.id,
+          title: input.title,
+          description: input.description,
+          questType: input.questType,
+          startDate: new Date(input.startDate),
+          endDate: new Date(input.endDate),
+        });
+      }),
+
+    completeQuest: protectedProcedure
+      .input(z.object({ questId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        await lifePlanningDb.completeQuest(input.questId);
+
+        // Award XP based on quest type
+        const quest = await db.query.quests.findFirst({
+          where: (quests, { eq }) => eq(quests.id, input.questId),
+        });
+
+        let xpAmount = 50; // Default for weekly
+        if (quest?.questType === 'monthly' || quest?.questType === 'specific_monthly') {
+          xpAmount = 200;
+        }
+
+        await lifePlanningDb.addXP(
+          ctx.user.id,
+          xpAmount,
+          `Completed ${quest?.questType} quest`,
+          'quest_completion',
+          input.questId
+        );
+
+        return { success: true };
+      }),
+
+    // Daily Reflections
+    getReflection: protectedProcedure
+      .input(z.object({ date: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getDailyReflection(ctx.user.id, new Date(input.date));
+      }),
+
+    getReflections: protectedProcedure
+      .input(z.object({
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getDailyReflections(
+          ctx.user.id,
+          new Date(input.startDate),
+          new Date(input.endDate)
+        );
+      }),
+
+    saveReflection: protectedProcedure
+      .input(z.object({
+        date: z.string(),
+        dailyIntention: z.string().optional(),
+        freeJournal: z.string().optional(),
+        oneThingGrateful: z.string().optional(),
+        oneThingLearned: z.string().optional(),
+        sleepTime: z.string().optional(),
+        wakeTime: z.string().optional(),
+        unscheduledScreenTime: z.number().optional(),
+        recoveryFocus: z.string().optional(),
+        calendarAudited: z.boolean().optional(),
+        dietScore: z.number().optional(),
+        big3OrSmallFood: z.string().optional(),
+        promisesHonored: z.boolean().optional(),
+        tmrwsIntention: z.string().optional(),
+        clothesLaidOut: z.boolean().optional(),
+        phoneOnCharge: z.boolean().optional(),
+        biggestVice: z.string().optional(),
+        personalConstraint: z.string().optional(),
+        onTrackProjections: z.boolean().optional(),
+        newCash: z.string().optional(),
+        cashInBank: z.string().optional(),
+        inputPercentage: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        const { date, ...reflectionData } = input;
+        return await lifePlanningDb.upsertDailyReflection({
+          userId: ctx.user.id,
+          reflectionDate: new Date(date),
+          ...reflectionData,
+        });
+      }),
+
+    // Gamification
+    getProfile: protectedProcedure.query(async ({ ctx }) => {
+      const lifePlanningDb = await import("./db/life-planning");
+      return await lifePlanningDb.getGamificationProfile(ctx.user.id);
+    }),
+
+    getXPHistory: protectedProcedure
+      .input(z.object({ limit: z.number().optional().default(50) }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getXPHistory(ctx.user.id, input.limit);
+      }),
+
+    // Visualizations
+    getVisualizations: protectedProcedure
+      .input(z.object({ limit: z.number().optional().default(10) }))
+      .query(async ({ ctx, input }) => {
+        const lifePlanningDb = await import("./db/life-planning");
+        return await lifePlanningDb.getLifeVisualizations(ctx.user.id, input.limit);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
