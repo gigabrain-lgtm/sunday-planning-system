@@ -892,6 +892,13 @@ export const appRouter = router({
       return await postDailyVisualization();
     }),
   }),
+
+  diagnostic: router({
+    checkPython: publicProcedure.query(async () => {
+      const { checkPythonAvailability } = await import("./check-python");
+      return await checkPythonAvailability();
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
