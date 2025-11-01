@@ -1,4 +1,4 @@
-import { db } from "./index";
+import { getDb } from "../db";
 import {
   habitCategories,
   lifeMissions,
@@ -24,12 +24,17 @@ import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 // ==================== Habit Categories ====================
 
 export async function getHabitCategories() {
+  const db = await getDb();
+  if (!db) return [];
   return await db.select().from(habitCategories).orderBy(habitCategories.sortOrder);
 }
 
 // ==================== Life Missions ====================
 
 export async function getLifeMission(userId: number, year: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
   const results = await db
     .select()
     .from(lifeMissions)
@@ -39,6 +44,9 @@ export async function getLifeMission(userId: number, year: number) {
 }
 
 export async function upsertLifeMission(data: InsertLifeMission) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const existing = await getLifeMission(data.userId, data.year);
   
   if (existing) {
@@ -56,6 +64,9 @@ export async function upsertLifeMission(data: InsertLifeMission) {
 // ==================== Habits ====================
 
 export async function getHabits(userId: number, activeOnly = true) {
+  const db = await getDb();
+  if (!db) return [];
+  
   const conditions = [eq(habits.userId, userId)];
   if (activeOnly) {
     conditions.push(eq(habits.isActive, true));
@@ -69,26 +80,41 @@ export async function getHabits(userId: number, activeOnly = true) {
 }
 
 export async function getHabitById(habitId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
   const results = await db.select().from(habits).where(eq(habits.id, habitId)).limit(1);
   return results[0] || null;
 }
 
 export async function createHabit(data: InsertHabit) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const result = await db.insert(habits).values(data).returning();
   return result[0];
 }
 
 export async function updateHabit(habitId: number, data: Partial<InsertHabit>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   await db.update(habits).set(data).where(eq(habits.id, habitId));
 }
 
 export async function deleteHabit(habitId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   await db.update(habits).set({ isActive: false }).where(eq(habits.id, habitId));
 }
 
 // ==================== Habit Completions ====================
 
 export async function getHabitCompletions(userId: number, startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  
   return await db
     .select()
     .from(habitCompletions)
@@ -103,6 +129,9 @@ export async function getHabitCompletions(userId: number, startDate: Date, endDa
 }
 
 export async function getHabitCompletion(habitId: number, date: Date) {
+  const db = await getDb();
+  if (!db) return null;
+  
   const dateStr = date.toISOString().split('T')[0];
   const results = await db
     .select()
@@ -118,6 +147,9 @@ export async function getHabitCompletion(habitId: number, date: Date) {
 }
 
 export async function upsertHabitCompletion(data: InsertHabitCompletion) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const existing = await getHabitCompletion(data.habitId, data.completedDate);
   
   if (existing) {
@@ -135,6 +167,9 @@ export async function upsertHabitCompletion(data: InsertHabitCompletion) {
 // ==================== Quests ====================
 
 export async function getQuests(userId: number, questType?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
   const conditions = [eq(quests.userId, userId)];
   if (questType) {
     conditions.push(eq(quests.questType, questType));
@@ -148,6 +183,9 @@ export async function getQuests(userId: number, questType?: string) {
 }
 
 export async function getActiveQuests(userId: number, currentDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  
   return await db
     .select()
     .from(quests)
@@ -163,11 +201,17 @@ export async function getActiveQuests(userId: number, currentDate: Date) {
 }
 
 export async function createQuest(data: InsertQuest) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const result = await db.insert(quests).values(data).returning();
   return result[0];
 }
 
 export async function completeQuest(questId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   await db
     .update(quests)
     .set({ completed: true, completedAt: new Date() })
@@ -177,6 +221,9 @@ export async function completeQuest(questId: number) {
 // ==================== Daily Reflections ====================
 
 export async function getDailyReflection(userId: number, date: Date) {
+  const db = await getDb();
+  if (!db) return null;
+  
   const dateStr = date.toISOString().split('T')[0];
   const results = await db
     .select()
@@ -192,6 +239,9 @@ export async function getDailyReflection(userId: number, date: Date) {
 }
 
 export async function getDailyReflections(userId: number, startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  
   return await db
     .select()
     .from(dailyReflections)
@@ -206,6 +256,9 @@ export async function getDailyReflections(userId: number, startDate: Date, endDa
 }
 
 export async function upsertDailyReflection(data: InsertDailyReflection) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const existing = await getDailyReflection(data.userId, data.reflectionDate);
   
   if (existing) {
@@ -223,6 +276,9 @@ export async function upsertDailyReflection(data: InsertDailyReflection) {
 // ==================== Gamification ====================
 
 export async function getGamificationProfile(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const results = await db
     .select()
     .from(gamificationProfiles)
@@ -242,6 +298,9 @@ export async function getGamificationProfile(userId: number) {
 }
 
 export async function addXP(userId: number, amount: number, reason: string, sourceType: string, sourceId?: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const profile = await getGamificationProfile(userId);
   
   // Calculate new XP and level
@@ -280,6 +339,9 @@ export async function addXP(userId: number, amount: number, reason: string, sour
 }
 
 export async function updateStreak(userId: number, currentStreak: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const profile = await getGamificationProfile(userId);
   const longestStreak = Math.max(profile.longestStreak, currentStreak);
   
@@ -294,6 +356,9 @@ export async function updateStreak(userId: number, currentStreak: number) {
 }
 
 export async function incrementHabitsCompleted(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   await db
     .update(gamificationProfiles)
     .set({
@@ -304,6 +369,9 @@ export async function incrementHabitsCompleted(userId: number) {
 }
 
 export async function getXPHistory(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
   return await db
     .select()
     .from(xpTransactions)
@@ -315,11 +383,17 @@ export async function getXPHistory(userId: number, limit = 50) {
 // ==================== Visualizations ====================
 
 export async function saveLifeVisualization(data: Omit<typeof lifeVisualizations.$inferInsert, 'id' | 'createdAt'>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   const result = await db.insert(lifeVisualizations).values(data).returning();
   return result[0];
 }
 
 export async function getLifeVisualizations(userId: number, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
   return await db
     .select()
     .from(lifeVisualizations)
