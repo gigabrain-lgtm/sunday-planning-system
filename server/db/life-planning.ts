@@ -1,4 +1,4 @@
-import { db } from "./_client";
+import { db } from "./index";
 import {
   habitCategories,
   lifeMissions,
