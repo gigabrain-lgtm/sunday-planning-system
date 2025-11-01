@@ -1165,6 +1165,14 @@ export const appRouter = router({
         return await lifePlanningDb.getLifeVisualizations(ctx.user.id, input.limit);
       }),
   }),
+
+  // Database initialization endpoint (run once to create Life Planning tables)
+  admin: router({
+    initLifePlanningDb: publicProcedure.mutation(async () => {
+      const { initLifePlanningTables } = await import("./init-life-planning-db");
+      return await initLifePlanningTables();
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
