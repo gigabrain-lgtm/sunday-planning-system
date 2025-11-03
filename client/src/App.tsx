@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import SundayPlanning from "./pages/SundayPlanning";
+import Dashboard from "./pages/Dashboard";
 import TestSlack from "./pages/TestSlack";
 
 function Router() {
@@ -13,6 +14,7 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={SundayPlanning} />
+      <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/test-slack"} component={TestSlack} />
       <Route path={"/home"} component={Home} />
       <Route path={"/404"} component={NotFound} />

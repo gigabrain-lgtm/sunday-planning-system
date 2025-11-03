@@ -14,7 +14,8 @@ import { HiringPriorities } from "@/components/planning/HiringPriorities";
 
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Check, LayoutDashboard } from "lucide-react";
+import { Link } from "wouter";
 import { Progress } from "@/components/ui/progress";
 
 type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "scorecard" | "hiring" | "visualization" | "sleep";
@@ -209,13 +210,23 @@ export default function SundayPlanning() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <div className="container max-w-5xl py-12">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Sunday Planning System
-          </h1>
-          <p className="text-muted-foreground mt-3 text-lg">
-            Week of {new Date(weekOf).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-          </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm">
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center">
+            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Sunday Planning System
+            </h1>
+            <p className="text-muted-foreground mt-3 text-lg">
+              Week of {new Date(weekOf).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+            </p>
+          </div>
         </div>
 
         {/* Progress Bar */}

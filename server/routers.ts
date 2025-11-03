@@ -8,6 +8,7 @@ import { saveManifestationToAirtable, getLatestManifestation as getLatestManifes
 import { postDailyManifestationToSlack } from "./slack";
 import * as clickup from "./clickup";
 import * as hiring from "./hiring";
+import * as dashboard from "./dashboard";
 import { ENV } from "./_core/env";
 
 // Helper function to calculate match score between task and Key Result
@@ -963,6 +964,39 @@ export const appRouter = router({
         } catch (error) {
           console.error("[Hiring] Error deleting priority:", error);
           throw new Error("Failed to delete priority");
+        }
+      }),
+  }),
+
+  dashboard: router({
+    getPendingItems: protectedProcedure.query(async () => {
+      try {
+        const tasks = await dashboard.fetchDashboardTasks();
+        const allTasks = [...tasks.personal, ...tasks.ea, ...tasks.pa];
+        const categories = dashboard.categorizeTasks(allTasks);
+        
+        return {
+          tasks,
+          categories,
+          total: tasks.total,
+        };
+      } catch (error) {
+        console.error("[Dashboard] Error fetching pending items:", error);
+        throw error;
+      }
+    }),
+    
+    completeTask: protectedProcedure
+      .input(z.object({
+        taskId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await dashboard.updateTaskStatus(input.taskId, 'complete');
+          return { success: true };
+        } catch (error) {
+          console.error("[Dashboard] Error completing task:", error);
+          throw error;
         }
       }),
   }),
