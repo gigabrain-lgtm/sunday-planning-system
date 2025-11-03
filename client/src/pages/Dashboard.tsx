@@ -20,8 +20,8 @@ import {
   RefreshCw,
   Calendar
 } from "lucide-react";
-import { Link } from "wouter";
 import { toast } from "sonner";
+import { Sidebar } from "@/components/layout/Sidebar";
 
 const categoryIcons: Record<string, any> = {
   urgent: Flame,
@@ -88,68 +88,65 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      <Sidebar>
+        <div className="min-h-screen bg-gray-50 p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
           </div>
         </div>
-      </div>
+      </Sidebar>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <AlertCircle className="w-12 h-12 text-destructive mb-4" />
-                <p className="text-sm text-muted-foreground">
-                  Failed to load dashboard: {error.message}
-                </p>
-                <Button onClick={() => refetch()} variant="outline" className="mt-4">
-                  Try Again
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      <Sidebar>
+        <div className="min-h-screen bg-gray-50 p-8">
+          <div className="max-w-7xl mx-auto">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+                  <p className="text-sm text-muted-foreground">
+                    Failed to load dashboard: {error.message}
+                  </p>
+                  <Button onClick={() => refetch()} variant="outline" className="mt-4">
+                    Try Again
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </Sidebar>
     );
   }
 
   const { tasks, categories, total } = data || { tasks: { personal: [], ea: [], pa: [], total: 0 }, categories: {}, total: 0 };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Link href="/">
-                <Button variant="outline" size="sm">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Sunday Planning
-                </Button>
-              </Link>
+    <Sidebar>
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+              <p className="text-muted-foreground mt-1">
+                Pending items across all your lists
+              </p>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Pending items across all your lists
-            </p>
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              disabled={isLoading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </div>
-          <Button
-            onClick={() => refetch()}
-            variant="outline"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
 
         {/* Total Count */}
         <Card>
@@ -293,7 +290,8 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
+    </Sidebar>
   );
 }
