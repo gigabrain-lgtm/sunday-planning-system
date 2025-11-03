@@ -25,11 +25,11 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 const categoryIcons: Record<string, any> = {
   urgent: Flame,
-  contracts: FileText,
-  approvals: CheckSquare,
   payments: DollarSign,
-  bookkeeping: Calculator,
+  contracts: FileText,
   recording: Mic,
+  individual: CheckSquare,
+  bookkeeping: Calculator,
   todo: ListTodo,
   slack: MessageSquare,
   personal: User,
@@ -37,11 +37,11 @@ const categoryIcons: Record<string, any> = {
 
 const categoryTitles: Record<string, string> = {
   urgent: "🔥 Urgent Tasks",
-  contracts: "📝 Contracts to Sign",
-  approvals: "✅ Approval Tasks",
   payments: "💰 Pending Payments",
-  bookkeeping: "📊 Bookkeeping Tasks",
+  contracts: "📝 Contracts to Sign",
   recording: "🎙️ Recording List",
+  individual: "✅ Individual Tasks",
+  bookkeeping: "📊 Bookkeeping Tasks",
   todo: "✅ To-Do",
   slack: "💬 Slack Tasks",
   personal: "👤 Personal Tasks",
@@ -174,8 +174,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Categories */}
-        {Object.entries(categories).map(([categoryKey, categoryTasks]: [string, any[]]) => {
+        {/* Categories - Ordered by priority */}
+        {['urgent', 'payments', 'contracts', 'recording', 'individual', 'bookkeeping', 'todo', 'slack', 'personal'].map((categoryKey) => {
+          const categoryTasks = categories[categoryKey] || [];
           if (!categoryTasks || categoryTasks.length === 0) return null;
 
           const Icon = categoryIcons[categoryKey] || ListTodo;

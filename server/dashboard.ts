@@ -137,62 +137,56 @@ export async function updateTaskStatus(taskId: string, status: string) {
 }
 
 /**
- * Categorize tasks based on ClickUp Status field
+ * Categorize tasks based on exact ClickUp Status field
+ * Categories are ordered by priority: Urgent, Payments, Contracts, Recording, then others
  */
 export function categorizeTasks(tasks: DashboardTask[]) {
   const categories = {
     urgent: [] as DashboardTask[],
-    contracts: [] as DashboardTask[],
-    approvals: [] as DashboardTask[],
     payments: [] as DashboardTask[],
-    bookkeeping: [] as DashboardTask[],
+    contracts: [] as DashboardTask[],
     recording: [] as DashboardTask[],
+    individual: [] as DashboardTask[],
+    bookkeeping: [] as DashboardTask[],
     todo: [] as DashboardTask[],
     slack: [] as DashboardTask[],
     personal: [] as DashboardTask[],
   };
 
   for (const task of tasks) {
-    const statusLower = task.status.toLowerCase();
+    const statusUpper = task.status.toUpperCase();
     const priorityLower = task.priority.toLowerCase();
 
-    // Categorize based on ClickUp Status field
-    
-    // Urgent tasks (high priority regardless of status)
+    // Urgent tasks (high priority - goes to top regardless of status)
     if (priorityLower === 'urgent' || priorityLower === 'high') {
       categories.urgent.push(task);
     }
 
-    // Contracts to Sign (based on status)
-    if (statusLower.includes('contract') || statusLower === 'contracts to sign') {
-      categories.contracts.push(task);
-    }
-    // Approval Tasks (based on status)
-    else if (statusLower.includes('approval') || statusLower === 'individual tasks') {
-      categories.approvals.push(task);
-    }
-    // Finance/Payment Tasks (based on status)
-    else if (statusLower.includes('finance') || statusLower.includes('payment') || task.paymentLink) {
+    // Categorize based on exact ClickUp Status field
+    // Priority order: Payments, Contracts, Recording, Individual, Bookkeeping, To-Do, Slack, Personal
+    
+    if (statusUpper === 'FINANCE TASKS') {
       categories.payments.push(task);
     }
-    // Bookkeeping Tasks (based on status)
-    else if (statusLower.includes('bookkeep') || statusLower.includes('accounting')) {
-      categories.bookkeeping.push(task);
+    else if (statusUpper === 'CONTRACTS TO SIGN') {
+      categories.contracts.push(task);
     }
-    // Recording List (based on status)
-    else if (statusLower.includes('recording')) {
+    else if (statusUpper === 'RECORDING LIST') {
       categories.recording.push(task);
     }
-    // Slack Tasks (based on status)
-    else if (statusLower.includes('slack')) {
-      categories.slack.push(task);
+    else if (statusUpper === 'INDIVIDUAL TASKS') {
+      categories.individual.push(task);
     }
-    // To-Do (based on status)
-    else if (statusLower.includes('to do') || statusLower.includes('todo') || statusLower === 'pending') {
+    else if (statusUpper === 'BOOKKEEPING TASKS') {
+      categories.bookkeeping.push(task);
+    }
+    else if (statusUpper === 'TO-DO' || statusUpper === 'PENDING' || statusUpper === 'NOT STARTED') {
       categories.todo.push(task);
     }
-    // In Progress (general category)
-    else if (statusLower === 'in progress') {
+    else if (statusUpper === 'SLACK TASKS') {
+      categories.slack.push(task);
+    }
+    else if (statusUpper === 'PERSONAL TASKS' || statusUpper === 'IN PROGRESS') {
       categories.personal.push(task);
     }
     // Everything else goes to personal
