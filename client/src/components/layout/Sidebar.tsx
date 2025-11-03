@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard, 
   Calendar,
+  ClipboardCheck,
   LogOut,
   Briefcase
 } from "lucide-react";
@@ -21,6 +22,11 @@ const navItems = [
     name: "Sunday Planning",
     path: "/",
     icon: Calendar,
+  },
+  {
+    name: "Check-ins",
+    path: "/checkins",
+    icon: ClipboardCheck,
   },
 ];
 
