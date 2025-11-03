@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Briefcase, AlertCircle, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Loader2, Briefcase, AlertCircle, Plus, Trash2, ExternalLink, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface HiringPriority {
@@ -44,6 +44,8 @@ export function HiringPriorities() {
   const [newRoleName, setNewRoleName] = useState("");
   const [newRolePriority, setNewRolePriority] = useState("normal");
   const [isAddingRole, setIsAddingRole] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteValue, setEditingNoteValue] = useState("");
 
   const { data: priorities, isLoading, error, refetch } = trpc.hiring.fetchPriorities.useQuery();
   const updateMutation = trpc.hiring.updatePriority.useMutation({
@@ -101,6 +103,30 @@ export function HiringPriorities() {
   const handleDeleteRole = async (taskId: string, roleName: string) => {
     if (confirm(`Are you sure you want to remove "${roleName}"?`)) {
       await deleteMutation.mutateAsync({ taskId });
+    }
+  };
+
+  const startEditingNote = (taskId: string, currentNote: string) => {
+    setEditingNoteId(taskId);
+    setEditingNoteValue(currentNote === "-" ? "" : currentNote);
+  };
+
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+    setEditingNoteValue("");
+  };
+
+  const saveNote = async (taskId: string) => {
+    try {
+      // Update the description field in ClickUp (which maps to Note)
+      await updateMutation.mutateAsync({
+        taskId,
+        description: editingNoteValue.trim(),
+      });
+      setEditingNoteId(null);
+      setEditingNoteValue("");
+    } catch (error) {
+      // Error already handled by mutation
     }
   };
 
@@ -323,9 +349,50 @@ export function HiringPriorities() {
                     </Select>
                   </div>
 
-                  {/* Note */}
-                  <div className="col-span-4 text-sm text-muted-foreground">
-                    {getNote(priority)}
+                  {/* Note - Editable */}
+                  <div className="col-span-4">
+                    {editingNoteId === priority.id ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={editingNoteValue}
+                          onChange={(e) => setEditingNoteValue(e.target.value)}
+                          className="h-8 text-sm"
+                          placeholder="Add note..."
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              saveNote(priority.id);
+                            } else if (e.key === "Escape") {
+                              cancelEditingNote();
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => saveNote(priority.id)}
+                          disabled={updateMutation.isPending}
+                        >
+                          <Check className="w-4 h-4 text-green-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={cancelEditingNote}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div
+                        className="text-sm text-muted-foreground cursor-pointer hover:bg-accent/50 px-2 py-1 rounded"
+                        onClick={() => startEditingNote(priority.id, getNote(priority))}
+                      >
+                        {getNote(priority)}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
