@@ -1,7 +1,10 @@
-import { db } from "./db";
+import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 
 export async function initLifePlanningTables() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
   try {
     console.log("Creating Life Planning tables...");
 
