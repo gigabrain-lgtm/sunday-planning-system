@@ -137,7 +137,7 @@ export async function updateTaskStatus(taskId: string, status: string) {
 }
 
 /**
- * Categorize tasks for dashboard display
+ * Categorize tasks based on ClickUp Status field
  */
 export function categorizeTasks(tasks: DashboardTask[]) {
   const categories = {
@@ -153,61 +153,51 @@ export function categorizeTasks(tasks: DashboardTask[]) {
   };
 
   for (const task of tasks) {
-    const nameLower = task.name.toLowerCase();
+    const statusLower = task.status.toLowerCase();
     const priorityLower = task.priority.toLowerCase();
 
-    // Urgent tasks
+    // Categorize based on ClickUp Status field
+    
+    // Urgent tasks (high priority regardless of status)
     if (priorityLower === 'urgent' || priorityLower === 'high') {
       categories.urgent.push(task);
     }
 
-    // Contracts
-    if (nameLower.includes('contract') || nameLower.includes('sign')) {
+    // Contracts to Sign (based on status)
+    if (statusLower.includes('contract') || statusLower === 'contracts to sign') {
       categories.contracts.push(task);
     }
-
-    // Approvals
-    if (nameLower.includes('approval') || nameLower.includes('approve') || nameLower.includes('review')) {
+    // Approval Tasks (based on status)
+    else if (statusLower.includes('approval') || statusLower === 'individual tasks') {
       categories.approvals.push(task);
     }
-
-    // Payments
-    if (nameLower.includes('payment') || nameLower.includes('pay') || nameLower.includes('invoice') || task.paymentLink) {
+    // Finance/Payment Tasks (based on status)
+    else if (statusLower.includes('finance') || statusLower.includes('payment') || task.paymentLink) {
       categories.payments.push(task);
     }
-
-    // Bookkeeping
-    if (nameLower.includes('bookkeep') || nameLower.includes('accounting') || nameLower.includes('finance')) {
+    // Bookkeeping Tasks (based on status)
+    else if (statusLower.includes('bookkeep') || statusLower.includes('accounting')) {
       categories.bookkeeping.push(task);
     }
-
-    // Recording
-    if (nameLower.includes('record') || nameLower.includes('video') || nameLower.includes('audio')) {
+    // Recording List (based on status)
+    else if (statusLower.includes('recording')) {
       categories.recording.push(task);
     }
-
-    // Slack
-    if (nameLower.includes('slack')) {
+    // Slack Tasks (based on status)
+    else if (statusLower.includes('slack')) {
       categories.slack.push(task);
     }
-
-    // Personal (from personal list)
-    if (task.listType === 'personal') {
+    // To-Do (based on status)
+    else if (statusLower.includes('to do') || statusLower.includes('todo') || statusLower === 'pending') {
+      categories.todo.push(task);
+    }
+    // In Progress (general category)
+    else if (statusLower === 'in progress') {
       categories.personal.push(task);
     }
-
-    // General todo (if not categorized elsewhere)
-    if (
-      !categories.urgent.includes(task) &&
-      !categories.contracts.includes(task) &&
-      !categories.approvals.includes(task) &&
-      !categories.payments.includes(task) &&
-      !categories.bookkeeping.includes(task) &&
-      !categories.recording.includes(task) &&
-      !categories.slack.includes(task) &&
-      !categories.personal.includes(task)
-    ) {
-      categories.todo.push(task);
+    // Everything else goes to personal
+    else {
+      categories.personal.push(task);
     }
   }
 
