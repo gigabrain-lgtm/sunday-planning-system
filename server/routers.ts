@@ -938,6 +938,33 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         return await hiring.createHiringPriority(input);
       }),
+    
+    deletePriority: protectedProcedure
+      .input(z.object({
+        taskId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const response = await fetch(
+            `https://api.clickup.com/api/v2/task/${input.taskId}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'Authorization': ENV.clickupApiKey,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`ClickUp API error: ${response.statusText}`);
+          }
+
+          return { success: true };
+        } catch (error) {
+          console.error("[Hiring] Error deleting priority:", error);
+          throw new Error("Failed to delete priority");
+        }
+      }),
   }),
 
 });

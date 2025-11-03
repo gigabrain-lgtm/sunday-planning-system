@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Briefcase, Calendar, User, AlertCircle } from "lucide-react";
+import { Loader2, Briefcase, AlertCircle, Plus, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 interface HiringPriority {
@@ -25,8 +26,83 @@ interface HiringPriority {
   customFields?: Record<string, any>;
 }
 
+const priorityMap: Record<string, number> = {
+  urgent: 1,
+  high: 2,
+  normal: 3,
+  low: 4,
+};
+
+const priorityColors: Record<string, string> = {
+  urgent: "bg-red-500",
+  high: "bg-orange-500",
+  normal: "bg-blue-500",
+  low: "bg-gray-500",
+};
+
 export function HiringPriorities() {
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRolePriority, setNewRolePriority] = useState("normal");
+  const [isAddingRole, setIsAddingRole] = useState(false);
+
   const { data: priorities, isLoading, error, refetch } = trpc.hiring.fetchPriorities.useQuery();
+  const updateMutation = trpc.hiring.updatePriority.useMutation({
+    onSuccess: () => {
+      toast.success("Priority updated successfully");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update: ${error.message}`);
+    },
+  });
+
+  const createMutation = trpc.hiring.createPriority.useMutation({
+    onSuccess: () => {
+      toast.success("Role added successfully");
+      setNewRoleName("");
+      setNewRolePriority("normal");
+      setIsAddingRole(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to add role: ${error.message}`);
+    },
+  });
+
+  const deleteMutation = trpc.hiring.deletePriority.useMutation({
+    onSuccess: () => {
+      toast.success("Role removed successfully");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to remove role: ${error.message}`);
+    },
+  });
+
+  const handlePriorityChange = async (taskId: string, newPriority: string) => {
+    await updateMutation.mutateAsync({
+      taskId,
+      priority: priorityMap[newPriority],
+    });
+  };
+
+  const handleAddRole = async () => {
+    if (!newRoleName.trim()) {
+      toast.error("Please enter a role name");
+      return;
+    }
+
+    await createMutation.mutateAsync({
+      name: newRoleName,
+      priority: priorityMap[newRolePriority],
+    });
+  };
+
+  const handleDeleteRole = async (taskId: string, roleName: string) => {
+    if (confirm(`Are you sure you want to remove "${roleName}"?`)) {
+      await deleteMutation.mutateAsync({ taskId });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -72,38 +148,7 @@ export function HiringPriorities() {
     );
   }
 
-  const getPriorityColor = (priority: HiringPriority["priority"]) => {
-    if (!priority) return "bg-gray-500";
-    return priority.color || "bg-gray-500";
-  };
-
-  const getPriorityLabel = (priority: HiringPriority["priority"]) => {
-    if (!priority) return "Normal";
-    return priority.priority || "Normal";
-  };
-
-  const getStatusColor = (status: string) => {
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes("complete") || statusLower.includes("done")) {
-      return "bg-green-500/10 text-green-700 border-green-500/20";
-    }
-    if (statusLower.includes("progress") || statusLower.includes("active")) {
-      return "bg-blue-500/10 text-blue-700 border-blue-500/20";
-    }
-    if (statusLower.includes("blocked") || statusLower.includes("hold")) {
-      return "bg-red-500/10 text-red-700 border-red-500/20";
-    }
-    return "bg-gray-500/10 text-gray-700 border-gray-500/20";
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  };
-
   const sortedPriorities = [...(priorities || [])].sort((a, b) => {
-    // Sort by priority first (urgent > high > normal > low)
     const priorityOrder: Record<string, number> = { urgent: 1, high: 2, normal: 3, low: 4 };
     const aPriority = priorityOrder[a.priority?.priority?.toLowerCase() || "normal"] || 3;
     const bPriority = priorityOrder[b.priority?.priority?.toLowerCase() || "normal"] || 3;
@@ -112,7 +157,6 @@ export function HiringPriorities() {
       return aPriority - bPriority;
     }
     
-    // Then by due date (earliest first)
     if (a.dueDate && b.dueDate) {
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     }
@@ -121,6 +165,10 @@ export function HiringPriorities() {
     
     return 0;
   });
+
+  const getNote = (priority: HiringPriority) => {
+    return priority.customFields?.Note || priority.customFields?.note || "-";
+  };
 
   return (
     <Card>
@@ -134,93 +182,197 @@ export function HiringPriorities() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {!priorities || priorities.length === 0 ? (
-          <div className="text-center py-12">
-            <Briefcase className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-sm text-muted-foreground">No hiring priorities found</p>
+        {/* Add New Role Section */}
+        {isAddingRole ? (
+          <div className="mb-6 p-4 border rounded-lg bg-accent/50">
+            <h3 className="font-semibold mb-3">Add New Role</h3>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Role name (e.g., Senior Developer)"
+                value={newRoleName}
+                onChange={(e) => setNewRoleName(e.target.value)}
+                className="flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddRole();
+                  }
+                }}
+              />
+              <Select value={newRolePriority} onValueChange={setNewRolePriority}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleAddRole}
+                disabled={createMutation.isPending}
+                size="sm"
+              >
+                {createMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Add"
+                )}
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAddingRole(false);
+                  setNewRoleName("");
+                  setNewRolePriority("normal");
+                }}
+                variant="outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {sortedPriorities.map((priority) => (
-              <div
-                key={priority.id}
-                className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-base">{priority.name}</h3>
-                      {priority.priority && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs"
-                          style={{ backgroundColor: getPriorityColor(priority.priority) + "20" }}
-                        >
-                          {getPriorityLabel(priority.priority)}
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className={`text-xs ${getStatusColor(priority.status)}`}>
-                        {priority.status}
-                      </Badge>
-                    </div>
-                    
+          <Button
+            onClick={() => setIsAddingRole(true)}
+            variant="outline"
+            size="sm"
+            className="mb-6"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Role
+          </Button>
+        )}
+
+        {/* Table Header */}
+        <div className="border rounded-lg overflow-hidden">
+          <div className="bg-muted/50 px-4 py-3 grid grid-cols-12 gap-4 font-semibold text-sm border-b">
+            <div className="col-span-5">Name</div>
+            <div className="col-span-2">Priority</div>
+            <div className="col-span-4">Note</div>
+            <div className="col-span-1 text-right">Actions</div>
+          </div>
+
+          {/* Table Body */}
+          {!priorities || priorities.length === 0 ? (
+            <div className="text-center py-12">
+              <Briefcase className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-sm text-muted-foreground">No hiring priorities found</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {sortedPriorities.map((priority) => (
+                <div
+                  key={priority.id}
+                  className="px-4 py-3 grid grid-cols-12 gap-4 items-center hover:bg-accent/50 transition-colors"
+                >
+                  {/* Name */}
+                  <div className="col-span-5">
+                    <div className="font-medium">{priority.name}</div>
                     {priority.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <div className="text-xs text-muted-foreground line-clamp-1 mt-1">
                         {priority.description}
-                      </p>
-                    )}
-                    
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      {priority.assignees && priority.assignees.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
-                          <span>{priority.assignees[0].username}</span>
-                        </div>
-                      )}
-                      {priority.dueDate && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{formatDate(priority.dueDate)}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {priority.customFields && Object.keys(priority.customFields).length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {Object.entries(priority.customFields).map(([key, value]) => {
-                          if (value === null || value === undefined || value === "") return null;
-                          return (
-                            <Badge key={key} variant="secondary" className="text-xs">
-                              {key}: {String(value)}
-                            </Badge>
-                          );
-                        })}
                       </div>
                     )}
                   </div>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      window.open(`https://app.clickup.com/t/${priority.id}`, "_blank");
-                    }}
-                  >
-                    View in ClickUp
-                  </Button>
+
+                  {/* Priority Dropdown */}
+                  <div className="col-span-2">
+                    <Select
+                      value={priority.priority?.priority?.toLowerCase() || "normal"}
+                      onValueChange={(value) => handlePriorityChange(priority.id, value)}
+                      disabled={updateMutation.isPending}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              priorityColors[priority.priority?.priority?.toLowerCase() || "normal"]
+                            }`}
+                          />
+                          <SelectValue />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="urgent">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-red-500" />
+                            Urgent
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="high">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-orange-500" />
+                            High
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="normal">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                            Normal
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="low">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-gray-500" />
+                            Low
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Note */}
+                  <div className="col-span-4 text-sm text-muted-foreground">
+                    {getNote(priority)}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="col-span-1 flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        window.open(`https://app.clickup.com/t/${priority.id}`, "_blank");
+                      }}
+                      title="View in ClickUp"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      onClick={() => handleDeleteRole(priority.id, priority.name)}
+                      disabled={deleteMutation.isPending}
+                      title="Remove role"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="mt-6 pt-4 border-t">
           <Button
             variant="outline"
             onClick={() => refetch()}
             className="w-full"
+            disabled={isLoading}
           >
-            Refresh Priorities
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              "Refresh Priorities"
+            )}
           </Button>
         </div>
       </CardContent>
