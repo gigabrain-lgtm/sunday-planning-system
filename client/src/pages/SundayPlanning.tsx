@@ -10,13 +10,14 @@ import { OKRDashboard } from "@/components/planning/OKRDashboard";
 import { Visualization } from "@/components/Visualization";
 import { Scorecard } from "@/components/planning/Scorecard";
 import { SleepReview } from "@/components/planning/SleepReview";
+import { HiringPriorities } from "@/components/planning/HiringPriorities";
 
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "scorecard" | "visualization" | "sleep";
+type Step = "business" | "manifestation" | "personal" | "okr" | "okrDashboard" | "needleMovers" | "roadmap" | "scorecard" | "hiring" | "visualization" | "sleep";
 
 export default function SundayPlanning() {
   const [currentStep, setCurrentStep] = useState<Step>("business");
@@ -176,14 +177,15 @@ export default function SundayPlanning() {
   };
 
   const steps: { key: Step; label: string; progress: number }[] = [
-    { key: "business", label: "Business Planning", progress: 10 },
-    { key: "manifestation", label: "Manifestation Tracker", progress: 20 },
-    { key: "personal", label: "Personal Planning", progress: 30 },
-    { key: "okr", label: "OKR Review", progress: 40 },
-    { key: "okrDashboard", label: "OKR Dashboard", progress: 50 },
-    { key: "needleMovers", label: "Needle Movers", progress: 60 },
-    { key: "roadmap", label: "Roadmap", progress: 70 },
-    { key: "scorecard", label: "Scorecard", progress: 77 },
+    { key: "business", label: "Business Planning", progress: 9 },
+    { key: "manifestation", label: "Manifestation Tracker", progress: 18 },
+    { key: "personal", label: "Personal Planning", progress: 27 },
+    { key: "okr", label: "OKR Review", progress: 36 },
+    { key: "okrDashboard", label: "OKR Dashboard", progress: 45 },
+    { key: "needleMovers", label: "Needle Movers", progress: 54 },
+    { key: "roadmap", label: "Roadmap", progress: 63 },
+    { key: "scorecard", label: "Scorecard", progress: 72 },
+    { key: "hiring", label: "Hiring Priorities", progress: 81 },
     { key: "visualization", label: "Visualization", progress: 90 },
     { key: "sleep", label: "Sleep Review", progress: 100 },
   ];
@@ -285,6 +287,9 @@ export default function SundayPlanning() {
           )}
           {currentStep === "visualization" && (
             <Visualization />
+          )}
+          {currentStep === "hiring" && (
+            <HiringPriorities />
           )}
           {currentStep === "sleep" && (
             <SleepReview />

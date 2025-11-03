@@ -7,6 +7,7 @@ import * as db from "./db";
 import { saveManifestationToAirtable, getLatestManifestation as getLatestManifestationFromAirtable } from "./airtable";
 import { postDailyManifestationToSlack } from "./slack";
 import * as clickup from "./clickup";
+import * as hiring from "./hiring";
 import { ENV } from "./_core/env";
 
 // Helper function to calculate match score between task and Key Result
@@ -898,6 +899,45 @@ export const appRouter = router({
       const { checkPythonAvailability } = await import("./check-python");
       return await checkPythonAvailability();
     }),
+  }),
+
+  hiring: router({
+    fetchPriorities: protectedProcedure.query(async () => {
+      try {
+        return await hiring.fetchHiringPriorities();
+      } catch (error) {
+        console.error("[Hiring] Error fetching priorities:", error);
+        throw error;
+      }
+    }),
+    
+    updatePriority: protectedProcedure
+      .input(z.object({
+        taskId: z.string(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        status: z.string().optional(),
+        priority: z.number().optional(),
+        assigneeId: z.number().optional(),
+        dueDate: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { taskId, ...updates } = input;
+        await hiring.updateHiringPriority(taskId, updates);
+        return { success: true };
+      }),
+    
+    createPriority: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        priority: z.number().optional(),
+        assigneeId: z.number().optional(),
+        dueDate: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await hiring.createHiringPriority(input);
+      }),
   }),
 
 });

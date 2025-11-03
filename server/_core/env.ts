@@ -16,6 +16,7 @@ export const ENV = {
   clickupBusinessListId: process.env.CLICKUP_BUSINESS_LIST_ID ?? "",
   clickupPersonalListId: process.env.CLICKUP_PERSONAL_LIST_ID ?? "",
   clickupRoadmapListId: process.env.CLICKUP_ROADMAP_LIST_ID ?? "",
+  clickupHiringListId: process.env.CLICKUP_HIRING_LIST_ID ?? "901316042589",
   microsoftClientId: process.env.MICROSOFT_CLIENT_ID ?? "",
   microsoftClientSecret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
   microsoftTenantId: process.env.MICROSOFT_TENANT_ID ?? "",
