@@ -107,6 +107,36 @@ export async function fetchDashboardTasks() {
 }
 
 /**
+ * Move a task to a different ClickUp list
+ */
+export async function moveTaskToList(taskId: string, targetListId: string) {
+  try {
+    const response = await fetch(
+      `https://api.clickup.com/api/v2/task/${taskId}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': ENV.clickupApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ list: targetListId }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Dashboard] Failed to move task:', errorData);
+      throw new Error(errorData.err || 'Failed to move task');
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('[Dashboard] Error moving task:', error);
+    throw new Error(error.message || 'Failed to move task');
+  }
+}
+
+/**
  * Update a ClickUp task status
  */
 export async function updateTaskStatus(taskId: string, status: string) {

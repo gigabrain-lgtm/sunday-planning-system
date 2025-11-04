@@ -58,6 +58,7 @@ const priorityColors: Record<string, string> = {
 export default function Dashboard() {
   const { data, isLoading, error, refetch } = trpc.dashboard.getPendingItems.useQuery();
   const [completingTasks, setCompletingTasks] = useState<Set<string>>(new Set());
+  const [movingTasks, setMovingTasks] = useState<Set<string>>(new Set());
 
   const completeMutation = trpc.dashboard.completeTask.useMutation({
     onSuccess: (_, variables) => {
@@ -79,11 +80,36 @@ export default function Dashboard() {
     },
   });
 
+  const moveTaskMutation = trpc.dashboard.moveTaskToList.useMutation({
+    onSuccess: (_, variables) => {
+      toast.success(`Task moved to ${variables.targetList.toUpperCase()}!`);
+      setMovingTasks(prev => {
+        const next = new Set(prev);
+        next.delete(variables.taskId);
+        return next;
+      });
+      refetch();
+    },
+    onError: (error, variables) => {
+      toast.error(`Failed to move task: ${error.message}`);
+      setMovingTasks(prev => {
+        const next = new Set(prev);
+        next.delete(variables.taskId);
+        return next;
+      });
+    },
+  });
+
   const handleCompleteTask = async (taskId: string) => {
     if (confirm("Mark this task as complete?")) {
       setCompletingTasks(prev => new Set(prev).add(taskId));
       await completeMutation.mutateAsync({ taskId });
     }
+  };
+
+  const handleMoveTask = (taskId: string, targetList: 'ea' | 'pa') => {
+    setMovingTasks(prev => new Set(prev).add(taskId));
+    moveTaskMutation.mutate({ taskId, targetList });
   };
 
   if (isLoading) {
@@ -246,6 +272,39 @@ export default function Dashboard() {
                             <DollarSign className="w-4 h-4 mr-1" />
                             Pay Now
                           </Button>
+                        )}
+                        {/* Show delegation buttons only for Personal tasks */}
+                        {task.listType === 'personal' && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleMoveTask(task.id, 'ea')}
+                              disabled={movingTasks.has(task.id)}
+                              title="Send to EA"
+                              className="text-xs"
+                            >
+                              {movingTasks.has(task.id) ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                'Send to EA'
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleMoveTask(task.id, 'pa')}
+                              disabled={movingTasks.has(task.id)}
+                              title="Send to PA"
+                              className="text-xs"
+                            >
+                              {movingTasks.has(task.id) ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                'Send to PA'
+                              )}
+                            </Button>
+                          </>
                         )}
                         <Button
                           variant="ghost"

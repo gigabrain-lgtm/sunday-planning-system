@@ -999,6 +999,25 @@ export const appRouter = router({
           throw error;
         }
       }),
+
+    moveTaskToList: protectedProcedure
+      .input(z.object({
+        taskId: z.string(),
+        targetList: z.enum(['ea', 'pa']),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const targetListId = input.targetList === 'ea' 
+            ? ENV.clickupDashboardEAListId 
+            : ENV.clickupDashboardPAListId;
+          
+          await dashboard.moveTaskToList(input.taskId, targetListId);
+          return { success: true };
+        } catch (error) {
+          console.error("[Dashboard] Error moving task:", error);
+          throw error;
+        }
+      }),
   }),
 
 });
