@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import SundayPlanning from "./pages/SundayPlanning";
 import Dashboard from "./pages/Dashboard";
 import Checkins from "./pages/Checkins";
+import Calendar from "./pages/Calendar";
 import TestSlack from "./pages/TestSlack";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <Route path={"/"} component={SundayPlanning} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/checkins"} component={Checkins} />
+      <Route path={"/calendar"} component={Calendar} />
       <Route path={"/test-slack"} component={TestSlack} />
       <Route path={"/home"} component={Home} />
       <Route path={"/404"} component={NotFound} />
