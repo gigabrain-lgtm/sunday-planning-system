@@ -9,6 +9,7 @@ import { postDailyManifestationToSlack } from "./slack";
 import * as clickup from "./clickup";
 import * as hiring from "./hiring";
 import * as dashboard from "./dashboard";
+import * as airtableMarketing from "./airtable-marketing";
 import { ENV } from "./_core/env";
 
 // Helper function to calculate match score between task and Key Result
@@ -966,6 +967,18 @@ export const appRouter = router({
           throw new Error("Failed to delete priority");
         }
       }),
+  }),
+
+  marketing: router({
+    getAllData: protectedProcedure.query(async () => {
+      try {
+        const data = await airtableMarketing.fetchAllMarketingData();
+        return data;
+      } catch (error) {
+        console.error("[Marketing] Error fetching data:", error);
+        throw error;
+      }
+    }),
   }),
 
   dashboard: router({
