@@ -4,6 +4,7 @@ import {
   Calendar as CalendarIcon,
   ClipboardCheck,
   CalendarDays,
+  TrendingUp,
   LogOut,
   Briefcase
 } from "lucide-react";
@@ -33,6 +34,11 @@ const navItems = [
     name: "Calendar",
     path: "/calendar",
     icon: CalendarDays,
+  },
+  {
+    name: "Marketing",
+    path: "/marketing",
+    icon: TrendingUp,
   },
 ];
 

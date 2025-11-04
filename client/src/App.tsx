@@ -9,6 +9,7 @@ import SundayPlanning from "./pages/SundayPlanning";
 import Dashboard from "./pages/Dashboard";
 import Checkins from "./pages/Checkins";
 import Calendar from "./pages/Calendar";
+import Marketing from "./pages/Marketing";
 import TestSlack from "./pages/TestSlack";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/checkins"} component={Checkins} />
       <Route path={"/calendar"} component={Calendar} />
+      <Route path={"/marketing"} component={Marketing} />
       <Route path={"/test-slack"} component={TestSlack} />
       <Route path={"/home"} component={Home} />
       <Route path={"/404"} component={NotFound} />
