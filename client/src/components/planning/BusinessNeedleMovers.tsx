@@ -528,20 +528,19 @@ export function BusinessNeedleMovers({
                             </Select>
                           )}
                           
-                          {selectedKeyResults[nm.id!] && (
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => handleLinkOKR(nm.id!)}
-                              disabled={linkOKRMutation.isPending}
-                            >
-                              {linkOKRMutation.isPending ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                "Link"
-                              )}
-                            </Button>
-                          )}
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleLinkOKR(nm.id!)}
+                            disabled={!selectedObjectives[nm.id!] || !selectedKeyResults[nm.id!] || linkOKRMutation.isPending}
+                            className="ml-auto"
+                          >
+                            {linkOKRMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              "Link to OKR"
+                            )}
+                          </Button>
                         </div>
                       )}
                     </div>
