@@ -129,7 +129,8 @@ export default function OKRReview() {
     );
   }
 
-  // Department mapping
+  // Department mapping (based on ClickUp dropdown indices)
+  // 0=Marketing, 1=Product/Finance, 2=Engineering/Operations, 3=Sales, 4=Success/IT
   const departmentMap: Record<string, { name: string; color: string }> = {
     "1": { name: "Finance", color: "bg-green-100 text-green-700 border-green-300" },
     "2": { name: "Operations", color: "bg-blue-100 text-blue-700 border-blue-300" },

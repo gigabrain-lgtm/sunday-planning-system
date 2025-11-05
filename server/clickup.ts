@@ -387,13 +387,16 @@ export async function fetchObjectives(): Promise<Objective[]> {
   const data = await response.json();
   const tasks: ClickUpTask[] = data.tasks;
 
-  return tasks.map((task) => ({
-    id: task.id,
-    name: task.name,
-    description: task.description || "",
-    status: task.priority?.priority || "to do",
-    department: getCustomFieldValue(task, "Department"),
-  }));
+  return tasks.map((task) => {
+    const deptValue = getCustomFieldValue(task, "Department");
+    return {
+      id: task.id,
+      name: task.name,
+      description: task.description || "",
+      status: task.priority?.priority || "to do",
+      department: deptValue !== null && deptValue !== undefined ? String(deptValue) : undefined,
+    };
+  });
 }
 
 export async function fetchKeyResults(): Promise<KeyResult[]> {
