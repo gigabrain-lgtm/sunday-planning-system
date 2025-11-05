@@ -441,8 +441,10 @@ export async function fetchKeyResults(): Promise<KeyResult[]> {
         })) || [],
       }));
     
-    const objectivesField = getCustomFieldValue(task, "Objectives");
-    const objectiveIds = objectivesField ? (Array.isArray(objectivesField) ? objectivesField : [objectivesField]) : [];
+    // Extract objective IDs from linked_tasks (task relationships)
+    const objectiveIds = (task.linked_tasks || [])
+      .map((link: any) => link.task_id)
+      .filter(Boolean);
     
     return {
       id: task.id,
