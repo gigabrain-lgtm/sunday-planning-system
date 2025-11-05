@@ -12,6 +12,7 @@ export default function OKRReview() {
   const [selectedActions, setSelectedActions] = useState<Record<string, string>>({});
   const [strategicThinking, setStrategicThinking] = useState<Record<string, { lastWeek: string; learned: string; needle20: string }>>({});
   const [newTaskName, setNewTaskName] = useState<Record<string, string>>({});
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
 
   const { data: objectives, isLoading: loadingObjectives } = trpc.okr.fetchObjectives.useQuery();
   const { data: keyResults, isLoading: loadingKeyResults, refetch: refetchKeyResults } = trpc.okr.fetchKeyResults.useQuery();
@@ -128,6 +129,20 @@ export default function OKRReview() {
     );
   }
 
+  // Department mapping
+  const departmentMap: Record<string, { name: string; color: string }> = {
+    "1": { name: "Finance", color: "bg-green-100 text-green-700 border-green-300" },
+    "2": { name: "Operations", color: "bg-blue-100 text-blue-700 border-blue-300" },
+    "3": { name: "Marketing/Sales", color: "bg-purple-100 text-purple-700 border-purple-300" },
+    "4": { name: "IT Team", color: "bg-orange-100 text-orange-700 border-orange-300" },
+  };
+
+  // Filter objectives by selected department
+  const filteredObjectives = objectives?.filter((obj: any) => {
+    if (selectedDepartment === 'all') return true;
+    return obj.department === selectedDepartment;
+  }) || [];
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -140,20 +155,67 @@ export default function OKRReview() {
         </p>
       </div>
 
-      {objectives?.map((objective: any) => {
+      {/* Department Filter Bar */}
+      <div className="flex flex-wrap gap-2 justify-center mb-6">
+        <button
+          onClick={() => setSelectedDepartment('all')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            selectedDepartment === 'all'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          All Departments
+        </button>
+        <button
+          onClick={() => setSelectedDepartment('1')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            selectedDepartment === '1'
+              ? 'bg-green-600 text-white shadow-md'
+              : 'bg-green-100 text-green-700 hover:bg-green-200'
+          }`}
+        >
+          💰 Finance
+        </button>
+        <button
+          onClick={() => setSelectedDepartment('2')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            selectedDepartment === '2'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+          }`}
+        >
+          ⚙️ Operations
+        </button>
+        <button
+          onClick={() => setSelectedDepartment('3')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            selectedDepartment === '3'
+              ? 'bg-purple-600 text-white shadow-md'
+              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+          }`}
+        >
+          📈 Marketing/Sales
+        </button>
+        <button
+          onClick={() => setSelectedDepartment('4')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            selectedDepartment === '4'
+              ? 'bg-orange-600 text-white shadow-md'
+              : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+          }`}
+        >
+          💻 IT Team
+        </button>
+      </div>
+
+      {filteredObjectives?.map((objective: any) => {
         const isExpanded = expandedObjectives.has(objective.id);
         // Filter key results that belong to this objective
         const objectiveKeyResults = keyResults?.filter((kr: any) => 
           kr.objectiveIds?.includes(objective.id)
         ) || [];
         
-        // Get department from custom fields
-        const departmentMap: Record<string, { name: string; color: string }> = {
-          "1": { name: "Finance", color: "bg-green-100 text-green-700 border-green-300" },
-          "2": { name: "Operations", color: "bg-blue-100 text-blue-700 border-blue-300" },
-          "3": { name: "Marketing/Sales", color: "bg-purple-100 text-purple-700 border-purple-300" },
-          "4": { name: "IT Team", color: "bg-orange-100 text-orange-700 border-orange-300" },
-        };
         const department = departmentMap[objective.department] || { name: "No Department", color: "bg-gray-100 text-gray-700 border-gray-300" };
 
         return (
