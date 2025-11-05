@@ -212,3 +212,108 @@ export type InsertSleepSession = typeof sleepSessions.$inferInsert;
  */
 
 // Habit Categories
+
+/**
+ * Unified Standup System
+ * Integrates daily standups, weekly check-ins, and blocker tracking
+ */
+
+/**
+ * Daily Standup Submissions
+ * Tracks which tasks users commit to each day
+ */
+export const dailyStandups = pgTable("daily_standups", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
+  standupDate: timestamp("standupDate").notNull(),
+  taskIds: text("taskIds").array().notNull(), // Array of ClickUp task IDs
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DailyStandup = typeof dailyStandups.$inferSelect;
+export type InsertDailyStandup = typeof dailyStandups.$inferInsert;
+
+/**
+ * Task Blockers/Bottlenecks
+ * Tracks blockers reported during standups or work sessions
+ */
+export const taskBlockers = pgTable("task_blockers", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  taskId: varchar("taskId", { length: 255 }).notNull(),
+  taskName: text("taskName").notNull(),
+  userId: integer("userId").notNull(),
+  blockerType: varchar("blockerType", { length: 50 }),
+  description: text("description").notNull(),
+  status: varchar("status", { length: 20 }).default("open").notNull(),
+  priority: varchar("priority", { length: 20 }).default("medium"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  resolvedBy: integer("resolvedBy"),
+  resolutionNotes: text("resolutionNotes"),
+});
+
+export type TaskBlocker = typeof taskBlockers.$inferSelect;
+export type InsertTaskBlocker = typeof taskBlockers.$inferInsert;
+
+/**
+ * Weekly Submissions (Check-in/Checkout)
+ * Tracks weekly check-ins (Monday) and checkouts (Friday)
+ */
+export const weeklySubmissions = pgTable("weekly_submissions", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
+  submissionType: varchar("submissionType", { length: 20 }).notNull(), // 'checkin' or 'checkout'
+  weekNumber: integer("weekNumber").notNull(),
+  year: integer("year").notNull(),
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  slackMessageTs: text("slackMessageTs"),
+  totalTasks: integer("totalTasks").default(0),
+  completedTasks: integer("completedTasks").default(0),
+  inProgressTasks: integer("inProgressTasks").default(0),
+  newTasks: integer("newTasks").default(0),
+  flaggedTasks: integer("flaggedTasks").default(0),
+  taskData: text("taskData"), // JSON string
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WeeklySubmission = typeof weeklySubmissions.$inferSelect;
+export type InsertWeeklySubmission = typeof weeklySubmissions.$inferInsert;
+
+/**
+ * Reminder Log
+ * Prevents duplicate reminder sends
+ */
+export const reminderLog = pgTable("reminder_log", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  reminderType: varchar("reminderType", { length: 50 }).notNull(),
+  weekNumber: integer("weekNumber").notNull(),
+  year: integer("year").notNull(),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  recipientCount: integer("recipientCount").default(0),
+});
+
+export type ReminderLog = typeof reminderLog.$inferSelect;
+export type InsertReminderLog = typeof reminderLog.$inferInsert;
+
+/**
+ * Standup Stats
+ * Weekly analytics on standup completion
+ */
+export const standupStats = pgTable("standup_stats", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
+  weekNumber: integer("weekNumber").notNull(),
+  year: integer("year").notNull(),
+  standupsCompleted: integer("standupsCompleted").default(0),
+  standupsExpected: integer("standupsExpected").default(5),
+  completionRate: varchar("completionRate", { length: 10 }),
+  avgTasksPerStandup: varchar("avgTasksPerStandup", { length: 10 }),
+  totalBlockersReported: integer("totalBlockersReported").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type StandupStats = typeof standupStats.$inferSelect;
+export type InsertStandupStats = typeof standupStats.$inferInsert;

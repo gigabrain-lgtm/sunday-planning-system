@@ -11,6 +11,11 @@ import Checkins from "./pages/Checkins";
 import Calendar from "./pages/Calendar";
 import Marketing from "./pages/Marketing";
 import TestSlack from "./pages/TestSlack";
+import SalesUpdate from "./pages/SalesUpdate";
+import FinanceUpdate from "./pages/FinanceUpdate";
+import ClickUpReportUpload from "./pages/ClickUpReportUpload";
+import OKRDashboard from "./pages/OKRDashboard";
+import A3Template from "./pages/A3Template";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -22,6 +27,11 @@ function Router() {
       <Route path={"/calendar"} component={Calendar} />
       <Route path={"/marketing"} component={Marketing} />
       <Route path={"/test-slack"} component={TestSlack} />
+      <Route path={"/sales-update"} component={SalesUpdate} />
+      <Route path={"/finance-update"} component={FinanceUpdate} />
+      <Route path={"/clickup-report"} component={ClickUpReportUpload} />
+      <Route path={"/okrs"} component={OKRDashboard} />
+      <Route path={"/a3"} component={A3Template} />
       <Route path={"/home"} component={Home} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

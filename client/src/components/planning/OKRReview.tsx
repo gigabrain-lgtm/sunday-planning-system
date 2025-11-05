@@ -142,9 +142,19 @@ export default function OKRReview() {
 
       {objectives?.map((objective: any) => {
         const isExpanded = expandedObjectives.has(objective.id);
-        // For now, show all key results under each objective since relationships aren't set in ClickUp
-        // TODO: Filter by kr.objectiveIds once relationships are configured in ClickUp
-        const objectiveKeyResults = keyResults || [];
+        // Filter key results that belong to this objective
+        const objectiveKeyResults = keyResults?.filter((kr: any) => 
+          kr.objectiveIds?.includes(objective.id)
+        ) || [];
+        
+        // Get department from custom fields
+        const departmentMap: Record<string, { name: string; color: string }> = {
+          "1": { name: "Finance", color: "bg-green-100 text-green-700 border-green-300" },
+          "2": { name: "Operations", color: "bg-blue-100 text-blue-700 border-blue-300" },
+          "3": { name: "Marketing/Sales", color: "bg-purple-100 text-purple-700 border-purple-300" },
+          "4": { name: "IT Team", color: "bg-orange-100 text-orange-700 border-orange-300" },
+        };
+        const department = departmentMap[objective.department] || { name: "No Department", color: "bg-gray-100 text-gray-700 border-gray-300" };
 
         return (
           <div
@@ -158,7 +168,12 @@ export default function OKRReview() {
               <div className="flex items-start gap-3 flex-1">
                 <span className="text-2xl">🎯</span>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{objective.name}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-lg">{objective.name}</h3>
+                    <span className={`text-xs px-2 py-1 rounded border ${department.color}`}>
+                      {department.name}
+                    </span>
+                  </div>
                   {isExpanded && objective.description && (
                     <p className="text-sm text-muted-foreground mt-2">
                       Why this matters: {objective.description}

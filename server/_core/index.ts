@@ -49,6 +49,59 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  // REST API endpoints for roadmap integration with daily standup
+  
+  // GET roadmap tasks
+  app.get("/api/roadmap/tasks", async (req, res) => {
+    try {
+      // API key authentication
+      const apiKey = req.headers["x-api-key"];
+      if (!apiKey || apiKey !== process.env.INTERNAL_API_KEY) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const clickup = await import("../clickup");
+      const tasks = await clickup.fetchRoadmapTasks();
+      
+      res.json({ success: true, tasks });
+    } catch (error) {
+      console.error("[API] Error fetching roadmap tasks:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch roadmap tasks",
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // POST move task to roadmap
+  app.post("/api/roadmap/move", async (req, res) => {
+    try {
+      // API key authentication
+      const apiKey = req.headers["x-api-key"];
+      if (!apiKey || apiKey !== process.env.INTERNAL_API_KEY) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { taskId } = req.body;
+      if (!taskId) {
+        return res.status(400).json({ error: "taskId is required" });
+      }
+
+      const { ENV } = await import("./env");
+      const clickup = await import("../clickup");
+      
+      await clickup.moveTaskToList(taskId, ENV.clickupRoadmapListId);
+      
+      res.json({ success: true, message: "Task moved to roadmap" });
+    } catch (error) {
+      console.error("[API] Error moving task to roadmap:", error);
+      res.status(500).json({ 
+        error: "Failed to move task",
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Cron endpoints
   app.post("/api/cron/post-visualization", async (req, res) => {
     try {

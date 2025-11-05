@@ -50,6 +50,7 @@ export interface Objective {
   name: string;
   description: string;
   status: string;
+  department?: string;
 }
 
 export interface Subtask {
@@ -391,6 +392,7 @@ export async function fetchObjectives(): Promise<Objective[]> {
     name: task.name,
     description: task.description || "",
     status: task.priority?.priority || "to do",
+    department: getCustomFieldValue(task, "Department"),
   }));
 }
 
