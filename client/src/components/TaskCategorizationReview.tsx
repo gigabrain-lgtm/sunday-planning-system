@@ -30,6 +30,7 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
   const [editedSuggestions, setEditedSuggestions] = useState<Record<string, { keyResultId: string; objectiveId: string }>>({});
   const [skippedTasks, setSkippedTasks] = useState<Set<string>>(new Set());
   const [approvedTasks, setApprovedTasks] = useState<Set<string>>(new Set());
+  const [editingTasks, setEditingTasks] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
 
   if (isLoading) {
@@ -148,6 +149,7 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
           if (skippedTasks.has(taskId)) return null;
 
           const isApproved = approvedTasks.has(taskId);
+          const isEditing = editingTasks.has(taskId);
           const edited = editedSuggestions[taskId];
           const currentKeyResultId = edited?.keyResultId || keyResultId;
           const currentObjectiveId = edited?.objectiveId || objectiveId;
@@ -168,41 +170,142 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
                       <label className="text-sm font-medium text-gray-700 block mb-2">
                         Objective
                       </label>
-                      <div className="text-sm text-gray-900 p-3 bg-gray-50 rounded-md border border-gray-200">
-                        {objectives?.find(obj => obj.id === currentObjectiveId)?.name || "Select an objective"}
-                      </div>
+                      {isEditing ? (
+                        <Select
+                          value={currentObjectiveId}
+                          onValueChange={(objectiveId) => {
+                            const firstKR = getKeyResultsForObjective(objectiveId)[0];
+                            if (firstKR) {
+                              handleEdit(taskId, firstKR.id || "", objectiveId);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue className="truncate">
+                              <span className="truncate block">
+                                {objectives?.find(obj => obj.id === currentObjectiveId)?.name || "Select objective"}
+                              </span>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent className="max-w-[600px]">
+                            {objectives?.map((obj) => (
+                              <SelectItem key={obj.id} value={obj.id || ""} className="max-w-full">
+                                <div className="truncate max-w-[550px]" title={obj.name}>
+                                  {obj.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="text-sm text-gray-900 p-3 bg-gray-50 rounded-md border border-gray-200">
+                          {objectives?.find(obj => obj.id === currentObjectiveId)?.name || "Select an objective"}
+                        </div>
+                      )}
                     </div>
 
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
                         Key Result
                       </label>
-                      <div className="text-sm text-gray-900 p-3 bg-gray-50 rounded-md border border-gray-200">
-                        {keyResults?.find(kr => kr.id === currentKeyResultId)?.name || "Select a key result"}
-                      </div>
+                      {isEditing ? (
+                        <Select
+                          value={currentKeyResultId}
+                          onValueChange={(keyResultId) => {
+                            handleEdit(taskId, keyResultId, currentObjectiveId);
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue className="truncate">
+                              <span className="truncate block">
+                                {keyResults?.find(kr => kr.id === currentKeyResultId)?.name || "Select key result"}
+                              </span>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent className="max-w-[600px]">
+                            {getKeyResultsForObjective(currentObjectiveId).map((kr) => (
+                              <SelectItem key={kr.id} value={kr.id || ""} className="max-w-full">
+                                <div className="truncate max-w-[550px]" title={kr.name}>
+                                  {kr.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="text-sm text-gray-900 p-3 bg-gray-50 rounded-md border border-gray-200">
+                          {keyResults?.find(kr => kr.id === currentKeyResultId)?.name || "Select a key result"}
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex gap-2">
                     {!isApproved ? (
                       <>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleApprove(taskId)}
-                          className="flex-1"
-                        >
-                          <Check className="h-4 w-4 mr-2" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleSkip(taskId)}
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          Skip
-                        </Button>
+                        {!isEditing ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleApprove(taskId)}
+                              className="flex-1"
+                            >
+                              <Check className="h-4 w-4 mr-2" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingTasks(prev => new Set(prev).add(taskId));
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleSkip(taskId)}
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Skip
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => {
+                                setEditingTasks(prev => {
+                                  const next = new Set(prev);
+                                  next.delete(taskId);
+                                  return next;
+                                });
+                                handleApprove(taskId);
+                              }}
+                              className="flex-1"
+                            >
+                              <Check className="h-4 w-4 mr-2" />
+                              Done Editing
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingTasks(prev => {
+                                  const next = new Set(prev);
+                                  next.delete(taskId);
+                                  return next;
+                                });
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </>
+                        )}
                       </>
                     ) : (
                       <Button
@@ -214,6 +317,7 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
                             next.delete(taskId);
                             return next;
                           });
+                          setEditingTasks(prev => new Set(prev).add(taskId));
                         }}
                         className="flex-1"
                       >
