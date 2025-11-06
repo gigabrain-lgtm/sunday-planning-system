@@ -666,7 +666,9 @@ export const appRouter = router({
                 keyResultName: kr.name,
                 objectiveId: ctx.objective.id,
                 objectiveName: ctx.objective.name,
-                confidence: Math.min(score / 5, 1) // Normalize to 0-1
+                confidence: Math.min(score / 5, 1), // Normalize to 0-1
+                assigneeId: task.assigneeId,
+                assigneeName: task.assigneeName
               };
             }
           }

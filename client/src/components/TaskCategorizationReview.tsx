@@ -14,6 +14,8 @@ interface Suggestion {
   objectiveId: string | undefined;
   objectiveName: string;
   confidence: number;
+  assigneeId?: number;
+  assigneeName?: string;
 }
 
 interface TaskCategorizationReviewProps {
@@ -203,8 +205,14 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
                     ) : (
                       <div className="font-semibold text-lg">{currentTaskName}</div>
                     )}
-                    <div className="text-sm text-gray-500 mt-1">
-                      Confidence: {Math.round(suggestion.confidence * 100)}%
+                    <div className="text-sm text-gray-500 mt-1 flex items-center gap-4">
+                      <span>Confidence: {Math.round(suggestion.confidence * 100)}%</span>
+                      {suggestion.assigneeName && (
+                        <span className="flex items-center gap-1">
+                          <span>•</span>
+                          <span>Assigned to: <span className="font-medium text-gray-700">{suggestion.assigneeName}</span></span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
