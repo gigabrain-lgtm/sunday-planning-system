@@ -163,54 +163,23 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
                         Objective
                       </label>
-                      <Select
-                        value={currentObjectiveId}
-                        onValueChange={(objectiveId) => {
-                          const firstKR = getKeyResultsForObjective(objectiveId)[0];
-                          if (firstKR) {
-                            handleEdit(taskId, firstKR.id || "", objectiveId);
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {objectives?.map((obj) => (
-                            <SelectItem key={obj.id} value={obj.id || ""}>
-                              {obj.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="text-sm text-gray-900 p-3 bg-gray-50 rounded-md border border-gray-200">
+                        {objectives?.find(obj => obj.id === currentObjectiveId)?.name || "Select an objective"}
+                      </div>
                     </div>
 
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
                         Key Result
                       </label>
-                      <Select
-                        value={currentKeyResultId}
-                        onValueChange={(keyResultId) => {
-                          handleEdit(taskId, keyResultId, currentObjectiveId);
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getKeyResultsForObjective(currentObjectiveId).map((kr) => (
-                            <SelectItem key={kr.id} value={kr.id || ""}>
-                              {kr.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="text-sm text-gray-900 p-3 bg-gray-50 rounded-md border border-gray-200">
+                        {keyResults?.find(kr => kr.id === currentKeyResultId)?.name || "Select a key result"}
+                      </div>
                     </div>
                   </div>
 
