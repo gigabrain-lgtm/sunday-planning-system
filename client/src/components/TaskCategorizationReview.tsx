@@ -25,9 +25,11 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
   const { data: objectives } = trpc.okr.fetchObjectives.useQuery();
   const { data: keyResults } = trpc.okr.fetchKeyResults.useQuery();
   const linkTasksMutation = trpc.okr.linkTaskToKeyResult.useMutation();
+  const updateTaskMutation = trpc.needleMovers.update.useMutation();
   const utils = trpc.useUtils();
 
   const [editedSuggestions, setEditedSuggestions] = useState<Record<string, { keyResultId: string; objectiveId: string }>>({});
+  const [editedTaskNames, setEditedTaskNames] = useState<Record<string, string>>({});
   const [skippedTasks, setSkippedTasks] = useState<Set<string>>(new Set());
   const [approvedTasks, setApprovedTasks] = useState<Set<string>>(new Set());
   const [editingTasks, setEditingTasks] = useState<Set<string>>(new Set());
@@ -94,7 +96,17 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
         
         const edited = editedSuggestions[suggestion.taskId];
         const keyResultId = edited?.keyResultId || suggestion.keyResultId;
+        const editedName = editedTaskNames[suggestion.taskId];
 
+        // Update task name if it was edited
+        if (editedName && editedName !== suggestion.taskName) {
+          await updateTaskMutation.mutateAsync({
+            taskId: suggestion.taskId,
+            name: editedName
+          });
+        }
+
+        // Link task to key result
         await linkTasksMutation.mutateAsync({
           taskId: suggestion.taskId,
           keyResultId,
@@ -153,13 +165,34 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
           const edited = editedSuggestions[taskId];
           const currentKeyResultId = edited?.keyResultId || keyResultId;
           const currentObjectiveId = edited?.objectiveId || objectiveId;
+          const currentTaskName = editedTaskNames[taskId] || suggestion.taskName;
 
           return (
             <Card key={taskId} className={isApproved ? "border-green-500 bg-green-50" : ""}>
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div>
-                    <div className="font-semibold text-lg">{suggestion.taskName}</div>
+                    {isEditing ? (
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 block mb-2">
+                          Task Name
+                        </label>
+                        <input
+                          type="text"
+                          value={currentTaskName}
+                          onChange={(e) => {
+                            setEditedTaskNames(prev => ({
+                              ...prev,
+                              [taskId]: e.target.value
+                            }));
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-lg"
+                          placeholder="Enter task name"
+                        />
+                      </div>
+                    ) : (
+                      <div className="font-semibold text-lg">{currentTaskName}</div>
+                    )}
                     <div className="text-sm text-gray-500 mt-1">
                       Confidence: {Math.round(suggestion.confidence * 100)}%
                     </div>
