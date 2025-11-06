@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,16 @@ export default function TaskCategorizationReview({ onClose }: TaskCategorization
   const [approvedTasks, setApprovedTasks] = useState<Set<string>>(new Set());
   const [editingTasks, setEditingTasks] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize all tasks in edit mode by default
+  useEffect(() => {
+    if (suggestions && suggestions.length > 0) {
+      const allTaskIds = suggestions
+        .filter((s: Suggestion) => s.taskId)
+        .map((s: Suggestion) => s.taskId as string);
+      setEditingTasks(new Set(allTaskIds));
+    }
+  }, [suggestions]);
 
   if (isLoading) {
     return (
