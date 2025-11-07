@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,17 +9,21 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, Send, Building2 } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { getAllAgencies } from "@/data/orgChart";
 
 export default function ExternalSubmissions() {
-  const [agencyId, setAgencyId] = useState<number | null>(null);
+  const [agencyId, setAgencyId] = useState<string>("");
   const [agencyName, setAgencyName] = useState("");
   const [contentLink, setContentLink] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const { data: agencies, isLoading: loadingAgencies } = trpc.agencies.getAll.useQuery();
   const [location] = useLocation();
+
+  // Use static org chart data instead of database
+  const agencies = useMemo(() => getAllAgencies(), []);
+  const loadingAgencies = false;
 
   // Check for agency parameter in URL
   useEffect(() => {
@@ -27,7 +31,7 @@ export default function ExternalSubmissions() {
     const agencyParam = params.get('agency');
     
     if (agencyParam && agencies) {
-      const agency = agencies.find(a => a.id.toString() === agencyParam || a.name.toLowerCase().replace(/\s+/g, '-') === agencyParam);
+      const agency = agencies.find(a => a.id === agencyParam || a.name.toLowerCase().replace(/\s+/g, '-') === agencyParam);
       if (agency) {
         setAgencyId(agency.id);
         setAgencyName(agency.name);
@@ -58,14 +62,14 @@ export default function ExternalSubmissions() {
     e.preventDefault();
     submitMutation.mutate({
       agencyName,
-      agencyId: agencyId || undefined,
+      agencyId: agencyId ? parseInt(agencyId) : undefined,
       contentLink,
       description,
       dueDate: dueDate || undefined,
     });
   };
 
-  const handleAgencyChange = (selectedId: number) => {
+  const handleAgencyChange = (selectedId: string) => {
     setAgencyId(selectedId);
     const agency = agencies?.find(a => a.id === selectedId);
     if (agency) {
@@ -120,7 +124,7 @@ export default function ExternalSubmissions() {
                         id="agency"
                         className="w-full p-3 border rounded-md"
                         value={agencyId || ""}
-                        onChange={(e) => handleAgencyChange(Number(e.target.value))}
+                        onChange={(e) => handleAgencyChange(e.target.value)}
                         required
                       >
                         <option value="">Select your agency...</option>
