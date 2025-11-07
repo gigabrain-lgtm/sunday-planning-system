@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, Send, Building2 } from "lucide-react";
-import { Sidebar } from "@/components/layout/Sidebar";
 import { getAllAgencies } from "@/data/orgChart";
 
 export default function ExternalSubmissions() {
@@ -78,9 +77,8 @@ export default function ExternalSubmissions() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 p-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-full p-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight">External Submissions</h1>
