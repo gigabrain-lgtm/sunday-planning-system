@@ -16,6 +16,7 @@ import FinanceUpdate from "./pages/FinanceUpdate";
 import ClickUpReportUpload from "./pages/ClickUpReportUpload";
 import OKRDashboard from "./pages/OKRDashboard";
 import A3Template from "./pages/A3Template";
+import ExternalSubmissions from "./pages/ExternalSubmissions";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -32,6 +33,7 @@ function Router() {
       <Route path={"/clickup-report"} component={ClickUpReportUpload} />
       <Route path={"/okrs"} component={OKRDashboard} />
       <Route path={"/a3"} component={A3Template} />
+      <Route path={"/submissions"} component={ExternalSubmissions} />
       <Route path={"/home"} component={Home} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

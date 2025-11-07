@@ -1033,6 +1033,50 @@ export const appRouter = router({
           throw error;
         }
       }),
+
+    submitContent: publicProcedure
+      .input(z.object({
+        agencyName: z.string().min(1, "Agency name is required"),
+        contentLink: z.string().url("Must be a valid URL"),
+        description: z.string().min(1, "Description is required"),
+        dueDate: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          // Create task in Personal list with CONTENT APPROVAL status
+          const taskName = `[${input.agencyName}] - Content Review`;
+          const taskDescription = `**Agency:** ${input.agencyName}\n**Content Link:** ${input.contentLink}\n\n**Description:**\n${input.description}`;
+          
+          const response = await fetch(
+            `https://api.clickup.com/api/v2/list/${ENV.clickupDashboardPersonalListId}/task`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': ENV.clickupApiKey,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: taskName,
+                description: taskDescription,
+                status: 'CONTENT APPROVAL',
+                due_date: input.dueDate ? new Date(input.dueDate).getTime() : undefined,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Dashboard] Failed to create content task:', errorText);
+            throw new Error('Failed to create content submission');
+          }
+
+          const data = await response.json();
+          return { success: true, taskId: data.id };
+        } catch (error) {
+          console.error("[Dashboard] Error submitting content:", error);
+          throw error;
+        }
+      }),
   }),
 
 });

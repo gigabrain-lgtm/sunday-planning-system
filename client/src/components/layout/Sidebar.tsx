@@ -6,7 +6,8 @@ import {
   CalendarDays,
   TrendingUp,
   LogOut,
-  Briefcase
+  Briefcase,
+  Send
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +40,11 @@ const navItems = [
     name: "Marketing",
     path: "/marketing",
     icon: TrendingUp,
+  },
+  {
+    name: "External Submissions",
+    path: "/submissions",
+    icon: Send,
   },
 ];
 
