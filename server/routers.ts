@@ -1079,6 +1079,49 @@ export const appRouter = router({
       }),
   }),
 
+  agencies: router({
+    getAll: protectedProcedure.query(async () => {
+      return await db.getAllAgencies();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAgencyById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1, "Agency name is required"),
+        slackChannelId: z.string().min(1, "Slack channel ID is required"),
+        contactEmail: z.string().email().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createAgency(input);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).optional(),
+        slackChannelId: z.string().min(1).optional(),
+        contactEmail: z.string().email().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        return await db.updateAgency(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteAgency(input.id);
+        return { success: true };
+      }),
+  }),
+
 });
 
 export type AppRouter = typeof appRouter;

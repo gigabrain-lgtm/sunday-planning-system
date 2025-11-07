@@ -2,7 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -412,4 +412,71 @@ export async function getWeeklySleepSummary(userId: number) {
     },
     sessions: sessions,
   };
+}
+
+/**
+ * Agency Management Functions
+ */
+
+export async function createAgency(agency: InsertAgency): Promise<Agency> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const [newAgency] = await db.insert(agencies).values(agency).returning();
+  return newAgency;
+}
+
+export async function getAllAgencies(): Promise<Agency[]> {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  return await db.select().from(agencies);
+}
+
+export async function getAgencyById(id: number): Promise<Agency | undefined> {
+  const db = await getDb();
+  if (!db) {
+    return undefined;
+  }
+
+  const [agency] = await db.select().from(agencies).where(eq(agencies.id, id));
+  return agency;
+}
+
+export async function getAgencyByName(name: string): Promise<Agency | undefined> {
+  const db = await getDb();
+  if (!db) {
+    return undefined;
+  }
+
+  const [agency] = await db.select().from(agencies).where(eq(agencies.name, name));
+  return agency;
+}
+
+export async function updateAgency(id: number, updates: Partial<InsertAgency>): Promise<Agency> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const [updatedAgency] = await db
+    .update(agencies)
+    .set({ ...updates, updatedAt: new Date() })
+    .where(eq(agencies.id, id))
+    .returning();
+  
+  return updatedAgency;
+}
+
+export async function deleteAgency(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(agencies).where(eq(agencies.id, id));
 }
