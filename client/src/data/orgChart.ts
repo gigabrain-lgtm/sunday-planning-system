@@ -107,6 +107,20 @@ export const orgChartData = {
         },
       ],
     },
+    {
+      id: "social-media",
+      name: "Social Media",
+      teamSize: 6,
+      subTeams: 1,
+      agencies: [
+        {
+          id: "mogul-media",
+          name: "Mogul Media",
+          slackChannelId: "C09Q0RUN0Q0",
+          logo: "/agency-logos/mogul-media.png",
+        },
+      ],
+    },
   ] as Department[],
   
   services: [
@@ -126,14 +140,7 @@ export const orgChartData = {
       teamSize: 4,
       subTeams: 1,
     },
-    {
-      id: "marketing-strategy",
-      name: "Marketing Strategy",
-      subName: "Mogul Media",
-      slackChannelId: "C09Q0RUN0Q0",
-      teamSize: 6,
-      subTeams: 1,
-    },
+
   ],
 };
 
