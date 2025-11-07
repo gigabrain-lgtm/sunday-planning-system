@@ -1037,7 +1037,7 @@ export const appRouter = router({
     submitContent: publicProcedure
       .input(z.object({
         agencyName: z.string().min(1, "Agency name is required"),
-        agencyId: z.number().optional(),
+        agencyId: z.string().optional(),
         contentLink: z.string().url("Must be a valid URL"),
         description: z.string().min(1, "Description is required"),
         dueDate: z.string().optional(),
