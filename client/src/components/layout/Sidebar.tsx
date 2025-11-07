@@ -8,7 +8,8 @@ import {
   LogOut,
   Briefcase,
   Send,
-  Building2
+  Building2,
+  Sitemap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +52,11 @@ const navItems = [
     name: "Agencies",
     path: "/agencies",
     icon: Building2,
+  },
+  {
+    name: "Org Chart",
+    path: "/org-chart",
+    icon: Sitemap,
   },
 ];
 

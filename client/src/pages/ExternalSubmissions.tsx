@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,15 +7,33 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, Send } from "lucide-react";
+import { Loader2, CheckCircle2, Send, Building2 } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 
 export default function ExternalSubmissions() {
+  const [agencyId, setAgencyId] = useState<number | null>(null);
   const [agencyName, setAgencyName] = useState("");
   const [contentLink, setContentLink] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  const { data: agencies, isLoading: loadingAgencies } = trpc.agencies.getAll.useQuery();
+  const [location] = useLocation();
+
+  // Check for agency parameter in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const agencyParam = params.get('agency');
+    
+    if (agencyParam && agencies) {
+      const agency = agencies.find(a => a.id.toString() === agencyParam || a.name.toLowerCase().replace(/\s+/g, '-') === agencyParam);
+      if (agency) {
+        setAgencyId(agency.id);
+        setAgencyName(agency.name);
+      }
+    }
+  }, [agencies]);
 
   const submitMutation = trpc.dashboard.submitContent.useMutation({
     onSuccess: () => {
@@ -22,6 +41,7 @@ export default function ExternalSubmissions() {
       setSubmitted(true);
       // Reset form after 3 seconds
       setTimeout(() => {
+        setAgencyId(null);
         setAgencyName("");
         setContentLink("");
         setDescription("");
@@ -38,10 +58,19 @@ export default function ExternalSubmissions() {
     e.preventDefault();
     submitMutation.mutate({
       agencyName,
+      agencyId: agencyId || undefined,
       contentLink,
       description,
       dueDate: dueDate || undefined,
     });
+  };
+
+  const handleAgencyChange = (selectedId: number) => {
+    setAgencyId(selectedId);
+    const agency = agencies?.find(a => a.id === selectedId);
+    if (agency) {
+      setAgencyName(agency.name);
+    }
   };
 
   return (
@@ -78,16 +107,37 @@ export default function ExternalSubmissions() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="agencyName">
-                      Agency Name <span className="text-red-500">*</span>
+                    <Label htmlFor="agency">
+                      Select Agency <span className="text-red-500">*</span>
                     </Label>
-                    <Input
-                      id="agencyName"
-                      placeholder="e.g., Acme Marketing Agency"
-                      value={agencyName}
-                      onChange={(e) => setAgencyName(e.target.value)}
-                      required
-                    />
+                    {loadingAgencies ? (
+                      <div className="flex items-center gap-2 p-3 border rounded-md">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm text-gray-500">Loading agencies...</span>
+                      </div>
+                    ) : agencies && agencies.length > 0 ? (
+                      <select
+                        id="agency"
+                        className="w-full p-3 border rounded-md"
+                        value={agencyId || ""}
+                        onChange={(e) => handleAgencyChange(Number(e.target.value))}
+                        required
+                      >
+                        <option value="">Select your agency...</option>
+                        {agencies.map((agency) => (
+                          <option key={agency.id} value={agency.id}>
+                            {agency.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <p className="text-sm text-yellow-800">
+                          <Building2 className="w-4 h-4 inline mr-1" />
+                          No agencies configured yet. Please contact the administrator.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
