@@ -61,7 +61,7 @@ export default function ExternalSubmissions() {
     e.preventDefault();
     submitMutation.mutate({
       agencyName,
-      agencyId: agencyId ? parseInt(agencyId) : undefined,
+      agencyId: agencyId || undefined,
       contentLink,
       description,
       dueDate: dueDate || undefined,
