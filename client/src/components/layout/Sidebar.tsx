@@ -9,7 +9,7 @@ import {
   Briefcase,
   Send,
   Building2,
-  Sitemap
+  Network
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +56,7 @@ const navItems = [
   {
     name: "Org Chart",
     path: "/org-chart",
-    icon: Sitemap,
+    icon: Network,
   },
 ];
 
