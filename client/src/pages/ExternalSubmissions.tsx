@@ -77,33 +77,46 @@ export default function ExternalSubmissions() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <div className="w-full p-8">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">External Submissions</h1>
-            <p className="text-muted-foreground mt-1">
-              Submit content for review
+          {/* GIGABRANDS Header */}
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">G</span>
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                GIGABRANDS
+              </h1>
+            </div>
+            <p className="text-gray-600 text-lg">
+              Content Submission Portal
             </p>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Send className="w-5 h-5" />
-                Content Review Submission
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <Send className="w-6 h-6 text-purple-600" />
+                Submit Your Content
               </CardTitle>
-              <CardDescription>
-                Fill out the form below to submit content for Hunter's review
+              <CardDescription className="text-base">
+                Share your content with us for review and feedback
               </CardDescription>
             </CardHeader>
             <CardContent>
               {submitted ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Submission Received!</h3>
-                  <p className="text-gray-600 text-center">
-                    Your content has been submitted for review. You'll receive feedback soon.
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle2 className="w-12 h-12 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2 text-gray-900">Thank You!</h3>
+                  <p className="text-gray-600 text-center text-lg">
+                    Your content has been successfully submitted.
+                  </p>
+                  <p className="text-gray-500 text-center mt-2">
+                    We'll review it and get back to you soon.
                   </p>
                 </div>
               ) : (
