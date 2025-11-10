@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   LayoutDashboard, 
   Calendar as CalendarIcon,
@@ -15,6 +16,26 @@ import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   children: React.ReactNode;
+}
+
+function LogoutButton() {
+  const { logout } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const handleLogout = () => {
+    logout();
+    setLocation('/submissions');
+  };
+
+  return (
+    <button
+      className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-gray-900 hover:text-red-300 rounded-lg transition-colors w-full"
+      onClick={handleLogout}
+    >
+      <LogOut className="w-5 h-5" />
+      <span className="font-medium">Logout</span>
+    </button>
+  );
 }
 
 const navItems = [
@@ -105,16 +126,7 @@ export function Sidebar({ children }: SidebarProps) {
 
         {/* Logout */}
         <div className="p-4 border-t border-gray-800">
-          <button
-            className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-gray-900 hover:text-red-300 rounded-lg transition-colors w-full"
-            onClick={() => {
-              // Add logout logic here if needed
-              console.log("Logout clicked");
-            }}
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Logout</span>
-          </button>
+          <LogoutButton />
         </div>
       </div>
 
