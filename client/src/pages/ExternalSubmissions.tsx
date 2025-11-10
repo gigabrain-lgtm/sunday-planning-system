@@ -17,39 +17,12 @@ export default function ExternalSubmissions() {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  
-  // Password protection
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [passwordInput, setPasswordInput] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const SUBMISSION_PASSWORD = "gigabrands2024"; // Change this to your desired password
 
   const [location] = useLocation();
 
   // Use static org chart data instead of database
   const agencies = useMemo(() => getAllAgencies(), []);
   const loadingAgencies = false;
-
-  // Check authentication on mount
-  useEffect(() => {
-    const authToken = localStorage.getItem('gigabrands_submission_auth');
-    if (authToken === SUBMISSION_PASSWORD) {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  // Handle password submission
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordInput === SUBMISSION_PASSWORD) {
-      localStorage.setItem('gigabrands_submission_auth', passwordInput);
-      setIsAuthenticated(true);
-      setPasswordError("");
-    } else {
-      setPasswordError("Incorrect password. Please try again.");
-      setPasswordInput("");
-    }
-  };
 
   // Check for agency parameter in URL
   useEffect(() => {
@@ -102,61 +75,6 @@ export default function ExternalSubmissions() {
       setAgencyName(agency.name);
     }
   };
-
-  // Show password gate if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="w-full max-w-md p-8">
-          {/* GIGABRANDS Header */}
-          <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">G</span>
-              </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                GIGABRANDS
-              </h1>
-            </div>
-            <p className="text-gray-600 text-lg">
-              Content Submission Portal
-            </p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl text-center">Access Required</CardTitle>
-              <CardDescription className="text-center">
-                Please enter the password to access the submission portal
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter password"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    required
-                    autoFocus
-                  />
-                  {passwordError && (
-                    <p className="text-sm text-red-600">{passwordError}</p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full">
-                  Access Portal
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
