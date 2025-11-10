@@ -4,6 +4,8 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import SundayPlanning from "./pages/SundayPlanning";
 import Dashboard from "./pages/Dashboard";
@@ -21,24 +23,82 @@ import Agencies from "./pages/Agencies";
 import OrgChart from "./pages/OrgChart";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={SundayPlanning} />
-      <Route path={"/dashboard"} component={Dashboard} />
-      <Route path={"/checkins"} component={Checkins} />
-      <Route path={"/calendar"} component={Calendar} />
-      <Route path={"/marketing"} component={Marketing} />
-      <Route path={"/test-slack"} component={TestSlack} />
-      <Route path={"/sales-update"} component={SalesUpdate} />
-      <Route path={"/finance-update"} component={FinanceUpdate} />
-      <Route path={"/clickup-report"} component={ClickUpReportUpload} />
-      <Route path={"/okrs"} component={OKRDashboard} />
-      <Route path={"/a3"} component={A3Template} />
+      {/* Public route - no authentication required */}
       <Route path={"/submissions"} component={ExternalSubmissions} />
-      <Route path={"/agencies"} component={Agencies} />
-      <Route path={"/org-chart"} component={OrgChart} />
-      <Route path={"/home"} component={Home} />
+      
+      {/* Protected routes - require authentication */}
+      <Route path={"/"}>
+        <ProtectedRoute>
+          <SundayPlanning />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/dashboard"}>
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/checkins"}>
+        <ProtectedRoute>
+          <Checkins />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/calendar"}>
+        <ProtectedRoute>
+          <Calendar />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/marketing"}>
+        <ProtectedRoute>
+          <Marketing />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/test-slack"}>
+        <ProtectedRoute>
+          <TestSlack />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/sales-update"}>
+        <ProtectedRoute>
+          <SalesUpdate />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/finance-update"}>
+        <ProtectedRoute>
+          <FinanceUpdate />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/clickup-report"}>
+        <ProtectedRoute>
+          <ClickUpReportUpload />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/okrs"}>
+        <ProtectedRoute>
+          <OKRDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/a3"}>
+        <ProtectedRoute>
+          <A3Template />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/agencies"}>
+        <ProtectedRoute>
+          <Agencies />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/org-chart"}>
+        <ProtectedRoute>
+          <OrgChart />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/home"}>
+        <ProtectedRoute>
+          <Home />
+        </ProtectedRoute>
+      </Route>
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -58,10 +118,12 @@ function App() {
         defaultTheme="light"
         // switchable
       >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
