@@ -203,9 +203,9 @@ export default function Dashboard() {
         </Card>
 
         {/* Categories - Ordered by priority */}
-        {['urgent', 'payments', 'contracts', 'recording', 'individual', 'bookkeeping', 'todo', 'slack', 'personal'].map((categoryKey) => {
+        {['urgent', 'payments', 'contracts', 'recording', 'content', 'individual', 'bookkeeping', 'todo', 'slack', 'personal'].map((categoryKey) => {
           const categoryTasks = categories[categoryKey] || [];
-          if (!categoryTasks || categoryTasks.length === 0) return null;
+          // Show all categories, even if empty
 
           const Icon = categoryIcons[categoryKey] || ListTodo;
 
@@ -221,8 +221,13 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {categoryTasks.map((task) => (
+                {categoryTasks.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No tasks in this category
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {categoryTasks.map((task) => (
                     <div
                       key={task.id}
                       className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -332,7 +337,8 @@ export default function Dashboard() {
                       </div>
                     </div>
                   ))}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
