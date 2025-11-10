@@ -159,3 +159,89 @@ export async function postVisualizationToSlack(content: string, channelId: strin
 
   return data;
 }
+
+/**
+ * Post content review notification to agency's Slack channel
+ */
+export async function postContentReviewNotification(
+  channelId: string,
+  agencyName: string,
+  contentLink: string,
+  description: string,
+  taskUrl: string
+) {
+  const message = {
+    channel: channelId,
+    text: "Content Review Requested",
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "📝 Content Review Requested",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Agency:*\n${agencyName}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*Status:*\nPending Review`,
+          },
+        ],
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Content Link:*\n<${contentLink}|View Content>`,
+        },
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Description:*\n${description}`,
+        },
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "View in ClickUp",
+              emoji: true,
+            },
+            url: taskUrl,
+            style: "primary",
+          },
+        ],
+      },
+    ],
+  };
+
+  const response = await fetch("https://slack.com/api/chat.postMessage", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${ENV.slackBotToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    console.error("[Slack] Failed to post content review notification:", data.error);
+    throw new Error(data.error || "Failed to post to Slack");
+  }
+
+  return data;
+}

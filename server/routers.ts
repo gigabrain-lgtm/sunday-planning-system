@@ -10,6 +10,8 @@ import * as clickup from "./clickup";
 import * as hiring from "./hiring";
 import * as dashboard from "./dashboard";
 import * as airtableMarketing from "./airtable-marketing";
+import { getAgencyById } from "./orgChart";
+import { postContentReviewNotification } from "./slack";
 import { ENV } from "./_core/env";
 
 // Helper function to calculate match score between task and Key Result
@@ -1072,6 +1074,28 @@ export const appRouter = router({
           }
 
           const data = await response.json();
+          const taskUrl = data.url || `https://app.clickup.com/t/${data.id}`;
+          
+          // Send Slack notification to agency's channel if agencyId is provided
+          if (input.agencyId) {
+            try {
+              const agency = getAgencyById(input.agencyId);
+              if (agency?.slackChannelId) {
+                await postContentReviewNotification(
+                  agency.slackChannelId,
+                  input.agencyName,
+                  input.contentLink,
+                  input.description,
+                  taskUrl
+                );
+                console.log(`[Dashboard] Sent Slack notification to ${agency.name} (${agency.slackChannelId})`);
+              }
+            } catch (slackError) {
+              console.error('[Dashboard] Failed to send Slack notification:', slackError);
+              // Don't fail the whole request if Slack fails
+            }
+          }
+          
           return { success: true, taskId: data.id };
         } catch (error) {
           console.error("[Dashboard] Error submitting content:", error);
