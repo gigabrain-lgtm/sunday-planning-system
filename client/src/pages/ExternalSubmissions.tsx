@@ -121,39 +121,26 @@ export default function ExternalSubmissions() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="agency">
-                      Select Agency <span className="text-red-500">*</span>
-                    </Label>
-                    {loadingAgencies ? (
-                      <div className="flex items-center gap-2 p-3 border rounded-md">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm text-gray-500">Loading agencies...</span>
+                  {/* Read-only Agency Display */}
+                  {agencyName && (
+                    <div className="space-y-2">
+                      <Label>Submitting as</Label>
+                      <div className="w-full p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
+                        <p className="text-lg font-semibold text-purple-900">{agencyName}</p>
                       </div>
-                    ) : agencies && agencies.length > 0 ? (
-                      <select
-                        id="agency"
-                        className="w-full p-3 border rounded-md"
-                        value={agencyId || ""}
-                        onChange={(e) => handleAgencyChange(e.target.value)}
-                        required
-                      >
-                        <option value="">Select your agency...</option>
-                        {agencies.map((agency) => (
-                          <option key={agency.id} value={agency.id}>
-                            {agency.name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
+                    </div>
+                  )}
+
+                  {!agencyName && (
+                    <div className="space-y-2">
                       <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
                         <p className="text-sm text-yellow-800">
                           <Building2 className="w-4 h-4 inline mr-1" />
                           No agencies configured yet. Please contact the administrator.
                         </p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="contentLink">
