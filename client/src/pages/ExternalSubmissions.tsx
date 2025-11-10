@@ -16,6 +16,7 @@ export default function ExternalSubmissions() {
   const [contentLink, setContentLink] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [verified, setVerified] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const [location] = useLocation();
@@ -47,6 +48,7 @@ export default function ExternalSubmissions() {
         setContentLink("");
         setDescription("");
         setDueDate("");
+        setVerified(false);
         setSubmitted(false);
         // Keep agencyId and agencyName intact so form stays on same agency
       }, 3000);
@@ -187,10 +189,32 @@ export default function ExternalSubmissions() {
                     </p>
                   </div>
 
+                  {/* Verification Checkbox */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="verified"
+                        checked={verified}
+                        onChange={(e) => setVerified(e.target.checked)}
+                        className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <label htmlFor="verified" className="text-sm text-gray-700 cursor-pointer">
+                        <span className="font-semibold">I verify that:</span>
+                        <ul className="mt-2 space-y-1 list-disc list-inside">
+                          <li>All documents are shared with <strong>hunter@gigabrands.ai</strong></li>
+                          <li>The format is clear and easy to review</li>
+                          <li>I've included ONLY what Hunter needs to approve</li>
+                          <li>Hunter's time is valuable - this submission is ready for review</li>
+                        </ul>
+                      </label>
+                    </div>
+                  </div>
+
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={submitMutation.isLoading}
+                    disabled={submitMutation.isLoading || !verified}
                   >
                     {submitMutation.isLoading ? (
                       <>
