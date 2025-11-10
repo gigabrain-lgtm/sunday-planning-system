@@ -176,6 +176,7 @@ export function categorizeTasks(tasks: DashboardTask[]) {
     payments: [] as DashboardTask[],
     contracts: [] as DashboardTask[],
     recording: [] as DashboardTask[],
+    content: [] as DashboardTask[],
     individual: [] as DashboardTask[],
     bookkeeping: [] as DashboardTask[],
     todo: [] as DashboardTask[],
@@ -203,6 +204,9 @@ export function categorizeTasks(tasks: DashboardTask[]) {
     }
     else if (statusUpper === 'RECORDING LIST') {
       categories.recording.push(task);
+    }
+    else if (statusUpper === 'CONTENT APPROVAL') {
+      categories.content.push(task);
     }
     else if (statusUpper === 'INDIVIDUAL TASKS') {
       categories.individual.push(task);

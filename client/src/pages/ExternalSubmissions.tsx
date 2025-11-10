@@ -42,14 +42,13 @@ export default function ExternalSubmissions() {
     onSuccess: () => {
       toast.success("Content submitted successfully!");
       setSubmitted(true);
-      // Reset form after 3 seconds
+      // Reset form fields but keep agency pre-filled
       setTimeout(() => {
-        setAgencyId(null);
-        setAgencyName("");
         setContentLink("");
         setDescription("");
         setDueDate("");
         setSubmitted(false);
+        // Keep agencyId and agencyName intact so form stays on same agency
       }, 3000);
     },
     onError: (error) => {
