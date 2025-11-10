@@ -8,7 +8,6 @@ import {
   TrendingUp,
   LogOut,
   Briefcase,
-  Send,
   Building2,
   Network
 } from "lucide-react";
@@ -63,11 +62,6 @@ const navItems = [
     name: "Marketing",
     path: "/marketing",
     icon: TrendingUp,
-  },
-  {
-    name: "External Submissions",
-    path: "/submissions",
-    icon: Send,
   },
   {
     name: "Agencies",
