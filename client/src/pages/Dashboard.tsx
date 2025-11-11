@@ -64,7 +64,10 @@ export default function Dashboard() {
 
   const completeMutation = trpc.dashboard.completeTask.useMutation({
     onSuccess: (_, variables) => {
-      toast.success("Task completed!");
+      const message = variables.agencyName 
+        ? `Task completed! Notification sent to ${variables.agencyName}.`
+        : "Task completed!";
+      toast.success(message);
       setCompletingTasks(prev => {
         const next = new Set(prev);
         next.delete(variables.taskId);
@@ -102,10 +105,25 @@ export default function Dashboard() {
     },
   });
 
-  const handleCompleteTask = async (taskId: string) => {
+  const handleCompleteTask = async (taskId: string, taskName?: string, contentLink?: string) => {
     if (confirm("Mark this task as complete?")) {
       setCompletingTasks(prev => new Set(prev).add(taskId));
-      await completeMutation.mutateAsync({ taskId });
+      
+      // Extract agency name from task name if it starts with [Agency Name]
+      let agencyName: string | undefined;
+      if (taskName) {
+        const match = taskName.match(/^\[([^\]]+)\]/);
+        if (match) {
+          agencyName = match[1];
+        }
+      }
+      
+      await completeMutation.mutateAsync({ 
+        taskId, 
+        taskName,
+        agencyName,
+        contentLink 
+      });
     }
   };
 
@@ -335,7 +353,7 @@ export default function Dashboard() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleCompleteTask(task.id)}
+                          onClick={() => handleCompleteTask(task.id, task.name, task.contentLink)}
                           disabled={completingTasks.has(task.id)}
                           title="Mark as complete"
                         >

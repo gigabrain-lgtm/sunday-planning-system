@@ -245,3 +245,87 @@ export async function postContentReviewNotification(
 
   return data;
 }
+
+/**
+ * Post content approval notification to agency's Slack channel
+ */
+export async function postContentApprovalNotification(
+  channelId: string,
+  agencyName: string,
+  taskName: string,
+  contentLink?: string
+) {
+  const message = {
+    channel: channelId,
+    text: "Content Approved",
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "✅ Content Approved",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Agency:*\n${agencyName}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*Status:*\nApproved ✅`,
+          },
+        ],
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Task:*\n${taskName}`,
+        },
+      },
+    ],
+  };
+
+  // Add content link if available
+  if (contentLink) {
+    message.blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Content Link:*\n<${contentLink}|View Content>`,
+      },
+    });
+  }
+
+  message.blocks.push({
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: `Approved on ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`,
+      },
+    ],
+  });
+
+  const response = await fetch("https://slack.com/api/chat.postMessage", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${ENV.slackBotToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    console.error("[Slack] Failed to post content approval notification:", data.error);
+    throw new Error(data.error || "Failed to post to Slack");
+  }
+
+  return data;
+}
