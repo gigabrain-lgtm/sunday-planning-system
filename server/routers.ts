@@ -1137,43 +1137,49 @@ export const appRouter = router({
 
   agencies: router({
     getAll: protectedProcedure.query(async () => {
-      return await db.getAllAgencies();
+      const { getAllAgencies } = await import('./agencies');
+      return getAllAgencies();
     }),
 
     getById: protectedProcedure
-      .input(z.object({ id: z.number() }))
+      .input(z.object({ id: z.string() }))
       .query(async ({ input }) => {
-        return await db.getAgencyById(input.id);
+        const { getAllAgencies } = await import('./agencies');
+        const agencies = getAllAgencies();
+        return agencies.find(a => a.id === input.id);
       }),
 
     create: protectedProcedure
       .input(z.object({
         name: z.string().min(1, "Agency name is required"),
-        slackChannelId: z.string().min(1, "Slack channel ID is required"),
-        contactEmail: z.string().email().optional(),
-        notes: z.string().optional(),
+        slackChannel: z.string().min(1, "Slack channel ID is required"),
+        department: z.string().min(1, "Department is required"),
+        logo: z.string().optional(),
+        teamSize: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
-        return await db.createAgency(input);
+        const { createAgency } = await import('./agencies');
+        return createAgency(input);
       }),
 
     update: protectedProcedure
       .input(z.object({
-        id: z.number(),
+        id: z.string(),
         name: z.string().min(1).optional(),
-        slackChannelId: z.string().min(1).optional(),
-        contactEmail: z.string().email().optional(),
-        notes: z.string().optional(),
+        slackChannel: z.string().min(1).optional(),
+        logo: z.string().optional(),
+        teamSize: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
-        const { id, ...updates } = input;
-        return await db.updateAgency(id, updates);
+        const { updateAgency } = await import('./agencies');
+        return updateAgency(input);
       }),
 
     delete: protectedProcedure
-      .input(z.object({ id: z.number() }))
+      .input(z.object({ id: z.string() }))
       .mutation(async ({ input }) => {
-        await db.deleteAgency(input.id);
+        const { deleteAgency } = await import('./agencies');
+        deleteAgency(input.id);
         return { success: true };
       }),
   }),
