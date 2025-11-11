@@ -31,12 +31,8 @@ export default function Agencies() {
   });
 
   // Fetch agencies from backend
-  const { data: agenciesData, refetch } = trpc.agencies.getAll.useQuery();
-  const createMutation = trpc.agencies.create.useMutation();
-  const updateMutation = trpc.agencies.update.useMutation();
-  const deleteMutation = trpc.agencies.delete.useMutation();
-
-  const agencies = useMemo(() => agenciesData || getAllAgencies(), [agenciesData]);
+  // Use static org chart data directly
+  const agencies = useMemo(() => getAllAgencies(), []);
   const departments = orgChartData.departments;
 
   const copySubmissionLink = (agencyId: string) => {
@@ -62,33 +58,13 @@ export default function Agencies() {
 
   const handleSaveEdit = async () => {
     if (!editingAgency) return;
-
-    try {
-      await updateMutation.mutateAsync({
-        id: editingAgency.id,
-        name: editingAgency.name,
-        slackChannel: editingAgency.slackChannel,
-        logo: editingAgency.logo,
-        teamSize: editingAgency.teamSize,
-      });
-      toast.success("Agency updated successfully!");
-      setEditingAgency(null);
-      refetch();
-    } catch (error) {
-      toast.error("Failed to update agency");
-    }
+    toast.info("Changes are view-only. To update agencies, edit the orgChart.ts file.");
+    setEditingAgency(null);
   };
 
   const handleDelete = async (agencyId: string, agencyName: string) => {
     if (!confirm(`Are you sure you want to delete "${agencyName}"?`)) return;
-
-    try {
-      await deleteMutation.mutateAsync({ id: agencyId });
-      toast.success("Agency deleted successfully!");
-      refetch();
-    } catch (error) {
-      toast.error("Failed to delete agency");
-    }
+    toast.info("Changes are view-only. To delete agencies, edit the orgChart.ts file.");
   };
 
   const handleAddAgency = async () => {
@@ -96,28 +72,16 @@ export default function Agencies() {
       toast.error("Please fill in all required fields");
       return;
     }
-
-    try {
-      await createMutation.mutateAsync({
-        name: newAgency.name,
-        slackChannel: newAgency.slackChannel,
-        department: newAgency.department,
-        logo: newAgency.logo || "",
-        teamSize: newAgency.teamSize,
-      });
-      toast.success("Agency added successfully!");
-      setIsAddDialogOpen(false);
-      setNewAgency({
-        name: "",
-        slackChannel: "",
-        department: "",
-        logo: "",
-        teamSize: 1,
-      });
-      refetch();
-    } catch (error) {
-      toast.error("Failed to add agency");
-    }
+    
+    toast.info("Changes are view-only. To add agencies, edit the orgChart.ts file.");
+    setIsAddDialogOpen(false);
+    setNewAgency({
+      name: "",
+      slackChannel: "",
+      department: "",
+      logo: "",
+      teamSize: 1,
+    });
   };
 
   return (
@@ -216,7 +180,7 @@ export default function Agencies() {
                               <Button
                                 size="sm"
                                 onClick={handleSaveEdit}
-                                disabled={updateMutation.isLoading}
+                                disabled={false}
                                 className="flex-1"
                               >
                                 <Save className="w-4 h-4 mr-1" />
@@ -448,9 +412,9 @@ export default function Agencies() {
             </Button>
             <Button
               onClick={handleAddAgency}
-              disabled={createMutation.isLoading}
+              disabled={false}
             >
-              {createMutation.isLoading ? "Adding..." : "Add Agency"}
+              Add Agency
             </Button>
           </DialogFooter>
         </DialogContent>
