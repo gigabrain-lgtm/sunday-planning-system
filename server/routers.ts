@@ -1036,6 +1036,31 @@ export const appRouter = router({
         }
       }),
 
+    getCustomFields: protectedProcedure
+      .input(z.object({ taskId: z.string() }))
+      .query(async ({ input }) => {
+        try {
+          const response = await fetch(
+            `https://api.clickup.com/api/v2/task/${input.taskId}`,
+            {
+              headers: {
+                'Authorization': ENV.clickupApiKey,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch task');
+          }
+
+          const data = await response.json();
+          return { customFields: data.custom_fields || [] };
+        } catch (error) {
+          console.error('[Dashboard] Error fetching custom fields:', error);
+          throw error;
+        }
+      }),
+
     submitContent: publicProcedure
       .input(z.object({
         agencyName: z.string().min(1, "Agency name is required"),
@@ -1063,6 +1088,12 @@ export const appRouter = router({
                 description: taskDescription,
                 status: 'CONTENT APPROVAL',
                 due_date: input.dueDate ? new Date(input.dueDate).getTime() : undefined,
+                custom_fields: [
+                  {
+                    id: 'e4b2e0c5-3f8a-4d9e-8c7b-1a2b3c4d5e6f', // Content Link custom field ID (will need to get actual ID)
+                    value: input.contentLink,
+                  },
+                ],
               }),
             }
           );

@@ -21,12 +21,14 @@ import A3Template from "./pages/A3Template";
 import ExternalSubmissions from "./pages/ExternalSubmissions";
 import Agencies from "./pages/Agencies";
 import OrgChart from "./pages/OrgChart";
+import TestCustomFields from "./pages/TestCustomFields";
 
 function Router() {
   return (
     <Switch>
       {/* Public route - no authentication required */}
       <Route path={"/submissions"} component={ExternalSubmissions} />
+      <Route path={"/test-custom-fields"} component={TestCustomFields} />
       
       {/* Protected routes - require authentication */}
       <Route path={"/"}>
