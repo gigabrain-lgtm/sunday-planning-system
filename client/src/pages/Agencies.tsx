@@ -212,16 +212,6 @@ export default function Agencies() {
                                 }
                               />
                             </div>
-                            <div>
-                              <Label>Team Size</Label>
-                              <Input
-                                type="number"
-                                value={editingAgency.teamSize}
-                                onChange={(e) =>
-                                  setEditingAgency({ ...editingAgency, teamSize: parseInt(e.target.value) })
-                                }
-                              />
-                            </div>
                             <div className="flex gap-2">
                               <Button
                                 size="sm"
