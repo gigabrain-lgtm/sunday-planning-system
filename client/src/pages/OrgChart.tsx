@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { orgChartData, getSubmissionLink } from "@/data/orgChart";
-import { Building2, Users, Copy, CheckCircle, ExternalLink } from "lucide-react";
+import { Building2, Users, Copy, CheckCircle, ExternalLink, Edit2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function OrgChart() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingAgency, setEditingAgency] = useState<{id: string, name: string, slackChannelId: string} | null>(null);
 
   const copySubmissionLink = (agencyId: string, agencyName: string) => {
     const link = getSubmissionLink(agencyId);
@@ -17,6 +21,23 @@ export default function OrgChart() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleEdit = (agency: any) => {
+    setEditingAgency({
+      id: agency.id,
+      name: agency.name,
+      slackChannelId: agency.slackChannelId,
+    });
+  };
+
+  const handleSaveEdit = () => {
+    toast.info("Changes are view-only. To update agencies, edit the orgChart.ts file.");
+    setEditingAgency(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAgency(null);
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar>
@@ -24,9 +45,9 @@ export default function OrgChart() {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight">Organization Chart</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Agencies</h1>
               <p className="text-muted-foreground mt-1">
-                Team structure, agencies, and submission links
+                Manage agency partners, submission links, and Slack channels
               </p>
             </div>
 
@@ -94,6 +115,15 @@ export default function OrgChart() {
                           </CardHeader>
                           <CardContent>
                             <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full mb-2"
+                              onClick={() => handleEdit(agency)}
+                            >
+                              <Edit2 className="w-4 h-4 mr-2" />
+                              Edit
+                            </Button>
+                            <Button
                               variant="outline"
                               size="sm"
                               className="w-full"
@@ -151,6 +181,15 @@ export default function OrgChart() {
                     </CardHeader>
                     <CardContent>
                       <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full mb-2"
+                        onClick={() => handleEdit(service)}
+                      >
+                        <Edit2 className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
                         variant="outline"
                         size="sm"
                         className="w-full"
@@ -196,6 +235,48 @@ export default function OrgChart() {
           </div>
         </div>
       </Sidebar>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingAgency} onOpenChange={() => setEditingAgency(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Agency</DialogTitle>
+            <DialogDescription>
+              View agency details. To make changes, edit the orgChart.ts file.
+            </DialogDescription>
+          </DialogHeader>
+          {editingAgency && (
+            <div className="space-y-4">
+              <div>
+                <Label>Agency Name</Label>
+                <Input
+                  value={editingAgency.name}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+              <div>
+                <Label>Slack Channel ID</Label>
+                <Input
+                  value={editingAgency.slackChannelId}
+                  onChange={(e) => setEditingAgency({...editingAgency, slackChannelId: e.target.value})}
+                  placeholder="e.g., C09Q0RUN0Q0"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEdit}>
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

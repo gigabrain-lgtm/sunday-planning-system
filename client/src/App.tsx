@@ -19,7 +19,6 @@ import ClickUpReportUpload from "./pages/ClickUpReportUpload";
 import OKRDashboard from "./pages/OKRDashboard";
 import A3Template from "./pages/A3Template";
 import ExternalSubmissions from "./pages/ExternalSubmissions";
-import Agencies from "./pages/Agencies";
 import OrgChart from "./pages/OrgChart";
 import TestCustomFields from "./pages/TestCustomFields";
 
@@ -84,11 +83,6 @@ function Router() {
       <Route path={"/a3"}>
         <ProtectedRoute>
           <A3Template />
-        </ProtectedRoute>
-      </Route>
-      <Route path={"/agencies"}>
-        <ProtectedRoute>
-          <Agencies />
         </ProtectedRoute>
       </Route>
       <Route path={"/org-chart"}>
