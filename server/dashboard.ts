@@ -9,6 +9,7 @@ export interface DashboardTask {
   dueDate: string | null;
   url: string;
   paymentLink: string;
+  contentLink: string;
   listType: 'personal' | 'ea' | 'pa';
 }
 
@@ -70,6 +71,16 @@ async function fetchClickUpListTasks(listId: string, listType: 'personal' | 'ea'
         }
       }
 
+      // Extract Content Link custom field
+      let contentLink = '';
+      const contentLinkField = task.custom_fields?.find(
+        (field: any) => field.name === 'Content Link'
+      );
+
+      if (contentLinkField) {
+        contentLink = contentLinkField.value || '';
+      }
+
       return {
         id: task.id,
         name: task.name,
@@ -79,6 +90,7 @@ async function fetchClickUpListTasks(listId: string, listType: 'personal' | 'ea'
         dueDate: task.due_date || null,
         url: task.url || `https://app.clickup.com/t/${task.id}`,
         paymentLink: paymentLink.trim(),
+        contentLink: contentLink.trim(),
         listType,
       };
     });

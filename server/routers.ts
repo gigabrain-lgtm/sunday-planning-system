@@ -1090,7 +1090,7 @@ export const appRouter = router({
                 due_date: input.dueDate ? new Date(input.dueDate).getTime() : undefined,
                 custom_fields: [
                   {
-                    id: 'e4b2e0c5-3f8a-4d9e-8c7b-1a2b3c4d5e6f', // Content Link custom field ID (will need to get actual ID)
+                    id: '23beb36f-c20f-43d4-a72b-a8d38dd8ecc7', // Content Link custom field ID
                     value: input.contentLink,
                   },
                 ],

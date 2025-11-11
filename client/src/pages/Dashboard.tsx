@@ -270,6 +270,17 @@ export default function Dashboard() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
+                        {task.contentLink && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(task.contentLink, "_blank")}
+                            className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Review
+                          </Button>
+                        )}
                         {task.paymentLink && (
                           <Button
                             variant="outline"
