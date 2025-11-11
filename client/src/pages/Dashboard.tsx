@@ -18,7 +18,8 @@ import {
   MessageSquare,
   User,
   RefreshCw,
-  Calendar
+  Calendar,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -61,6 +62,7 @@ export default function Dashboard() {
   const { data, isLoading, error, refetch } = trpc.dashboard.getPendingItems.useQuery();
   const [completingTasks, setCompletingTasks] = useState<Set<string>>(new Set());
   const [movingTasks, setMovingTasks] = useState<Set<string>>(new Set());
+  const [rejectingTasks, setRejectingTasks] = useState<Set<string>>(new Set());
 
   const completeMutation = trpc.dashboard.completeTask.useMutation({
     onSuccess: (_, variables) => {
@@ -105,6 +107,29 @@ export default function Dashboard() {
     },
   });
 
+  const rejectMutation = trpc.dashboard.rejectTask.useMutation({
+    onSuccess: (_, variables) => {
+      const message = variables.agencyName 
+        ? `Task rejected! Notification sent to ${variables.agencyName}.`
+        : "Task rejected!";
+      toast.success(message);
+      setRejectingTasks(prev => {
+        const next = new Set(prev);
+        next.delete(variables.taskId);
+        return next;
+      });
+      refetch();
+    },
+    onError: (error, variables) => {
+      toast.error(`Failed to reject task: ${error.message}`);
+      setRejectingTasks(prev => {
+        const next = new Set(prev);
+        next.delete(variables.taskId);
+        return next;
+      });
+    },
+  });
+
   const handleCompleteTask = async (taskId: string, taskName?: string, contentLink?: string) => {
     if (confirm("Mark this task as complete?")) {
       setCompletingTasks(prev => new Set(prev).add(taskId));
@@ -124,6 +149,33 @@ export default function Dashboard() {
         agencyName,
         contentLink 
       });
+    }
+  };
+
+  const handleRejectTask = async (taskId: string, taskName?: string, contentLink?: string) => {
+    const rejectionReason = prompt("Please provide a reason for rejecting this content:");
+    
+    if (rejectionReason && rejectionReason.trim()) {
+      setRejectingTasks(prev => new Set(prev).add(taskId));
+      
+      // Extract agency name from task name if it starts with [Agency Name]
+      let agencyName: string | undefined;
+      if (taskName) {
+        const match = taskName.match(/^\[([^\]]+)\]/);
+        if (match) {
+          agencyName = match[1];
+        }
+      }
+      
+      await rejectMutation.mutateAsync({ 
+        taskId, 
+        taskName,
+        agencyName,
+        contentLink,
+        rejectionReason: rejectionReason.trim()
+      });
+    } else if (rejectionReason !== null) {
+      toast.error("Rejection reason is required");
     }
   };
 
@@ -349,6 +401,20 @@ export default function Dashboard() {
                           title="View in ClickUp"
                         >
                           <ExternalLink className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRejectTask(task.id, task.name, task.contentLink)}
+                          disabled={rejectingTasks.has(task.id)}
+                          title="Reject content"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          {rejectingTasks.has(task.id) ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <X className="w-4 h-4" />
+                          )}
                         </Button>
                         <Button
                           variant="ghost"

@@ -11,7 +11,7 @@ import * as hiring from "./hiring";
 import * as dashboard from "./dashboard";
 import * as airtableMarketing from "./airtable-marketing";
 import { getAgencyById } from "./orgChart";
-import { postContentReviewNotification, postContentApprovalNotification } from "./slack";
+import { postContentReviewNotification, postContentApprovalNotification, postContentRejectionNotification } from "./slack";
 import { ENV } from "./_core/env";
 
 // Helper function to calculate match score between task and Key Result
@@ -1042,6 +1042,51 @@ export const appRouter = router({
           return { success: true };
         } catch (error) {
           console.error("[Dashboard] Error completing task:", error);
+          throw error;
+        }
+      }),
+
+    rejectTask: protectedProcedure
+      .input(z.object({
+        taskId: z.string(),
+        taskName: z.string().optional(),
+        agencyName: z.string().optional(),
+        contentLink: z.string().optional(),
+        rejectionReason: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          // Delete the task from ClickUp
+          await dashboard.deleteTask(input.taskId);
+          
+          // If agency name is provided, send Slack notification
+          if (input.agencyName) {
+            // Extract agency ID from agency name (e.g., "Mogul Media" -> "mogul-media")
+            const agencyId = input.agencyName.toLowerCase().replace(/\s+/g, '-');
+            const agency = getAgencyById(agencyId);
+            
+            if (agency && agency.slackChannelId) {
+              try {
+                await postContentRejectionNotification(
+                  agency.slackChannelId,
+                  input.agencyName,
+                  input.taskName || 'Content Review',
+                  input.rejectionReason,
+                  input.contentLink
+                );
+                console.log(`[Dashboard] Sent rejection notification to ${input.agencyName} (${agency.slackChannelId})`);
+              } catch (slackError) {
+                console.error("[Dashboard] Failed to send Slack notification:", slackError);
+                // Don't fail the whole operation if Slack fails
+              }
+            } else {
+              console.warn(`[Dashboard] No Slack channel found for agency: ${input.agencyName} (${agencyId})`);
+            }
+          }
+          
+          return { success: true };
+        } catch (error) {
+          console.error("[Dashboard] Error rejecting task:", error);
           throw error;
         }
       }),

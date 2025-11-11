@@ -243,3 +243,31 @@ export function categorizeTasks(tasks: DashboardTask[]) {
 
   return categories;
 }
+
+/**
+ * Delete a ClickUp task
+ */
+export async function deleteTask(taskId: string) {
+  try {
+    const response = await fetch(
+      `https://api.clickup.com/api/v2/task/${taskId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': ENV.clickupApiKey,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Dashboard] Failed to delete task:', errorData);
+      throw new Error(errorData.err || 'Failed to delete task');
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('[Dashboard] Error deleting task:', error);
+    throw new Error(error.message || 'Failed to delete task');
+  }
+}

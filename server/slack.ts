@@ -329,3 +329,97 @@ export async function postContentApprovalNotification(
 
   return data;
 }
+
+/**
+ * Post content rejection notification to agency's Slack channel
+ */
+export async function postContentRejectionNotification(
+  channelId: string,
+  agencyName: string,
+  taskName: string,
+  rejectionReason: string,
+  contentLink?: string
+) {
+  const message = {
+    channel: channelId,
+    text: "Content Rejected",
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "❌ Content Rejected",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Agency:*\n${agencyName}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*Status:*\nRejected ❌`,
+          },
+        ],
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Task:*\n${taskName}`,
+        },
+      },
+    ],
+  };
+
+  // Add content link if available
+  if (contentLink) {
+    message.blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Content Link:*\n<${contentLink}|View Content>`,
+      },
+    });
+  }
+
+  // Add rejection reason
+  message.blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*Rejection Reason:*\n${rejectionReason}`,
+    },
+  });
+
+  message.blocks.push({
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: `Rejected on ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`,
+      },
+    ],
+  });
+
+  const response = await fetch("https://slack.com/api/chat.postMessage", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${ENV.slackBotToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    console.error("[Slack] Failed to post content rejection notification:", data.error);
+    throw new Error(data.error || "Failed to post to Slack");
+  }
+
+  return data;
+}
