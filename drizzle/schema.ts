@@ -334,3 +334,20 @@ export const agencies = pgTable("agencies", {
 
 export type Agency = typeof agencies.$inferSelect;
 export type InsertAgency = typeof agencies.$inferInsert;
+
+/**
+ * Agency overrides table
+ * Stores edits to agencies that override the static orgChart.ts data
+ */
+export const agencies = pgTable("agencies", {
+  id: varchar("id", { length: 255 }).primaryKey(), // agency ID from orgChart.ts
+  name: varchar("name", { length: 255 }).notNull(),
+  slackChannelId: varchar("slackChannelId", { length: 255 }),
+  department: varchar("department", { length: 255 }).notNull(), // department ID or 'services'
+  logo: varchar("logo", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Agency = typeof agencies.$inferSelect;
+export type InsertAgency = typeof agencies.$inferInsert;

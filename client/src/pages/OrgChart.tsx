@@ -1,17 +1,44 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { orgChartData, getSubmissionLink } from "@/data/orgChart";
 import { Building2, Users, Copy, CheckCircle, ExternalLink, Edit2, Save, X } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 export default function OrgChart() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [editingAgency, setEditingAgency] = useState<{id: string, name: string, slackChannelId: string} | null>(null);
+  const [editingAgency, setEditingAgency] = useState<{id: string, name: string, slackChannelId: string, department: string} | null>(null);
+  
+  // Fetch agency overrides from database
+  const { data: overrides } = trpc.dashboard.getAgencyOverrides.useQuery();
+  
+  // Merge static data with database overrides
+  const mergedOrgChartData = useMemo(() => {
+    if (!overrides || overrides.length === 0) return orgChartData;
+    
+    const overrideMap = new Map(overrides.map(o => [o.id, o]));
+    
+    return {
+      ...orgChartData,
+      departments: orgChartData.departments.map(dept => ({
+        ...dept,
+        agencies: dept.agencies.map(agency => {
+          const override = overrideMap.get(agency.id);
+          return override ? { ...agency, ...override } : agency;
+        }),
+      })),
+      services: orgChartData.services.map(service => {
+        const override = overrideMap.get(service.id);
+        return override ? { ...service, ...override } : service;
+      }),
+    };
+  }, [overrides]);
 
   const copySubmissionLink = (agencyId: string, agencyName: string) => {
     const link = getSubmissionLink(agencyId);
@@ -21,17 +48,36 @@ export default function OrgChart() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleEdit = (agency: any) => {
+  const handleEdit = (agency: any, departmentId: string) => {
     setEditingAgency({
       id: agency.id,
       name: agency.name,
-      slackChannelId: agency.slackChannelId,
+      slackChannelId: agency.slackChannelId || '',
+      department: departmentId,
     });
   };
 
-  const handleSaveEdit = () => {
-    toast.info("Changes are view-only. To update agencies, edit the orgChart.ts file.");
-    setEditingAgency(null);
+  const updateMutation = trpc.dashboard.updateAgency.useMutation({
+    onSuccess: () => {
+      toast.success("Agency updated successfully!");
+      setEditingAgency(null);
+      // Reload page to show updated data
+      window.location.reload();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update agency: ${error.message}`);
+    },
+  });
+
+  const handleSaveEdit = async () => {
+    if (!editingAgency) return;
+    
+    await updateMutation.mutateAsync({
+      id: editingAgency.id,
+      name: editingAgency.name,
+      slackChannelId: editingAgency.slackChannelId,
+      department: editingAgency.department,
+    });
   };
 
   const handleCancelEdit = () => {
@@ -70,7 +116,7 @@ export default function OrgChart() {
             <div className="space-y-8">
               <h2 className="text-2xl font-bold">Departments</h2>
               
-              {orgChartData.departments.map((dept) => (
+              {mergedOrgChartData.departments.map((dept) => (
                 <Card key={dept.id} className="border-2">
                   <CardHeader className="bg-gray-50">
                     <div className="flex items-center justify-between">
@@ -118,7 +164,7 @@ export default function OrgChart() {
                               variant="ghost"
                               size="sm"
                               className="w-full mb-2"
-                              onClick={() => handleEdit(agency)}
+                              onClick={() => handleEdit(agency, dept.id)}
                             >
                               <Edit2 className="w-4 h-4 mr-2" />
                               Edit
@@ -164,7 +210,7 @@ export default function OrgChart() {
               <h2 className="text-2xl font-bold">Services</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {orgChartData.services.map((service) => (
+                {mergedOrgChartData.services.map((service) => (
                   <Card key={service.id} className="hover:shadow-lg transition-shadow border-2">
                     <CardHeader>
                       <CardTitle className="text-lg">{service.name}</CardTitle>
@@ -184,7 +230,7 @@ export default function OrgChart() {
                         variant="ghost"
                         size="sm"
                         className="w-full mb-2"
-                        onClick={() => handleEdit(service)}
+                        onClick={() => handleEdit(service, 'services')}
                       >
                         <Edit2 className="w-4 h-4 mr-2" />
                         Edit
@@ -242,7 +288,7 @@ export default function OrgChart() {
           <DialogHeader>
             <DialogTitle>Edit Agency</DialogTitle>
             <DialogDescription>
-              View agency details. To make changes, edit the orgChart.ts file.
+              Update agency name, department, and Slack channel.
             </DialogDescription>
           </DialogHeader>
           {editingAgency && (
@@ -251,9 +297,28 @@ export default function OrgChart() {
                 <Label>Agency Name</Label>
                 <Input
                   value={editingAgency.name}
-                  disabled
-                  className="bg-gray-50"
+                  onChange={(e) => setEditingAgency({...editingAgency, name: e.target.value})}
+                  placeholder="e.g., Mogul Media"
                 />
+              </div>
+              <div>
+                <Label>Department</Label>
+                <Select
+                  value={editingAgency.department}
+                  onValueChange={(value) => setEditingAgency({...editingAgency, department: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                          {mergedOrgChartData.departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="services">Services</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Slack Channel ID</Label>

@@ -1207,6 +1207,41 @@ export const appRouter = router({
           throw error;
         }
       }),
+
+    updateAgency: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        name: z.string(),
+        slackChannelId: z.string().optional(),
+        department: z.string(),
+        logo: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await db.upsertAgency({
+            id: input.id,
+            name: input.name,
+            slackChannelId: input.slackChannelId || '',
+            department: input.department,
+            logo: input.logo,
+          });
+          return { success: true };
+        } catch (error) {
+          console.error("[Dashboard] Error updating agency:", error);
+          throw error;
+        }
+      }),
+
+    getAgencyOverrides: protectedProcedure
+      .query(async () => {
+        try {
+          const overrides = await db.getAllAgencyOverrides();
+          return overrides;
+        } catch (error) {
+          console.error("[Dashboard] Error getting agency overrides:", error);
+          return [];
+        }
+      }),
   }),
 
   agencies: router({

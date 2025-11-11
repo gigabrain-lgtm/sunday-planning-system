@@ -480,3 +480,69 @@ export async function deleteAgency(id: number): Promise<void> {
 
   await db.delete(agencies).where(eq(agencies.id, id));
 }
+
+/**
+ * Upsert agency override
+ */
+export async function upsertAgency(agency: InsertAgency): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot upsert agency: database not available");
+    return;
+  }
+
+  try {
+    await db.insert(agencies)
+      .values(agency)
+      .onConflictDoUpdate({
+        target: agencies.id,
+        set: {
+          name: agency.name,
+          slackChannelId: agency.slackChannelId,
+          department: agency.department,
+          logo: agency.logo,
+          updatedAt: new Date(),
+        },
+      });
+  } catch (error) {
+    console.error("[Database] Failed to upsert agency:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get all agency overrides
+ */
+export async function getAllAgencyOverrides(): Promise<Agency[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get agencies: database not available");
+    return [];
+  }
+
+  try {
+    return await db.select().from(agencies);
+  } catch (error) {
+    console.error("[Database] Failed to get agencies:", error);
+    return [];
+  }
+}
+
+/**
+ * Get agency override by ID
+ */
+export async function getAgencyOverride(agencyId: string): Promise<Agency | undefined> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get agency: database not available");
+    return undefined;
+  }
+
+  try {
+    const results = await db.select().from(agencies).where(eq(agencies.id, agencyId));
+    return results[0];
+  } catch (error) {
+    console.error("[Database] Failed to get agency:", error);
+    return undefined;
+  }
+}
