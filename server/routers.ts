@@ -1613,6 +1613,131 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    getApprovedForCompletion: protectedProcedure
+      .query(async () => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new Error("Database not available");
+        }
+
+        const results = await dbInstance
+          .select()
+          .from(db.paymentRequests)
+          .where(eq(db.paymentRequests.status, "approved"))
+          .orderBy(db.paymentRequests.createdAt);
+
+        return results;
+      }),
+
+    complete: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        completionPaymentLink: z.string(),
+        completionAmount: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const paymentRequest = await db.getPaymentRequestById(input.id);
+        if (!paymentRequest) {
+          throw new Error("Payment request not found");
+        }
+
+        if (paymentRequest.status !== "approved") {
+          throw new Error("Payment request must be approved before completion");
+        }
+
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new Error("Database not available");
+        }
+
+        // Create ClickUp task in personal finance list
+        const CLICKUP_API_URL = "https://api.clickup.com/api/v2";
+        const PERSONAL_FINANCE_LIST_ID = "901305042845";
+        
+        const taskDescription = `Payment Completed for Request #${paymentRequest.id}\n\n` +
+          `**Submitter:** ${paymentRequest.submitterName || paymentRequest.userName || "Guest"}\n` +
+          `**Email:** ${paymentRequest.submitterEmail || "N/A"}\n` +
+          `**Requested Amount:** ${paymentRequest.amount}\n` +
+          `**Paid Amount:** ${input.completionAmount}\n` +
+          `**Payment Type:** ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}\n` +
+          `**Payment Confirmation:** ${input.completionPaymentLink}\n` +
+          `**Original ClickUp Task:** ${paymentRequest.clickupTaskId ? `https://app.clickup.com/t/${paymentRequest.clickupTaskId}` : "N/A"}\n`;
+
+        let completionClickupTaskId = null;
+
+        try {
+          // Fetch custom fields to set Amount
+          const fieldsResponse = await fetch(
+            `${CLICKUP_API_URL}/list/${PERSONAL_FINANCE_LIST_ID}/field`,
+            {
+              headers: {
+                "Authorization": process.env.CLICKUP_API_KEY!,
+              },
+            }
+          );
+
+          const customFields: any[] = [];
+          if (fieldsResponse.ok) {
+            const fieldsData = await fieldsResponse.json();
+            const amountField = fieldsData.fields?.find((f: any) => 
+              f.name.toLowerCase() === "amount"
+            );
+            
+            if (amountField) {
+              const amountValue = parseFloat(input.completionAmount.replace(/[$,]/g, ""));
+              customFields.push({
+                id: amountField.id,
+                value: amountValue
+              });
+            }
+          }
+
+          const response = await fetch(
+            `${CLICKUP_API_URL}/list/${PERSONAL_FINANCE_LIST_ID}/task`,
+            {
+              method: "POST",
+              headers: {
+                "Authorization": process.env.CLICKUP_API_KEY!,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: `Payment Completed #${paymentRequest.id} - ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}`,
+                description: taskDescription,
+                priority: 3,
+                status: "FINANCE TASKS",
+                custom_fields: customFields.length > 0 ? customFields : undefined,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const clickupTask = await response.json();
+            completionClickupTaskId = clickupTask.id;
+          }
+        } catch (error) {
+          console.error("Failed to create completion ClickUp task:", error);
+          // Continue even if ClickUp task creation fails
+        }
+
+        // Update payment request
+        await dbInstance
+          .update(db.paymentRequests)
+          .set({
+            status: "completed",
+            completionPaymentLink: input.completionPaymentLink,
+            completionAmount: input.completionAmount,
+            completedAt: new Date(),
+            completedBy: ctx.user?.name || "Unknown",
+            completionClickupTaskId,
+          })
+          .where(eq(db.paymentRequests.id, input.id));
+
+        return { 
+          success: true,
+          completionClickupTaskId,
+        };
+      }),
+
     reject: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
