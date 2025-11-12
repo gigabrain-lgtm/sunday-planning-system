@@ -14,12 +14,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function PaymentCompletion() {
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [completionPaymentLink, setCompletionPaymentLink] = useState("");
   const [completionAmount, setCompletionAmount] = useState("");
   const [verificationErrors, setVerificationErrors] = useState<string[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const { data: approvedRequests, isLoading, refetch } = trpc.paymentRequest.getApprovedForCompletion.useQuery();
 
@@ -88,12 +99,20 @@ export default function PaymentCompletion() {
       return;
     }
 
-    // All verifications passed, submit
+    // All verifications passed, show confirmation
+    setVerificationErrors([]);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmComplete = () => {
+    if (!selectedRequestId) return;
+    
     completeMutation.mutate({
       id: selectedRequestId,
       completionPaymentLink,
       completionAmount,
     });
+    setShowConfirmDialog(false);
   };
 
   const selectedRequest = approvedRequests?.find((r: any) => r.id === selectedRequestId);
@@ -277,6 +296,70 @@ export default function PaymentCompletion() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Payment Completion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark this payment as completed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          {selectedRequest && (
+            <div className="space-y-3 py-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-green-900 mb-1">All Verifications Passed</p>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>✓ Payment amount verified</li>
+                      {(selectedRequest.paymentType === "ach" || selectedRequest.paymentType === "wire") && (
+                        <li>✓ Account number last 4 digits verified</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                <p className="font-semibold text-gray-900">This will:</p>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• Create a task in your personal finance ClickUp list</li>
+                  <li>• Update payment request status to "Completed"</li>
+                  <li>• Record completion timestamp and details</li>
+                  <li>• Set the Amount custom field in ClickUp</li>
+                </ul>
+              </div>
+
+              <div className="border-t pt-3 space-y-1 text-sm">
+                <p><strong>Request ID:</strong> #{selectedRequest.id}</p>
+                <p><strong>Submitter:</strong> {selectedRequest.submitterName}</p>
+                <p><strong>Amount:</strong> {completionAmount}</p>
+              </div>
+            </div>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmComplete}
+              disabled={completeMutation.isPending}
+            >
+              {completeMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processing...
+                </>
+              ) : (
+                "Confirm & Complete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sidebar>
   );
 }

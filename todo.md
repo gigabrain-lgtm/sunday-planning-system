@@ -349,3 +349,9 @@
 - [x] Create ClickUp task in personal finance list when completed
 - [x] Update original payment request status to "completed"
 - [ ] Add completion details to admin view
+
+
+## Payment Completion UX Fix
+- [x] Add confirmation dialog before marking payment as completed
+- [x] Show verification results in confirmation dialog
+- [x] Show what will happen (create ClickUp task, update status)
