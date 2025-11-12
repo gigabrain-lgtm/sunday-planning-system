@@ -20,6 +20,9 @@ export default function PaymentRequestsAdmin() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editAmount, setEditAmount] = useState("");
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [receiptImage, setReceiptImage] = useState<string | null>(null);
+  const [pendingApprovalId, setPendingApprovalId] = useState<number | null>(null);
 
   const { data: requests, isLoading, refetch } = trpc.paymentRequest.getAll.useQuery();
 
@@ -57,9 +60,56 @@ export default function PaymentRequestsAdmin() {
   });
 
   const handleApprove = (id: number) => {
-    if (confirm("Are you sure you want to approve this payment request? This will create a ClickUp task.")) {
-      approveMutation.mutate({ id });
+    setPendingApprovalId(id);
+    setReceiptImage(null);
+    setReceiptDialogOpen(true);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setReceiptImage(event.target?.result as string);
+          };
+          reader.readAsDataURL(blob);
+        }
+        break;
+      }
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setReceiptImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const confirmApproval = () => {
+    if (!receiptImage || !pendingApprovalId) {
+      toast.error("Please paste or upload a receipt image");
+      return;
+    }
+
+    approveMutation.mutate({
+      id: pendingApprovalId,
+      receiptImage,
+      receiptFileName: `receipt-${pendingApprovalId}-${Date.now()}.png`,
+    });
+
+    setReceiptDialogOpen(false);
+    setReceiptImage(null);
+    setPendingApprovalId(null);
   };
 
   const handleEdit = (request: any) => {
@@ -520,6 +570,77 @@ export default function PaymentRequestsAdmin() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Receipt Upload Dialog */}
+      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Receipt</DialogTitle>
+            <DialogDescription>
+              Paste a screenshot (Ctrl+V) or upload a receipt image
+            </DialogDescription>
+          </DialogHeader>
+          <div
+            className="border-2 border-dashed rounded-lg p-8 text-center"
+            onPaste={handlePaste}
+            tabIndex={0}
+          >
+            {receiptImage ? (
+              <div className="space-y-4">
+                <img
+                  src={receiptImage}
+                  alt="Receipt preview"
+                  className="max-w-full max-h-64 mx-auto rounded"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReceiptImage(null)}
+                >
+                  Clear
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500">
+                  Press Ctrl+V to paste or click to upload
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="receipt-upload"
+                />
+                <label htmlFor="receipt-upload">
+                  <Button variant="outline" size="sm" asChild>
+                    <span>Browse Files</span>
+                  </Button>
+                </label>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setReceiptDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmApproval}
+              disabled={!receiptImage || approveMutation.isPending}
+            >
+              {approveMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <CheckCircle className="h-4 w-4 mr-2" />
+              )}
+              Approve & Attach Receipt
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </Sidebar>

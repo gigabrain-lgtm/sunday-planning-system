@@ -1370,7 +1370,11 @@ export const appRouter = router({
       }),
 
     approve: protectedProcedure
-      .input(z.object({ id: z.number() }))
+      .input(z.object({ 
+        id: z.number(),
+        receiptImage: z.string().optional(),
+        receiptFileName: z.string().optional(),
+      }))
       .mutation(async ({ input }) => {
         const paymentRequest = await db.getPaymentRequestById(input.id);
         if (!paymentRequest) {
@@ -1384,16 +1388,16 @@ export const appRouter = router({
         // Create ClickUp task
         const CLICKUP_API_URL = "https://api.clickup.com/api/v2";
         
-        // Determine list ID and status based on payment type and amount
-        let CLICKUP_LIST_ID = "901322357018"; // Default: bookkeeping list
-        let taskStatus = null;
-        let customFields: any[] = [];
+        // Use Receipts list
+        const CLICKUP_LIST_ID = "901322363097"; // Receipts list
+        const taskStatus = null;
+        const customFields: any[] = [];
         
         // Parse amount (remove $, commas, etc.)
         const amountStr = paymentRequest.amount || "0";
         const amountValue = parseFloat(amountStr.replace(/[$,]/g, ""));
         
-        if (paymentRequest.paymentType === "credit_card" && amountValue > 1000) {
+        if (false) { // Disabled conditional logic
           // Credit cards over $1000 go to personal finance list
           CLICKUP_LIST_ID = "901305042845";
           taskStatus = "FINANCE TASKS";
@@ -1518,6 +1522,45 @@ export const appRouter = router({
           }
 
           const clickupTask = await response.json();
+          
+          // Upload receipt as attachment if provided
+          if (input.receiptImage && input.receiptFileName) {
+            try {
+              // Convert base64 to buffer
+              const base64Data = input.receiptImage.split(',')[1];
+              const buffer = Buffer.from(base64Data, 'base64');
+              
+              // Create form data
+              const FormData = (await import('form-data')).default;
+              const formData = new FormData();
+              formData.append('attachment', buffer, {
+                filename: input.receiptFileName,
+                contentType: 'image/png',
+              });
+              
+              // Upload to ClickUp
+              const attachResponse = await fetch(
+                `${CLICKUP_API_URL}/task/${clickupTask.id}/attachment`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': process.env.CLICKUP_API_KEY!,
+                    ...formData.getHeaders(),
+                  },
+                  body: formData,
+                }
+              );
+              
+              if (!attachResponse.ok) {
+                console.error('Failed to upload receipt attachment:', await attachResponse.text());
+              } else {
+                console.log('Receipt attached successfully to task:', clickupTask.id);
+              }
+            } catch (error) {
+              console.error('Error uploading receipt:', error);
+              // Don't fail the whole approval if attachment fails
+            }
+          }
           
           // Update payment request status
           const dbInstance = await db.getDb();
