@@ -285,24 +285,85 @@ export default function PaymentCompletion() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="receiptFile">
+                        <Label>
                           Receipt Upload (Optional)
                         </Label>
-                        <Input
-                          id="receiptFile"
+                        
+                        {/* Paste Area */}
+                        <div
+                          className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            const items = e.clipboardData?.items;
+                            if (!items) return;
+                            
+                            for (let i = 0; i < items.length; i++) {
+                              if (items[i].type.indexOf('image') !== -1) {
+                                const blob = items[i].getAsFile();
+                                if (blob) {
+                                  const file = new File([blob], `receipt-${Date.now()}.png`, { type: blob.type });
+                                  setReceiptFile(file);
+                                  toast.success('Receipt pasted successfully!');
+                                }
+                                break;
+                              }
+                            }
+                          }}
+                          onClick={() => document.getElementById('receiptFileInput')?.click()}
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              document.getElementById('receiptFileInput')?.click();
+                            }
+                          }}
+                        >
+                          {receiptFile ? (
+                            <div className="space-y-2">
+                              <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+                              <p className="text-sm font-medium text-green-600">
+                                ✓ {receiptFile.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Click to change or paste a new image
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-gray-400">
+                                <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-700">
+                                  Paste receipt here (Ctrl+V / Cmd+V)
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Or click to browse files
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Hidden file input */}
+                        <input
+                          id="receiptFileInput"
                           type="file"
                           accept="image/*,.pdf"
-                          onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
-                          className="cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setReceiptFile(file);
+                              toast.success('Receipt uploaded successfully!');
+                            }
+                          }}
+                          className="hidden"
                         />
+                        
                         <p className="text-xs text-gray-500">
-                          Upload a screenshot or PDF of the payment receipt
+                          Take a screenshot and paste it here, or upload an image/PDF file
                         </p>
-                        {receiptFile && (
-                          <p className="text-sm text-green-600">
-                            ✓ {receiptFile.name} selected
-                          </p>
-                        )}
                       </div>
 
                       {/* Verification Errors */}

@@ -365,3 +365,11 @@
 - [x] Store S3 URL in database
 - [ ] Display receipt in admin view (image preview or download link)
 - [x] Include receipt link in ClickUp task description
+
+
+## Clipboard Paste for Receipts
+- [x] Add paste area for receipt upload
+- [x] Handle Ctrl+V / Cmd+V paste events
+- [x] Convert pasted image to file
+- [x] Show image preview after paste
+- [x] Keep file upload option as alternative
