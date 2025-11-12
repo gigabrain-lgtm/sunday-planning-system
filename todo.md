@@ -301,3 +301,8 @@
 - [x] Display submitter name in admin review table
 - [x] Include amount in ClickUp task description
 - [x] Include submitter name in ClickUp task description
+
+
+## Bug Fix
+- [x] Investigate why submitterName is not being saved (showing "Guest" instead)
+- [x] Fix backend mutation to properly save submitterName field

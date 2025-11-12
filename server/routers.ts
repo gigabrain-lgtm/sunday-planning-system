@@ -1298,6 +1298,8 @@ export const appRouter = router({
     create: publicProcedure
       .input(z.object({
         paymentType: z.enum(["credit_card", "ach", "wire", "invoice"]),
+        submitterName: z.string(),
+        amount: z.string(),
         // Credit Card fields
         paymentLink: z.string().optional(),
         description: z.string().optional(),
