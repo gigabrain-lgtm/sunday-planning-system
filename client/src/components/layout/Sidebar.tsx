@@ -68,6 +68,11 @@ const navItems = [
     path: "/org-chart",
     icon: Building2,
   },
+  {
+    name: "Payment Requests",
+    path: "/payment-requests",
+    icon: DollarSign,
+  },
 ];
 
 const adminNavItems = [

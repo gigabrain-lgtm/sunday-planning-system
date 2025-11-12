@@ -279,9 +279,13 @@
 - [x] Ensure form works without login
 
 ### Testing & Deployment
-- [ ] Test public form submission without login
-- [ ] Test admin review page with pending requests
-- [ ] Test approval workflow and ClickUp task creation
-- [ ] Test rejection workflow
-- [ ] Commit and push changes to GitHub
+- [x] Test public form submission without login
+- [x] Test admin review page with pending requests
+- [x] Test approval workflow and ClickUp task creation
+- [x] Test rejection workflow
+- [x] Commit and push changes to GitHub
 - [ ] Verify deployment in DigitalOcean
+
+
+## Quick Fix
+- [x] Add Payment Requests link back to sidebar for easy access/copying
