@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, XCircle, ExternalLink } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, ExternalLink, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +12,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function PaymentRequestsAdmin() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editAmount, setEditAmount] = useState("");
 
   const { data: requests, isLoading, refetch } = trpc.paymentRequest.getAll.useQuery();
 
@@ -41,10 +45,35 @@ export default function PaymentRequestsAdmin() {
     },
   });
 
+  const updateMutation = trpc.paymentRequest.update.useMutation({
+    onSuccess: () => {
+      toast.success("Payment request updated");
+      refetch();
+      setEditOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update payment request");
+    },
+  });
+
   const handleApprove = (id: number) => {
     if (confirm("Are you sure you want to approve this payment request? This will create a ClickUp task.")) {
       approveMutation.mutate({ id });
     }
+  };
+
+  const handleEdit = (request: any) => {
+    setSelectedRequest(request);
+    setEditAmount(request.amount || "");
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!selectedRequest) return;
+    updateMutation.mutate({
+      id: selectedRequest.id,
+      amount: editAmount,
+    });
   };
 
   const handleReject = (id: number) => {
@@ -161,6 +190,14 @@ export default function PaymentRequestsAdmin() {
                           >
                             View Details
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(request)}
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
                           {request.status === "pending" && (
                             <>
                               <Button
@@ -249,6 +286,10 @@ export default function PaymentRequestsAdmin() {
                 <div>
                   <p className="text-sm font-medium text-gray-500">Amount</p>
                   <p className="text-sm text-gray-900 font-semibold">{selectedRequest.amount || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Email</p>
+                  <p className="text-sm text-gray-900">{selectedRequest.submitterEmail || "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Payment Type</p>
@@ -434,6 +475,49 @@ export default function PaymentRequestsAdmin() {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Payment Request</DialogTitle>
+            <DialogDescription>
+              Update the payment request details
+            </DialogDescription>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="editAmount">Amount</Label>
+                <Input
+                  id="editAmount"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  placeholder="Enter amount"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Save Changes
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

@@ -1299,6 +1299,7 @@ export const appRouter = router({
       .input(z.object({
         paymentType: z.enum(["credit_card", "ach", "wire", "invoice"]),
         submitterName: z.string(),
+        submitterEmail: z.string().email(),
         amount: z.string(),
         // Credit Card fields
         paymentLink: z.string().optional(),
@@ -1541,6 +1542,32 @@ export const appRouter = router({
           console.error("Failed to create ClickUp task:", error);
           throw new Error("Failed to create ClickUp task: " + (error as Error).message);
         }
+      }),
+
+    update: protectedProcedure
+      .input(z.object({ 
+        id: z.number(),
+        amount: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const paymentRequest = await db.getPaymentRequestById(input.id);
+        if (!paymentRequest) {
+          throw new Error("Payment request not found");
+        }
+
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new Error("Database not available");
+        }
+
+        await dbInstance
+          .update(db.paymentRequests)
+          .set({
+            amount: input.amount,
+          })
+          .where(eq(db.paymentRequests.id, input.id));
+
+        return { success: true };
       }),
 
     reject: protectedProcedure

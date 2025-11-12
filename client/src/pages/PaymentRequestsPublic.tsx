@@ -17,6 +17,7 @@ export default function PaymentRequestsPublic() {
   
   // Submitter information
   const [submitterName, setSubmitterName] = useState("");
+  const [submitterEmail, setSubmitterEmail] = useState("");
   const [amount, setAmount] = useState("");
   
   // Common fields
@@ -65,6 +66,7 @@ export default function PaymentRequestsPublic() {
 
   const resetForm = () => {
     setSubmitterName("");
+    setSubmitterEmail("");
     setAmount("");
     setDescription("");
     setDueDate("");
@@ -97,6 +99,7 @@ export default function PaymentRequestsPublic() {
     
     const baseData = {
       submitterName,
+      submitterEmail,
       amount,
       description: description || undefined,
       dueDate: dueDate || undefined,
@@ -111,6 +114,7 @@ export default function PaymentRequestsPublic() {
       createMutation.mutate({
         paymentType: "credit_card",
         submitterName,
+        submitterEmail,
         amount,
         paymentLink,
         description,
@@ -179,6 +183,18 @@ export default function PaymentRequestsPublic() {
                 placeholder="Enter your full name"
                 value={submitterName}
                 onChange={(e) => setSubmitterName(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="submitterEmail">Your Email *</Label>
+              <Input
+                id="submitterEmail"
+                type="email"
+                placeholder="your.email@example.com"
+                value={submitterEmail}
+                onChange={(e) => setSubmitterEmail(e.target.value)}
                 required
               />
             </div>

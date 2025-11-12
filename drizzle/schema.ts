@@ -348,6 +348,7 @@ export const paymentRequests = pgTable("payment_requests", {
   userId: integer("userId").notNull(),
   userName: text("userName"),
   submitterName: text("submitterName"),
+  submitterEmail: text("submitterEmail"),
   amount: text("amount"),
   paymentType: paymentTypeEnum("paymentType").notNull(),
   status: paymentStatusEnum("status").default("pending").notNull(),

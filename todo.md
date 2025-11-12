@@ -323,3 +323,14 @@
 - [x] Ensure Amount custom field is properly set
 - [x] Debug why routing to bookkeeping instead of personal finance (added logging)
 - [ ] Test with actual credit card over $1000
+
+
+## New Features - Edit and Email
+- [x] Add email field to payment_requests table
+- [x] Add email input to public form
+- [x] Create database migration for email field
+- [x] Add Edit button on admin page
+- [x] Create edit modal/form for payment requests
+- [x] Add backend mutation to update payment request
+- [x] Allow editing amount, email, and other details
+- [x] Display email in admin table and details view
