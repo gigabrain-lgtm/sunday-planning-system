@@ -32,19 +32,44 @@ export default function OrgChart() {
     
     const overrideMap = new Map(overrides.map(o => [o.id, o]));
     
+    // Collect all agencies from all departments and services
+    const allAgencies = [
+      ...orgChartData.departments.flatMap(d => d.agencies),
+      ...orgChartData.services
+    ];
+    
+    // Build new department structure with moved agencies
+    const newDepartments = orgChartData.departments.map(dept => {
+      const deptAgencies = [];
+      
+      // Add agencies that belong to this department
+      for (const agency of allAgencies) {
+        const override = overrideMap.get(agency.id);
+        const targetDept = override?.department || (orgChartData.departments.find(d => d.agencies.some(a => a.id === agency.id))?.id) || 'services';
+        
+        if (targetDept === dept.id) {
+          deptAgencies.push(override ? { ...agency, ...override } : agency);
+        }
+      }
+      
+      return { ...dept, agencies: deptAgencies };
+    });
+    
+    // Build services array
+    const newServices = [];
+    for (const agency of allAgencies) {
+      const override = overrideMap.get(agency.id);
+      const targetDept = override?.department || (orgChartData.departments.find(d => d.agencies.some(a => a.id === agency.id))?.id) || 'services';
+      
+      if (targetDept === 'services') {
+        newServices.push(override ? { ...agency, ...override } : agency);
+      }
+    }
+    
     return {
       ...orgChartData,
-      departments: orgChartData.departments.map(dept => ({
-        ...dept,
-        agencies: dept.agencies.map(agency => {
-          const override = overrideMap.get(agency.id);
-          return override ? { ...agency, ...override } : agency;
-        }),
-      })),
-      services: orgChartData.services.map(service => {
-        const override = overrideMap.get(service.id);
-        return override ? { ...service, ...override } : service;
-      }),
+      departments: newDepartments,
+      services: newServices,
     };
   }, [overrides]);
 
