@@ -314,4 +314,12 @@
 - [x] Set status to "FINANCE TASKS" for credit cards over $1000
 - [x] Add Amount custom field to ClickUp tasks
 - [x] Keep ACH/Wire transfers routing to bookkeeping list (901322357018)
-- [ ] Test amount parsing and routing logic
+- [x] Test amount parsing and routing logic
+
+
+## Bug Fixes - ClickUp Integration
+- [x] Fix list ID for credit cards over $1000 (should be 901305042845, not using full URL)
+- [x] Add Payment Link to custom fields for credit cards
+- [x] Ensure Amount custom field is properly set
+- [x] Debug why routing to bookkeeping instead of personal finance (added logging)
+- [ ] Test with actual credit card over $1000

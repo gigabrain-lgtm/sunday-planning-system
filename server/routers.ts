@@ -1397,7 +1397,9 @@ export const appRouter = router({
           CLICKUP_LIST_ID = "901305042845";
           taskStatus = "FINANCE TASKS";
           
-          // Fetch custom fields for this list to find the Amount field ID
+          console.log(`[ClickUp] Credit card over $1000 detected. Amount: ${amountValue}, List: ${CLICKUP_LIST_ID}`);
+          
+          // Fetch custom fields for this list to find the Amount and Payment Link field IDs
           try {
             const fieldsResponse = await fetch(
               `${CLICKUP_API_URL}/list/${CLICKUP_LIST_ID}/field`,
@@ -1410,21 +1412,46 @@ export const appRouter = router({
             
             if (fieldsResponse.ok) {
               const fieldsData = await fieldsResponse.json();
+              console.log(`[ClickUp] Custom fields fetched:`, JSON.stringify(fieldsData, null, 2));
+              
+              // Find Amount field
               const amountField = fieldsData.fields?.find((f: any) => 
-                f.name.toLowerCase() === "amount" || f.name.toLowerCase().includes("amount")
+                f.name.toLowerCase() === "amount"
+              );
+              
+              // Find Payment Link field
+              const paymentLinkField = fieldsData.fields?.find((f: any) => 
+                f.name.toLowerCase() === "payment link" || f.name.toLowerCase().includes("payment")
               );
               
               if (amountField) {
+                console.log(`[ClickUp] Found Amount field:`, amountField.id);
                 customFields.push({
                   id: amountField.id,
                   value: amountValue
                 });
+              } else {
+                console.log(`[ClickUp] Amount field not found`);
               }
+              
+              if (paymentLinkField && paymentRequest.paymentLink) {
+                console.log(`[ClickUp] Found Payment Link field:`, paymentLinkField.id);
+                customFields.push({
+                  id: paymentLinkField.id,
+                  value: paymentRequest.paymentLink
+                });
+              } else {
+                console.log(`[ClickUp] Payment Link field not found or no payment link provided`);
+              }
+            } else {
+              console.error(`[ClickUp] Failed to fetch custom fields:`, await fieldsResponse.text());
             }
           } catch (error) {
-            console.error("Failed to fetch custom fields:", error);
+            console.error("[ClickUp] Failed to fetch custom fields:", error);
             // Continue without custom field if fetch fails
           }
+        } else {
+          console.log(`[ClickUp] Routing to bookkeeping. Type: ${paymentRequest.paymentType}, Amount: ${amountValue}`);
         }
         
         // Format payment details based on type
@@ -1461,6 +1488,16 @@ export const appRouter = router({
           taskDescription += `**Invoice Email:** ${paymentRequest.invoiceEmail}\n`;
         }
 
+        const taskPayload = {
+          name: `Payment Request #${paymentRequest.id} - ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}`,
+          description: taskDescription,
+          priority: 3,
+          status: taskStatus,
+          custom_fields: customFields.length > 0 ? customFields : undefined,
+        };
+        
+        console.log(`[ClickUp] Creating task in list ${CLICKUP_LIST_ID}:`, JSON.stringify(taskPayload, null, 2));
+        
         try {
           const response = await fetch(
             `${CLICKUP_API_URL}/list/${CLICKUP_LIST_ID}/task`,
@@ -1470,13 +1507,7 @@ export const appRouter = router({
                 "Authorization": process.env.CLICKUP_API_KEY!,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                name: `Payment Request #${paymentRequest.id} - ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}`,
-                description: taskDescription,
-                priority: 3,
-                status: taskStatus,
-                custom_fields: customFields.length > 0 ? customFields : undefined,
-              }),
+              body: JSON.stringify(taskPayload),
             }
           );
 
