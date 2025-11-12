@@ -68,9 +68,12 @@ const navItems = [
     path: "/org-chart",
     icon: Building2,
   },
+];
+
+const adminNavItems = [
   {
-    name: "Payment Requests",
-    path: "/payment-requests",
+    name: "Payment Requests Admin",
+    path: "/payment-requests-admin",
     icon: DollarSign,
   },
 ];
@@ -116,6 +119,37 @@ export function Sidebar({ children }: SidebarProps) {
               );
             })}
           </ul>
+          
+          {/* Admin Section */}
+          <div className="mt-8">
+            <div className="px-4 mb-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase">Admin</span>
+            </div>
+            <ul className="space-y-2">
+              {adminNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.path;
+                
+                return (
+                  <li key={item.path}>
+                    <Link href={item.path}>
+                      <a
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                          isActive
+                            ? "bg-white text-black"
+                            : "text-gray-300 hover:bg-gray-900 hover:text-white"
+                        )}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="font-medium">{item.name}</span>
+                      </a>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </nav>
 
         {/* Logout */}

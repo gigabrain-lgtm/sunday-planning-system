@@ -237,9 +237,51 @@
 - [ ] Create payment request detail view
 
 ### Testing & Deployment
-- [ ] Test locally with development database
-- [ ] Test all payment type forms (credit card, ACH, wire, invoice)
-- [ ] Test form validation and confirmation checkboxes
-- [ ] Commit and push to main branch
+- [x] Test locally with development database
+- [x] Test all payment type forms (credit card, ACH, wire, invoice)
+- [x] Test form validation and confirmation checkboxes
+- [x] Commit changes to main branch
+- [x] Push to GitHub (requires user authentication)
 - [ ] Verify deployment in Digital Ocean
 - [ ] Test in production environment
+
+
+## Payment Request System Enhancements
+
+### Database Updates
+- [x] Add status field to payment_requests table (pending, approved, rejected)
+- [x] Add clickup_task_id field to track created tasks
+- [x] Add approved_at timestamp field
+- [x] Create migration file for new fields
+
+### Admin Review Page
+- [x] Create PaymentRequestsAdmin.tsx page component
+- [x] Display all payment requests in a table/list format
+- [x] Show payment type, submitter, date, and status
+- [x] Add "Approve" button for each pending request
+- [x] Add "Reject" button for each pending request
+- [x] Show payment details in expandable/modal view
+- [x] Add route to App.tsx for /payment-requests-admin
+- [x] Add sidebar menu item for admin page (protected route)
+
+### ClickUp Integration
+- [x] Add backend mutation to create ClickUp task on approval
+- [x] Format payment details into ClickUp task description
+- [x] Use list ID: 901322357018
+- [x] Update payment request status after ClickUp task creation
+- [x] Store ClickUp task ID in database
+- [x] Handle ClickUp API errors gracefully
+
+### Public Submission Form
+- [x] Make /payment-requests route public (no authentication required)
+- [x] Update PaymentRequests.tsx to remove Sidebar wrapper
+- [x] Add simple header/branding to public form
+- [x] Ensure form works without login
+
+### Testing & Deployment
+- [ ] Test public form submission without login
+- [ ] Test admin review page with pending requests
+- [ ] Test approval workflow and ClickUp task creation
+- [ ] Test rejection workflow
+- [ ] Commit and push changes to GitHub
+- [ ] Verify deployment in DigitalOcean

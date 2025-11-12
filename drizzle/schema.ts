@@ -341,12 +341,16 @@ export type InsertAgency = typeof agencies.$inferInsert;
  */
 export const paymentTypeEnum = pgEnum("payment_type", ["credit_card", "ach", "wire", "invoice"]);
 export const accountTypeEnum = pgEnum("account_type", ["checking", "savings"]);
+export const paymentStatusEnum = pgEnum("payment_status", ["pending", "approved", "rejected"]);
 
 export const paymentRequests = pgTable("payment_requests", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: integer("userId").notNull(),
   userName: text("userName"),
   paymentType: paymentTypeEnum("paymentType").notNull(),
+  status: paymentStatusEnum("status").default("pending").notNull(),
+  clickupTaskId: text("clickupTaskId"),
+  approvedAt: timestamp("approvedAt"),
   
   // Credit Card fields
   paymentLink: text("paymentLink"),
@@ -384,3 +388,4 @@ export const paymentRequests = pgTable("payment_requests", {
 
 export type PaymentRequest = typeof paymentRequests.$inferSelect;
 export type InsertPaymentRequest = typeof paymentRequests.$inferInsert;
+export type PaymentStatus = "pending" | "approved" | "rejected";

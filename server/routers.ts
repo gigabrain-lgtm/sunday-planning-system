@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import * as db from "./db";
 import { saveManifestationToAirtable, getLatestManifestation as getLatestManifestationFromAirtable } from "./airtable";
 import { postDailyManifestationToSlack } from "./slack";
@@ -1363,6 +1364,129 @@ export const appRouter = router({
       .input(z.object({ userId: z.number() }))
       .query(async ({ input }) => {
         return await db.getPaymentRequestsByUserId(input.userId);
+      }),
+
+    approve: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const paymentRequest = await db.getPaymentRequestById(input.id);
+        if (!paymentRequest) {
+          throw new Error("Payment request not found");
+        }
+
+        if (paymentRequest.status !== "pending") {
+          throw new Error("Payment request is not pending");
+        }
+
+        // Create ClickUp task
+        const CLICKUP_LIST_ID = "901322357018";
+        const CLICKUP_API_URL = "https://api.clickup.com/api/v2";
+        
+        // Format payment details based on type
+        let taskDescription = `Payment Request #${paymentRequest.id}\n\n`;
+        taskDescription += `**Submitted by:** ${paymentRequest.userName || "Guest"}\n`;
+        taskDescription += `**Payment Type:** ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}\n\n`;
+        
+        if (paymentRequest.paymentType === "credit_card") {
+          taskDescription += `**Payment Link:** ${paymentRequest.paymentLink}\n`;
+          if (paymentRequest.description) taskDescription += `**Description:** ${paymentRequest.description}\n`;
+          if (paymentRequest.dueDate) taskDescription += `**Due Date:** ${paymentRequest.dueDate}\n`;
+          if (paymentRequest.serviceStartDate) taskDescription += `**Service Start Date:** ${paymentRequest.serviceStartDate}\n`;
+        } else if (paymentRequest.paymentType === "ach") {
+          taskDescription += `**Bank Name:** ${paymentRequest.achBankName}\n`;
+          taskDescription += `**Bank Address:** ${paymentRequest.achBankAddress}\n`;
+          taskDescription += `**Routing Number:** ${paymentRequest.achRoutingNumber}\n`;
+          taskDescription += `**Account Number:** ${paymentRequest.achAccountNumber}\n`;
+          taskDescription += `**Account Type:** ${paymentRequest.achAccountType}\n`;
+          taskDescription += `**Account Holder:** ${paymentRequest.achAccountHolderName}\n`;
+        } else if (paymentRequest.paymentType === "wire") {
+          taskDescription += `**Bank Name:** ${paymentRequest.wireBankName}\n`;
+          taskDescription += `**Bank Address:** ${paymentRequest.wireBankAddress}\n`;
+          taskDescription += `**SWIFT/BIC:** ${paymentRequest.wireSwiftBic}\n`;
+          taskDescription += `**Routing Number:** ${paymentRequest.wireRoutingNumber}\n`;
+          taskDescription += `**Account Number:** ${paymentRequest.wireAccountNumber}\n`;
+          taskDescription += `**Account Type:** ${paymentRequest.wireAccountType}\n`;
+          taskDescription += `**Beneficiary Name:** ${paymentRequest.wireBeneficiaryName}\n`;
+          taskDescription += `**Beneficiary Address:** ${paymentRequest.wireBeneficiaryAddress}\n`;
+          taskDescription += `**Country:** ${paymentRequest.wireCountry}\n`;
+          if (paymentRequest.wireIban) taskDescription += `**IBAN:** ${paymentRequest.wireIban}\n`;
+        } else if (paymentRequest.paymentType === "invoice") {
+          taskDescription += `**Invoice URL:** ${paymentRequest.invoiceUrl}\n`;
+          taskDescription += `**Invoice Email:** ${paymentRequest.invoiceEmail}\n`;
+        }
+
+        try {
+          const response = await fetch(
+            `${CLICKUP_API_URL}/list/${CLICKUP_LIST_ID}/task`,
+            {
+              method: "POST",
+              headers: {
+                "Authorization": process.env.CLICKUP_API_KEY!,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: `Payment Request #${paymentRequest.id} - ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}`,
+                description: taskDescription,
+                priority: 3,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`ClickUp API error: ${errorText}`);
+          }
+
+          const clickupTask = await response.json();
+          
+          // Update payment request status
+          const dbInstance = await db.getDb();
+          if (!dbInstance) {
+            throw new Error("Database not available");
+          }
+
+          await dbInstance
+            .update(db.paymentRequests)
+            .set({
+              status: "approved",
+              clickupTaskId: clickupTask.id,
+              approvedAt: new Date(),
+            })
+            .where(eq(db.paymentRequests.id, input.id));
+
+          return {
+            success: true,
+            clickupTaskId: clickupTask.id,
+          };
+        } catch (error) {
+          console.error("Failed to create ClickUp task:", error);
+          throw new Error("Failed to create ClickUp task: " + (error as Error).message);
+        }
+      }),
+
+    reject: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const paymentRequest = await db.getPaymentRequestById(input.id);
+        if (!paymentRequest) {
+          throw new Error("Payment request not found");
+        }
+
+        if (paymentRequest.status !== "pending") {
+          throw new Error("Payment request is not pending");
+        }
+
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new Error("Database not available");
+        }
+
+        await dbInstance
+          .update(db.paymentRequests)
+          .set({ status: "rejected" })
+          .where(eq(db.paymentRequests.id, input.id));
+
+        return { success: true };
       }),
   }),
 

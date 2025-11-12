@@ -3,6 +3,9 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
 import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency, paymentRequests, InsertPaymentRequest, PaymentRequest } from "../drizzle/schema";
+
+// Re-export paymentRequests for use in routers
+export { paymentRequests };
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
