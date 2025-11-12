@@ -116,6 +116,9 @@ export default function PaymentRequestsAdmin() {
                         Submitter
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Amount
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Payment Type
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -136,7 +139,10 @@ export default function PaymentRequestsAdmin() {
                           #{request.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {request.userName || "Guest"}
+                          {request.submitterName || request.userName || "Guest"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                          {request.amount || "N/A"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatPaymentType(request.paymentType)}
@@ -238,7 +244,11 @@ export default function PaymentRequestsAdmin() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Submitter</p>
-                  <p className="text-sm text-gray-900">{selectedRequest.userName || "Guest"}</p>
+                  <p className="text-sm text-gray-900">{selectedRequest.submitterName || selectedRequest.userName || "Guest"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Amount</p>
+                  <p className="text-sm text-gray-900 font-semibold">{selectedRequest.amount || "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Payment Type</p>

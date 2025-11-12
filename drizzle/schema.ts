@@ -347,6 +347,8 @@ export const paymentRequests = pgTable("payment_requests", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: integer("userId").notNull(),
   userName: text("userName"),
+  submitterName: text("submitterName"),
+  amount: text("amount"),
   paymentType: paymentTypeEnum("paymentType").notNull(),
   status: paymentStatusEnum("status").default("pending").notNull(),
   clickupTaskId: text("clickupTaskId"),

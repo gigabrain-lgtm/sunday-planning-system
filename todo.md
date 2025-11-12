@@ -289,3 +289,15 @@
 
 ## Quick Fix
 - [x] Add Payment Requests link back to sidebar for easy access/copying
+
+
+## New Feature Requests
+- [x] Add amount field to payment_requests table
+- [x] Add submitterName field to payment_requests table
+- [x] Update database migration to add new fields
+- [x] Add amount input field to public form (all payment types)
+- [x] Add submitter name input field to public form
+- [x] Display amount in admin review table
+- [x] Display submitter name in admin review table
+- [x] Include amount in ClickUp task description
+- [x] Include submitter name in ClickUp task description

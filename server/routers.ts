@@ -1384,7 +1384,8 @@ export const appRouter = router({
         
         // Format payment details based on type
         let taskDescription = `Payment Request #${paymentRequest.id}\n\n`;
-        taskDescription += `**Submitted by:** ${paymentRequest.userName || "Guest"}\n`;
+        taskDescription += `**Submitted by:** ${paymentRequest.submitterName || paymentRequest.userName || "Guest"}\n`;
+        taskDescription += `**Amount:** ${paymentRequest.amount || "N/A"}\n`;
         taskDescription += `**Payment Type:** ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}\n\n`;
         
         if (paymentRequest.paymentType === "credit_card") {

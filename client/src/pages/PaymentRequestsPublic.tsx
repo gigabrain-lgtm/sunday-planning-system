@@ -15,6 +15,10 @@ type AccountType = "checking" | "savings";
 export default function PaymentRequestsPublic() {
   const [paymentType, setPaymentType] = useState<PaymentType>("credit_card");
   
+  // Submitter information
+  const [submitterName, setSubmitterName] = useState("");
+  const [amount, setAmount] = useState("");
+  
   // Common fields
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -60,6 +64,8 @@ export default function PaymentRequestsPublic() {
   });
 
   const resetForm = () => {
+    setSubmitterName("");
+    setAmount("");
     setDescription("");
     setDueDate("");
     setServiceStartDate("");
@@ -90,6 +96,8 @@ export default function PaymentRequestsPublic() {
     e.preventDefault();
     
     const baseData = {
+      submitterName,
+      amount,
       description: description || undefined,
       dueDate: dueDate || undefined,
       serviceStartDate: serviceStartDate || undefined,
@@ -102,6 +110,8 @@ export default function PaymentRequestsPublic() {
       }
       createMutation.mutate({
         paymentType: "credit_card",
+        submitterName,
+        amount,
         paymentLink,
         description,
         dueDate,
@@ -161,6 +171,30 @@ export default function PaymentRequestsPublic() {
       <div className="container mx-auto p-8 max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-lg shadow-sm border">
           <div className="space-y-4">
+            {/* Submitter Information */}
+            <div className="space-y-2">
+              <Label htmlFor="submitterName">Your Full Name *</Label>
+              <Input
+                id="submitterName"
+                placeholder="Enter your full name"
+                value={submitterName}
+                onChange={(e) => setSubmitterName(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="amount">Invoice Amount *</Label>
+              <Input
+                id="amount"
+                type="text"
+                placeholder="$0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="paymentType">Payment Type</Label>
               <Select value={paymentType} onValueChange={(value) => setPaymentType(value as PaymentType)}>
