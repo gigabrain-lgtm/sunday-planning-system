@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { orgChartData, getSubmissionLink } from "@/data/orgChart";
-import { Building2, Users, Copy, CheckCircle, ExternalLink, Edit2, Save, X } from "lucide-react";
+import { Building2, Users, Copy, CheckCircle, ExternalLink, Edit2, Save, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -15,6 +15,13 @@ export default function OrgChart() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingAgency, setEditingAgency] = useState<{id: string, name: string, slackChannelId: string, department: string} | null>(null);
   const [editingDepartment, setEditingDepartment] = useState<{id: string, name: string} | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newAgency, setNewAgency] = useState({
+    id: '',
+    name: '',
+    slackChannelId: '',
+    department: '',
+  });
   
   // Fetch agency overrides from database
   const { data: overrides } = trpc.dashboard.getAgencyOverrides.useQuery();
@@ -91,11 +98,17 @@ export default function OrgChart() {
         <div className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight">Agencies</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage agency partners, submission links, and Slack channels
-              </p>
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Agencies</h1>
+                <p className="text-muted-foreground mt-1">
+                  Manage agency partners, submission links, and Slack channels
+                </p>
+              </div>
+              <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Add Agency
+              </Button>
             </div>
 
             {/* CEO Card */}
@@ -384,6 +397,84 @@ export default function OrgChart() {
             }}>
               <Save className="w-4 h-4 mr-2" />
               Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Agency Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Agency</DialogTitle>
+            <DialogDescription>
+              Create a new agency with name, department, and Slack channel.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Agency ID</Label>
+              <Input
+                value={newAgency.id}
+                onChange={(e) => setNewAgency({...newAgency, id: e.target.value})}
+                placeholder="e.g., new-agency (lowercase, no spaces)"
+              />
+            </div>
+            <div>
+              <Label>Agency Name</Label>
+              <Input
+                value={newAgency.name}
+                onChange={(e) => setNewAgency({...newAgency, name: e.target.value})}
+                placeholder="e.g., New Agency"
+              />
+            </div>
+            <div>
+              <Label>Department</Label>
+              <Select
+                value={newAgency.department}
+                onValueChange={(value) => setNewAgency({...newAgency, department: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mergedOrgChartData.departments.map((dept) => (
+                    <SelectItem key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="services">Services</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Slack Channel ID (Optional)</Label>
+              <Input
+                value={newAgency.slackChannelId}
+                onChange={(e) => setNewAgency({...newAgency, slackChannelId: e.target.value})}
+                placeholder="e.g., C09Q0RUN0Q0"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsAddDialogOpen(false);
+              setNewAgency({ id: '', name: '', slackChannelId: '', department: '' });
+            }}>
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={async () => {
+              if (!newAgency.id || !newAgency.name || !newAgency.department) {
+                toast.error("Please fill in Agency ID, Name, and Department");
+                return;
+              }
+              await updateMutation.mutateAsync(newAgency);
+              setIsAddDialogOpen(false);
+              setNewAgency({ id: '', name: '', slackChannelId: '', department: '' });
+            }}>
+              <Save className="w-4 h-4 mr-2" />
+              Add Agency
             </Button>
           </DialogFooter>
         </DialogContent>
