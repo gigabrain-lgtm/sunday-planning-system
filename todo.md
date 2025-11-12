@@ -306,3 +306,12 @@
 ## Bug Fix
 - [x] Investigate why submitterName is not being saved (showing "Guest" instead)
 - [x] Fix backend mutation to properly save submitterName field
+
+
+## ClickUp Routing Updates
+- [x] Parse amount field to determine if credit card is over $1000
+- [x] Route credit cards over $1000 to personal finance list (6-901305042845-1)
+- [x] Set status to "FINANCE TASKS" for credit cards over $1000
+- [x] Add Amount custom field to ClickUp tasks
+- [x] Keep ACH/Wire transfers routing to bookkeeping list (901322357018)
+- [ ] Test amount parsing and routing logic

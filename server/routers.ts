@@ -1381,8 +1381,51 @@ export const appRouter = router({
         }
 
         // Create ClickUp task
-        const CLICKUP_LIST_ID = "901322357018";
         const CLICKUP_API_URL = "https://api.clickup.com/api/v2";
+        
+        // Determine list ID and status based on payment type and amount
+        let CLICKUP_LIST_ID = "901322357018"; // Default: bookkeeping list
+        let taskStatus = null;
+        let customFields: any[] = [];
+        
+        // Parse amount (remove $, commas, etc.)
+        const amountStr = paymentRequest.amount || "0";
+        const amountValue = parseFloat(amountStr.replace(/[$,]/g, ""));
+        
+        if (paymentRequest.paymentType === "credit_card" && amountValue > 1000) {
+          // Credit cards over $1000 go to personal finance list
+          CLICKUP_LIST_ID = "901305042845";
+          taskStatus = "FINANCE TASKS";
+          
+          // Fetch custom fields for this list to find the Amount field ID
+          try {
+            const fieldsResponse = await fetch(
+              `${CLICKUP_API_URL}/list/${CLICKUP_LIST_ID}/field`,
+              {
+                headers: {
+                  "Authorization": process.env.CLICKUP_API_KEY!,
+                },
+              }
+            );
+            
+            if (fieldsResponse.ok) {
+              const fieldsData = await fieldsResponse.json();
+              const amountField = fieldsData.fields?.find((f: any) => 
+                f.name.toLowerCase() === "amount" || f.name.toLowerCase().includes("amount")
+              );
+              
+              if (amountField) {
+                customFields.push({
+                  id: amountField.id,
+                  value: amountValue
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Failed to fetch custom fields:", error);
+            // Continue without custom field if fetch fails
+          }
+        }
         
         // Format payment details based on type
         let taskDescription = `Payment Request #${paymentRequest.id}\n\n`;
@@ -1431,6 +1474,8 @@ export const appRouter = router({
                 name: `Payment Request #${paymentRequest.id} - ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}`,
                 description: taskDescription,
                 priority: 3,
+                status: taskStatus,
+                custom_fields: customFields.length > 0 ? customFields : undefined,
               }),
             }
           );
