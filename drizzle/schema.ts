@@ -334,3 +334,53 @@ export const agencies = pgTable("agencies", {
 
 export type Agency = typeof agencies.$inferSelect;
 export type InsertAgency = typeof agencies.$inferInsert;
+
+/**
+ * Payment Requests
+ * Stores payment information for different payment types (credit card, ACH, wire, invoice)
+ */
+export const paymentTypeEnum = pgEnum("payment_type", ["credit_card", "ach", "wire", "invoice"]);
+export const accountTypeEnum = pgEnum("account_type", ["checking", "savings"]);
+
+export const paymentRequests = pgTable("payment_requests", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
+  userName: text("userName"),
+  paymentType: paymentTypeEnum("paymentType").notNull(),
+  
+  // Credit Card fields
+  paymentLink: text("paymentLink"),
+  description: text("description"),
+  dueDate: varchar("dueDate", { length: 50 }),
+  serviceStartDate: varchar("serviceStartDate", { length: 50 }),
+  
+  // ACH fields
+  achBankName: text("achBankName"),
+  achBankAddress: text("achBankAddress"),
+  achRoutingNumber: varchar("achRoutingNumber", { length: 50 }),
+  achAccountNumber: varchar("achAccountNumber", { length: 50 }),
+  achAccountType: accountTypeEnum("achAccountType"),
+  achAccountHolderName: text("achAccountHolderName"),
+  
+  // Wire fields
+  wireBankName: text("wireBankName"),
+  wireBankAddress: text("wireBankAddress"),
+  wireSwiftBic: varchar("wireSwiftBic", { length: 50 }),
+  wireRoutingNumber: varchar("wireRoutingNumber", { length: 50 }),
+  wireAccountNumber: varchar("wireAccountNumber", { length: 50 }),
+  wireAccountType: accountTypeEnum("wireAccountType"),
+  wireBeneficiaryName: text("wireBeneficiaryName"),
+  wireBeneficiaryAddress: text("wireBeneficiaryAddress"),
+  wireCountry: text("wireCountry"),
+  wireIban: varchar("wireIban", { length: 100 }),
+  
+  // Invoice fields
+  invoiceUrl: text("invoiceUrl"),
+  invoiceEmail: varchar("invoiceEmail", { length: 320 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type PaymentRequest = typeof paymentRequests.$inferSelect;
+export type InsertPaymentRequest = typeof paymentRequests.$inferInsert;

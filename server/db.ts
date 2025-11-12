@@ -2,7 +2,7 @@ import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency, paymentRequests, InsertPaymentRequest, PaymentRequest } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -545,4 +545,47 @@ export async function getAgencyOverride(agencyId: string): Promise<Agency | unde
     console.error("[Database] Failed to get agency:", error);
     return undefined;
   }
+}
+
+
+// Payment Request queries
+export async function createPaymentRequest(data: InsertPaymentRequest): Promise<PaymentRequest> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Cannot create payment request: database not available");
+  }
+
+  const result = await db.insert(paymentRequests).values(data).returning();
+  return result[0];
+}
+
+export async function getAllPaymentRequests(): Promise<PaymentRequest[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get payment requests: database not available");
+    return [];
+  }
+
+  return await db.select().from(paymentRequests).orderBy(desc(paymentRequests.createdAt));
+}
+
+export async function getPaymentRequestById(id: number): Promise<PaymentRequest | undefined> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get payment request: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(paymentRequests).where(eq(paymentRequests.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getPaymentRequestsByUserId(userId: number): Promise<PaymentRequest[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get payment requests: database not available");
+    return [];
+  }
+
+  return await db.select().from(paymentRequests).where(eq(paymentRequests.userId, userId)).orderBy(desc(paymentRequests.createdAt));
 }

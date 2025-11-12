@@ -212,3 +212,34 @@
 - [ ] Fix React hydration error: "button cannot be a descendant of button" in TaskCategorizationReview
 - [ ] Fix ClickUp API error: SHARD_006 "Not found" error
 
+
+
+## Payment Request System Integration
+
+### Database Schema
+- [x] Add payment_requests table to drizzle/schema.ts with all payment type fields
+- [x] Create migration SQL file for payment_requests table
+- [x] Test database connection with PostgreSQL
+
+### Backend Implementation
+- [x] Add database helper functions in server/db.ts for payment requests
+- [x] Add tRPC endpoints in server/routers.ts for payment requests
+- [x] Add payment type validation (credit_card, ach, wire, invoice)
+- [x] Add owner notification when new payment request is submitted
+
+### Frontend Implementation
+- [x] Create PaymentRequests.tsx page component
+- [x] Add route to App.tsx for /payment-requests
+- [x] Add sidebar menu item in Sidebar.tsx with DollarSign icon
+- [x] Create payment request form with dynamic fields based on payment type
+- [x] Add confirmation checkboxes for credit card and invoice types
+- [ ] Create payment requests list view
+- [ ] Create payment request detail view
+
+### Testing & Deployment
+- [ ] Test locally with development database
+- [ ] Test all payment type forms (credit card, ACH, wire, invoice)
+- [ ] Test form validation and confirmation checkboxes
+- [ ] Commit and push to main branch
+- [ ] Verify deployment in Digital Ocean
+- [ ] Test in production environment

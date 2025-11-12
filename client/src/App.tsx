@@ -21,6 +21,7 @@ import A3Template from "./pages/A3Template";
 import ExternalSubmissions from "./pages/ExternalSubmissions";
 import OrgChart from "./pages/OrgChart";
 import TestCustomFields from "./pages/TestCustomFields";
+import PaymentRequests from "./pages/PaymentRequests";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
       {/* Public route - no authentication required */}
       <Route path={"/submissions"} component={ExternalSubmissions} />
       <Route path={"/test-custom-fields"} component={TestCustomFields} />
+      <Route path={"/payment-requests"} component={PaymentRequests} />
       
       {/* Protected routes - require authentication */}
       <Route path={"/"}>

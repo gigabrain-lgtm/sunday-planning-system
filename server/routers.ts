@@ -1293,6 +1293,79 @@ export const appRouter = router({
       }),
   }),
 
+  paymentRequest: router({
+    create: publicProcedure
+      .input(z.object({
+        paymentType: z.enum(["credit_card", "ach", "wire", "invoice"]),
+        // Credit Card fields
+        paymentLink: z.string().optional(),
+        description: z.string().optional(),
+        dueDate: z.string().optional(),
+        serviceStartDate: z.string().optional(),
+        // ACH fields
+        achBankName: z.string().optional(),
+        achBankAddress: z.string().optional(),
+        achRoutingNumber: z.string().optional(),
+        achAccountNumber: z.string().optional(),
+        achAccountType: z.enum(["checking", "savings"]).optional(),
+        achAccountHolderName: z.string().optional(),
+        // Wire fields
+        wireBankName: z.string().optional(),
+        wireBankAddress: z.string().optional(),
+        wireSwiftBic: z.string().optional(),
+        wireRoutingNumber: z.string().optional(),
+        wireAccountNumber: z.string().optional(),
+        wireAccountType: z.enum(["checking", "savings"]).optional(),
+        wireBeneficiaryName: z.string().optional(),
+        wireBeneficiaryAddress: z.string().optional(),
+        wireCountry: z.string().optional(),
+        wireIban: z.string().optional(),
+        // Invoice fields
+        invoiceUrl: z.string().optional(),
+        invoiceEmail: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const userId = ctx.user?.id || 0;
+        const userName = ctx.user?.name || "Guest";
+        
+        const paymentRequest = await db.createPaymentRequest({
+          userId,
+          userName,
+          ...input,
+        });
+
+        // Send notification to owner (optional)
+        try {
+          const { notifyOwner } = await import("./_core/notification");
+          await notifyOwner({
+            title: "New Payment Request Submitted",
+            content: `${userName} submitted a new ${input.paymentType.replace('_', ' ')} payment request.`,
+          });
+        } catch (error) {
+          console.error("Failed to send owner notification:", error);
+        }
+
+        return paymentRequest;
+      }),
+
+    getAll: publicProcedure
+      .query(async () => {
+        return await db.getAllPaymentRequests();
+      }),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getPaymentRequestById(input.id);
+      }),
+
+    getByUser: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getPaymentRequestsByUserId(input.userId);
+      }),
+  }),
+
 });
 
 export type AppRouter = typeof appRouter;
