@@ -31,6 +31,8 @@ export default function PaymentCompletion() {
   const [completionAmount, setCompletionAmount] = useState("");
   const [verificationErrors, setVerificationErrors] = useState<string[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
 
   const { data: approvedRequests, isLoading, refetch } = trpc.paymentRequest.getApprovedForCompletion.useQuery();
 
@@ -50,6 +52,7 @@ export default function PaymentCompletion() {
     setCompletionPaymentLink("");
     setCompletionAmount("");
     setVerificationErrors([]);
+    setReceiptFile(null);
   };
 
   const handleSelectRequest = (request: any) => {
@@ -57,6 +60,7 @@ export default function PaymentCompletion() {
     setCompletionPaymentLink("");
     setCompletionAmount("");
     setVerificationErrors([]);
+    setReceiptFile(null);
   };
 
   const verifyAndSubmit = () => {
@@ -104,13 +108,44 @@ export default function PaymentCompletion() {
     setShowConfirmDialog(true);
   };
 
-  const handleConfirmComplete = () => {
+  const handleConfirmComplete = async () => {
     if (!selectedRequestId) return;
+    
+    let receiptUrl = "";
+    
+    // Upload receipt to S3 if provided
+    if (receiptFile) {
+      setUploadingReceipt(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', receiptFile);
+        
+        const uploadResponse = await fetch('/api/upload-receipt', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (uploadResponse.ok) {
+          const data = await uploadResponse.json();
+          receiptUrl = data.url;
+        } else {
+          toast.error('Failed to upload receipt');
+          setUploadingReceipt(false);
+          return;
+        }
+      } catch (error) {
+        toast.error('Error uploading receipt');
+        setUploadingReceipt(false);
+        return;
+      }
+      setUploadingReceipt(false);
+    }
     
     completeMutation.mutate({
       id: selectedRequestId,
       completionPaymentLink,
       completionAmount,
+      receiptUrl,
     });
     setShowConfirmDialog(false);
   };
@@ -247,6 +282,27 @@ export default function PaymentCompletion() {
                         <p className="text-xs text-gray-500">
                           Must match requested amount (within 1%)
                         </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="receiptFile">
+                          Receipt Upload (Optional)
+                        </Label>
+                        <Input
+                          id="receiptFile"
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                          className="cursor-pointer"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Upload a screenshot or PDF of the payment receipt
+                        </p>
+                        {receiptFile && (
+                          <p className="text-sm text-green-600">
+                            ✓ {receiptFile.name} selected
+                          </p>
+                        )}
                       </div>
 
                       {/* Verification Errors */}

@@ -355,3 +355,13 @@
 - [x] Add confirmation dialog before marking payment as completed
 - [x] Show verification results in confirmation dialog
 - [x] Show what will happen (create ClickUp task, update status)
+
+
+## Receipt Upload Feature
+- [x] Add receiptUrl field to payment_requests table
+- [x] Create database migration for receiptUrl
+- [x] Add file upload input to payment completion form
+- [x] Upload receipt to S3 when completing payment
+- [x] Store S3 URL in database
+- [ ] Display receipt in admin view (image preview or download link)
+- [x] Include receipt link in ClickUp task description

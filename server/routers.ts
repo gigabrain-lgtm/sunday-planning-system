@@ -1634,6 +1634,7 @@ export const appRouter = router({
         id: z.number(),
         completionPaymentLink: z.string(),
         completionAmount: z.string(),
+        receiptUrl: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const paymentRequest = await db.getPaymentRequestById(input.id);
@@ -1661,6 +1662,7 @@ export const appRouter = router({
           `**Paid Amount:** ${input.completionAmount}\n` +
           `**Payment Type:** ${paymentRequest.paymentType.replace(/_/g, " ").toUpperCase()}\n` +
           `**Payment Confirmation:** ${input.completionPaymentLink}\n` +
+          (input.receiptUrl ? `**Receipt:** ${input.receiptUrl}\n` : "") +
           `**Original ClickUp Task:** ${paymentRequest.clickupTaskId ? `https://app.clickup.com/t/${paymentRequest.clickupTaskId}` : "N/A"}\n`;
 
         let completionClickupTaskId = null;
@@ -1729,6 +1731,7 @@ export const appRouter = router({
             completedAt: new Date(),
             completedBy: ctx.user?.name || "Unknown",
             completionClickupTaskId,
+            receiptUrl: input.receiptUrl || null,
           })
           .where(eq(db.paymentRequests.id, input.id));
 

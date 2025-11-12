@@ -360,6 +360,7 @@ export const paymentRequests = pgTable("payment_requests", {
   completedAt: timestamp("completedAt"),
   completedBy: text("completedBy"),
   completionClickupTaskId: text("completionClickupTaskId"),
+  receiptUrl: text("receiptUrl"),
   
   // Credit Card fields
   paymentLink: text("paymentLink"),
