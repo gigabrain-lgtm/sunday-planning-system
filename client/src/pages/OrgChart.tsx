@@ -14,6 +14,7 @@ import { trpc } from "@/lib/trpc";
 export default function OrgChart() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingAgency, setEditingAgency] = useState<{id: string, name: string, slackChannelId: string, department: string} | null>(null);
+  const [editingDepartment, setEditingDepartment] = useState<{id: string, name: string} | null>(null);
   
   // Fetch agency overrides from database
   const { data: overrides } = trpc.dashboard.getAgencyOverrides.useQuery();
@@ -130,6 +131,14 @@ export default function OrgChart() {
                           {dept.teamSize} people • {dept.subTeams} teams
                         </CardDescription>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingDepartment({ id: dept.id, name: dept.name })}
+                      >
+                        <Edit2 className="w-4 h-4 mr-2" />
+                        Edit Department
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-6">
@@ -336,6 +345,43 @@ export default function OrgChart() {
               Cancel
             </Button>
             <Button onClick={handleSaveEdit}>
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Department Dialog */}
+      <Dialog open={!!editingDepartment} onOpenChange={() => setEditingDepartment(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Department</DialogTitle>
+            <DialogDescription>
+              Update department name.
+            </DialogDescription>
+          </DialogHeader>
+          {editingDepartment && (
+            <div className="space-y-4">
+              <div>
+                <Label>Department Name</Label>
+                <Input
+                  value={editingDepartment.name}
+                  onChange={(e) => setEditingDepartment({...editingDepartment, name: e.target.value})}
+                  placeholder="e.g., Branding Development (Content)"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingDepartment(null)}>
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              toast.info("Department name changes are view-only. To update, edit the orgChart.ts file.");
+              setEditingDepartment(null);
+            }}>
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>

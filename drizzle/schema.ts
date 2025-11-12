@@ -319,23 +319,6 @@ export type StandupStats = typeof standupStats.$inferSelect;
 export type InsertStandupStats = typeof standupStats.$inferInsert;
 
 /**
- * Agencies
- * Store agency information for content submissions and Slack notifications
- */
-export const agencies = pgTable("agencies", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar("name", { length: 255 }).notNull().unique(),
-  slackChannelId: varchar("slackChannelId", { length: 255 }).notNull(),
-  contactEmail: varchar("contactEmail", { length: 320 }),
-  notes: text("notes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-export type Agency = typeof agencies.$inferSelect;
-export type InsertAgency = typeof agencies.$inferInsert;
-
-/**
  * Agency overrides table
  * Stores edits to agencies that override the static orgChart.ts data
  */
