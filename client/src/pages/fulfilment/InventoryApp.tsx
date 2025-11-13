@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface MRPInventoryItem {
   asin: string;
@@ -36,7 +36,7 @@ type TaskType = 'Main Image' | 'Gallery Images' | 'A+ Content' | 'Change Price' 
 
 export default function InventoryApp() {
   const [selectedSeller, setSelectedSeller] = useState<string>("");
-  const { toast } = useToast();
+  // Using sonner for toast notifications
   const queryClient = useQueryClient();
 
   // Fetch sellers
@@ -62,17 +62,10 @@ export default function InventoryApp() {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Task Created!",
-        description: `ClickUp task created successfully. Task ID: ${data.id}`,
-      });
+      toast.success(`Task Created! ClickUp task ID: ${data.id}`);
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Error: ${error.message}`);
     },
   });
 

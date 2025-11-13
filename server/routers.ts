@@ -1392,8 +1392,8 @@ export const appRouter = router({
         const CLICKUP_API_URL = "https://api.clickup.com/api/v2";
         
         // Use Receipts list
-        const CLICKUP_LIST_ID = "901322363097"; // Receipts list
-        const taskStatus = null;
+        let CLICKUP_LIST_ID = "901322363097"; // Receipts list
+        let taskStatus = null;
         const customFields: any[] = [];
         
         // Parse amount (remove $, commas, etc.)
