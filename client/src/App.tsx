@@ -27,6 +27,17 @@ import Hiring from "./pages/Hiring";
 import RecruiterManagement from "./pages/RecruiterManagement";
 import PaymentCompletion from "./pages/PaymentCompletion";
 
+import Roles from "./pages/Roles";
+import DailyReconciliation from "./pages/DailyReconciliation";
+import RecruitmentFunnel from "./pages/RecruitmentFunnel";
+import CEOReview from "./pages/CEOReview";
+import RecruiterOnboarding from "./pages/RecruiterOnboarding";
+import Jobs from "./pages/Jobs";
+import WorkableJobs from "./pages/WorkableJobs";
+import JobCoverageMatrix from "./pages/JobCoverageMatrix";
+import HiringPriority from "./pages/HiringPriority";
+import Invoices from "./pages/Invoices";
+
 function Router() {
   return (
     <Switch>
@@ -109,6 +120,57 @@ function Router() {
       <Route path={"/hiring/recruiter-management"}>
         <ProtectedRoute>
           <RecruiterManagement />
+        </ProtectedRoute>
+      </Route>
+
+      <Route path={"/hiring/roles"}>
+        <ProtectedRoute>
+          <Roles />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/daily-reconciliation"}>
+        <ProtectedRoute>
+          <DailyReconciliation />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/recruitment-funnel"}>
+        <ProtectedRoute>
+          <RecruitmentFunnel />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/ceo-review"}>
+        <ProtectedRoute>
+          <CEOReview />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/recruiter-onboarding"}>
+        <ProtectedRoute>
+          <RecruiterOnboarding />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/jobs"}>
+        <ProtectedRoute>
+          <Jobs />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/workable-jobs"}>
+        <ProtectedRoute>
+          <WorkableJobs />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/job-coverage"}>
+        <ProtectedRoute>
+          <JobCoverageMatrix />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/priorities"}>
+        <ProtectedRoute>
+          <HiringPriority />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring/invoices"}>
+        <ProtectedRoute>
+          <Invoices />
         </ProtectedRoute>
       </Route>
       <Route path={"/payment-completion"}>

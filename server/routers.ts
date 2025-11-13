@@ -1865,6 +1865,24 @@ export const appRouter = router({
           return { success: true };
         }),
     }),
+    
+    // Workable Integration
+    workable: router({
+      getCEOReviewCandidates: protectedProcedure.query(async () => {
+        const { getCEOReviewCandidates } = await import("./workable");
+        return await getCEOReviewCandidates();
+      }),
+      
+      getAllCandidates: protectedProcedure.query(async () => {
+        const { fetchAllWorkableCandidates } = await import("./workable");
+        return await fetchAllWorkableCandidates();
+      }),
+      
+      getAllJobs: protectedProcedure.query(async () => {
+        const { fetchAllWorkableJobs } = await import("./workable");
+        return await fetchAllWorkableJobs();
+      }),
+    }),
   }),
 
 });
