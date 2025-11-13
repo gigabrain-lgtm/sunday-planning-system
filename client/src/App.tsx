@@ -23,6 +23,7 @@ import OrgChart from "./pages/OrgChart";
 import TestCustomFields from "./pages/TestCustomFields";
 import PaymentRequestsPublic from "./pages/PaymentRequestsPublic";
 import PaymentRequestsAdmin from "./pages/PaymentRequestsAdmin";
+import Hiring from "./pages/Hiring";
 
 function Router() {
   return (
@@ -96,6 +97,11 @@ function Router() {
       <Route path={"/payment-requests-admin"}>
         <ProtectedRoute>
           <PaymentRequestsAdmin />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/hiring"}>
+        <ProtectedRoute>
+          <Hiring />
         </ProtectedRoute>
       </Route>
       <Route path={"/home"}>
