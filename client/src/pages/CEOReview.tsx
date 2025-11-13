@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
-import { Sidebar } from "@/components/layout/Sidebar";
+import HiringDashboardLayout from "@/components/HiringDashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,7 +67,7 @@ export default function CEOReview() {
   }, [candidates, selectedRole]);
 
   return (
-    <Sidebar>
+    <HiringDashboardLayout>
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -207,6 +207,6 @@ export default function CEOReview() {
           )}
         </div>
       </div>
-    </Sidebar>
+    </HiringDashboardLayout>
   );
 }

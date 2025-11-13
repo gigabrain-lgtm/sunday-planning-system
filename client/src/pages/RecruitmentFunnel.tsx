@@ -1,6 +1,6 @@
 import { useState, Fragment } from "react";
 import { trpc } from "@/lib/trpc";
-import DashboardLayout from "@/components/DashboardLayout";
+import HiringDashboardLayout from "@/components/HiringDashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -54,7 +54,7 @@ export default function RecruitmentFunnel() {
   };
 
   return (
-    <DashboardLayout>
+    <HiringDashboardLayout>
       <div className="container py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -179,6 +179,6 @@ export default function RecruitmentFunnel() {
         </CardContent>
       </Card>
       </div>
-    </DashboardLayout>
+    </HiringDashboardLayout>
   );
 }

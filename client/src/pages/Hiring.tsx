@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/layout/Sidebar";
+import HiringDashboardLayout from "@/components/HiringDashboardLayout";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { Plus, Users, Briefcase, Target, TrendingUp, UserCheck, GitBranch, Grid3x3, FileText, DollarSign, UserPlus } from "lucide-react";
@@ -10,7 +10,7 @@ export default function Hiring() {
   const { data: priorities } = trpc.hiring.priorities.list.useQuery();
 
   return (
-    <Sidebar>
+    <HiringDashboardLayout>
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -140,6 +140,6 @@ export default function Hiring() {
           </div>
         </div>
       </div>
-    </Sidebar>
+    </HiringDashboardLayout>
   );
 }

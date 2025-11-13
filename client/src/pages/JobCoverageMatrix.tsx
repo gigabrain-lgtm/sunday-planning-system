@@ -1,4 +1,4 @@
-import DashboardLayout from "@/components/DashboardLayout";
+import HiringDashboardLayout from "@/components/HiringDashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -136,14 +136,14 @@ export default function JobCoverageMatrix() {
   
   if (assignmentsLoading || recruitersLoading) {
     return (
-      <DashboardLayout>
+      <HiringDashboardLayout>
         <div className="container py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/3"></div>
             <div className="h-96 bg-muted rounded"></div>
           </div>
         </div>
-      </DashboardLayout>
+      </HiringDashboardLayout>
     );
   }
   
@@ -153,7 +153,7 @@ export default function JobCoverageMatrix() {
   );
   
   return (
-    <DashboardLayout>
+    <HiringDashboardLayout>
       <div className="container py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Job Coverage Matrix</h1>
@@ -382,6 +382,6 @@ export default function JobCoverageMatrix() {
           </div>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </HiringDashboardLayout>
   );
 }
