@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { storagePut } from "../storage";
+import { storagePut } from "./storage";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
