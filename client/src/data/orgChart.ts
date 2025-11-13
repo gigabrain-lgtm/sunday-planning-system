@@ -1,6 +1,7 @@
 export interface Agency {
   id: string;
   name: string;
+  slug?: string; // custom URL slug (defaults to id if not set)
   slackChannelId: string;
   logo?: string;
   teamSize?: number;
@@ -166,6 +167,6 @@ export function getAllAgencies(): Agency[] {
 }
 
 // Helper function to generate submission link
-export function getSubmissionLink(agencyId: string): string {
-  return `${window.location.origin}/submissions?agency=${agencyId}`;
+export function getSubmissionLink(agencySlug: string): string {
+  return `${window.location.origin}/submissions?agency=${agencySlug}`;
 }

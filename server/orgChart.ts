@@ -4,6 +4,7 @@
 export interface Agency {
   id: string;
   name: string;
+  slug?: string; // custom URL slug (defaults to id if not set)
   slackChannelId: string;
   logo?: string;
   teamSize?: number;

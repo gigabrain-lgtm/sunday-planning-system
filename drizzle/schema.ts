@@ -325,6 +325,7 @@ export type InsertStandupStats = typeof standupStats.$inferInsert;
 export const agencies = pgTable("agencies", {
   id: varchar("id", { length: 255 }).primaryKey(), // agency ID from orgChart.ts
   name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }), // custom URL slug (defaults to id if not set)
   slackChannelId: varchar("slackChannelId", { length: 255 }),
   department: varchar("department", { length: 255 }).notNull(), // department ID or 'services'
   logo: varchar("logo", { length: 255 }),

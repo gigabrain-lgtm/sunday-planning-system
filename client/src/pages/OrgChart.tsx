@@ -13,7 +13,7 @@ import { trpc } from "@/lib/trpc";
 
 export default function OrgChart() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [editingAgency, setEditingAgency] = useState<{id: string, name: string, slackChannelId: string, department: string} | null>(null);
+  const [editingAgency, setEditingAgency] = useState<{id: string, name: string, slug?: string, slackChannelId: string, department: string} | null>(null);
   const [editingDepartment, setEditingDepartment] = useState<{id: string, name: string} | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newAgency, setNewAgency] = useState({
@@ -73,11 +73,12 @@ export default function OrgChart() {
     };
   }, [overrides]);
 
-  const copySubmissionLink = (agencyId: string, agencyName: string) => {
-    const link = getSubmissionLink(agencyId);
+  const copySubmissionLink = (agency: any) => {
+    const slug = agency.slug || agency.id; // use slug if available, otherwise fall back to id
+    const link = getSubmissionLink(slug);
     navigator.clipboard.writeText(link);
-    setCopiedId(agencyId);
-    toast.success(`Copied ${agencyName} submission link!`);
+    setCopiedId(agency.id);
+    toast.success(`Copied ${agency.name} submission link!`);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -85,6 +86,7 @@ export default function OrgChart() {
     setEditingAgency({
       id: agency.id,
       name: agency.name,
+      slug: agency.slug || '',
       slackChannelId: agency.slackChannelId || '',
       department: departmentId,
     });
@@ -108,6 +110,7 @@ export default function OrgChart() {
     await updateMutation.mutateAsync({
       id: editingAgency.id,
       name: editingAgency.name,
+      slug: editingAgency.slug,
       slackChannelId: editingAgency.slackChannelId,
       department: editingAgency.department,
     });
@@ -220,7 +223,7 @@ export default function OrgChart() {
                               variant="outline"
                               size="sm"
                               className="w-full"
-                              onClick={() => copySubmissionLink(agency.id, agency.name)}
+                              onClick={() => copySubmissionLink(agency)}
                             >
                               {copiedId === agency.id ? (
                                 <>
@@ -286,7 +289,7 @@ export default function OrgChart() {
                         variant="outline"
                         size="sm"
                         className="w-full"
-                        onClick={() => copySubmissionLink(service.id, service.name)}
+                        onClick={() => copySubmissionLink(service)}
                       >
                         {copiedId === service.id ? (
                           <>
@@ -347,6 +350,17 @@ export default function OrgChart() {
                   onChange={(e) => setEditingAgency({...editingAgency, name: e.target.value})}
                   placeholder="e.g., Mogul Media"
                 />
+              </div>
+              <div>
+                <Label>URL Slug (for submission links)</Label>
+                <Input
+                  value={editingAgency.slug || ''}
+                  onChange={(e) => setEditingAgency({...editingAgency, slug: e.target.value})}
+                  placeholder="e.g., victoria (leave empty to use default)"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  This will change the agency's submission link URL. Old links will break.
+                </p>
               </div>
               <div>
                 <Label>Department</Label>

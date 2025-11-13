@@ -501,6 +501,7 @@ export async function upsertAgency(agency: InsertAgency): Promise<void> {
         target: agencies.id,
         set: {
           name: agency.name,
+          slug: agency.slug,
           slackChannelId: agency.slackChannelId,
           department: agency.department,
           logo: agency.logo,

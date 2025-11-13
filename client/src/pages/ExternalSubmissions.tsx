@@ -38,10 +38,11 @@ export default function ExternalSubmissions() {
         return {
           ...agency,
           name: override.name || agency.name,
+          slug: override.slug || agency.id, // use custom slug or fall back to id
           slackChannelId: override.slackChannelId || agency.slackChannelId,
         };
       }
-      return agency;
+      return { ...agency, slug: agency.id }; // default slug to id
     });
   }, [agencyOverrides]);
   
@@ -53,7 +54,12 @@ export default function ExternalSubmissions() {
     const agencyParam = params.get('agency');
     
     if (agencyParam && agencies) {
-      const agency = agencies.find(a => a.id === agencyParam || a.name.toLowerCase().replace(/\s+/g, '-') === agencyParam);
+      // Try to find by slug first, then by id, then by name
+      const agency = agencies.find(a => 
+        a.slug === agencyParam || 
+        a.id === agencyParam || 
+        a.name.toLowerCase().replace(/\s+/g, '-') === agencyParam
+      );
       if (agency) {
         setAgencyId(agency.id);
         setAgencyName(agency.name);

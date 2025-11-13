@@ -1213,6 +1213,7 @@ export const appRouter = router({
       .input(z.object({
         id: z.string(),
         name: z.string(),
+        slug: z.string().optional(),
         slackChannelId: z.string().optional(),
         department: z.string(),
         logo: z.string().optional(),
@@ -1222,6 +1223,7 @@ export const appRouter = router({
           await db.upsertAgency({
             id: input.id,
             name: input.name,
+            slug: input.slug,
             slackChannelId: input.slackChannelId || '',
             department: input.department,
             logo: input.logo,
