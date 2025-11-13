@@ -73,10 +73,10 @@ export default function RecruiterOnboarding() {
   const [workableLink, setWorkableLink] = useState("");
   const [cultureIndexQuestionAdded, setCultureIndexQuestionAdded] = useState(false);
   
-  const { data: recruiters } = trpc.recruiters.list.useQuery();
-  const createRecruiterMutation = trpc.recruiters.create.useMutation();
-  const createJobAssignmentMutation = trpc.jobAssignments.create.useMutation();
-  const updateJobAssignmentMutation = trpc.jobAssignments.update.useMutation();
+  const { data: recruiters } = trpc.hiring.recruiters.list.useQuery();
+  const createRecruiterMutation = trpc.hiring.recruiters.create.useMutation();
+  const createJobAssignmentMutation = trpc.hiring.jobAssignments.create.useMutation();
+  const updateJobAssignmentMutation = trpc.hiring.jobAssignments.update.useMutation();
   const utils = trpc.useUtils();
   
   const getCurrentJob = () => selectedJobs[currentJobIndex];

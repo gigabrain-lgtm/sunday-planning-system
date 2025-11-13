@@ -1866,6 +1866,45 @@ export const appRouter = router({
         }),
     }),
     
+    // Roles Management
+    roles: router({
+      list: protectedProcedure.query(async () => {
+        return await db.getAllRoles();
+      }),
+      
+      create: protectedProcedure
+        .input(z.object({
+          roleName: z.string().min(1),
+          description: z.string().optional(),
+          technicalInterviewer: z.string().optional(),
+          finalInterviewer: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          return await db.createRole(input);
+        }),
+      
+      update: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          roleName: z.string().optional(),
+          description: z.string().optional(),
+          technicalInterviewer: z.string().optional(),
+          finalInterviewer: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          const { id, ...data } = input;
+          await db.updateRole(id, data);
+          return { success: true };
+        }),
+      
+      delete: protectedProcedure
+        .input(z.object({ id: z.number() }))
+        .mutation(async ({ input }) => {
+          await db.deleteRole(input.id);
+          return { success: true };
+        }),
+    }),
+    
     // Workable Integration
     workable: router({
       getCEOReviewCandidates: protectedProcedure.query(async () => {

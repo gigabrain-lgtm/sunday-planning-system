@@ -1,7 +1,7 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { Plus, Users, Briefcase, Target, TrendingUp, UserCheck, GitBranch, Grid3x3, FileText, DollarSign, UserPlus, Calendar } from "lucide-react";
+import { Plus, Users, Briefcase, Target, TrendingUp, UserCheck, GitBranch, Grid3x3, FileText, DollarSign, UserPlus } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Hiring() {
@@ -60,13 +60,6 @@ export default function Hiring() {
               <Button className="w-full h-20 text-base" variant="outline">
                 <Briefcase className="mr-2 h-5 w-5" />
                 Roles
-              </Button>
-            </Link>
-            
-            <Link href="/hiring/daily-reconciliation">
-              <Button className="w-full h-20 text-base" variant="outline">
-                <Calendar className="mr-2 h-5 w-5" />
-                Daily Reconciliation
               </Button>
             </Link>
             

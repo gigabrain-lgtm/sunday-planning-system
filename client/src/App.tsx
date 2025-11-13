@@ -28,7 +28,7 @@ import RecruiterManagement from "./pages/RecruiterManagement";
 import PaymentCompletion from "./pages/PaymentCompletion";
 
 import Roles from "./pages/Roles";
-import DailyReconciliation from "./pages/DailyReconciliation";
+
 import RecruitmentFunnel from "./pages/RecruitmentFunnel";
 import CEOReview from "./pages/CEOReview";
 import RecruiterOnboarding from "./pages/RecruiterOnboarding";
@@ -128,11 +128,7 @@ function Router() {
           <Roles />
         </ProtectedRoute>
       </Route>
-      <Route path={"/hiring/daily-reconciliation"}>
-        <ProtectedRoute>
-          <DailyReconciliation />
-        </ProtectedRoute>
-      </Route>
+
       <Route path={"/hiring/recruitment-funnel"}>
         <ProtectedRoute>
           <RecruitmentFunnel />
