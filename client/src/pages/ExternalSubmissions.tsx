@@ -21,8 +21,30 @@ export default function ExternalSubmissions() {
 
   const [location] = useLocation();
 
-  // Use static org chart data instead of database
-  const agencies = useMemo(() => getAllAgencies(), []);
+  // Fetch agency overrides from database
+  const { data: agencyOverrides } = trpc.dashboard.getAgencyOverrides.useQuery();
+  
+  // Merge static data with database overrides
+  const agencies = useMemo(() => {
+    const staticAgencies = getAllAgencies();
+    if (!agencyOverrides || agencyOverrides.length === 0) {
+      return staticAgencies;
+    }
+    
+    // Apply overrides
+    return staticAgencies.map(agency => {
+      const override = agencyOverrides.find(o => o.id === agency.id);
+      if (override) {
+        return {
+          ...agency,
+          name: override.name || agency.name,
+          slackChannelId: override.slackChannelId || agency.slackChannelId,
+        };
+      }
+      return agency;
+    });
+  }, [agencyOverrides]);
+  
   const loadingAgencies = false;
 
   // Check for agency parameter in URL
