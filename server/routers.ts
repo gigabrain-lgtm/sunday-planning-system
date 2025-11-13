@@ -14,6 +14,7 @@ import * as airtableMarketing from "./airtable-marketing";
 import { getAgencyById } from "./orgChart";
 import { postContentReviewNotification, postContentApprovalNotification, postContentRejectionNotification } from "./slack";
 import { ENV } from "./_core/env";
+import * as fulfilment from "./fulfilment";
 
 // Helper function to calculate match score between task and Key Result
 function calculateMatchScore(task: any, keyResult: any, objective: any): number {
@@ -1923,6 +1924,52 @@ export const appRouter = router({
         const { fetchAllWorkableJobs } = await import("./workable");
         return await fetchAllWorkableJobs();
       }),
+    }),
+  }),
+
+  // Fulfilment Module
+  fulfilment: router({
+    // Get MRP sellers
+    getSellers: protectedProcedure.query(async () => {
+      return await fulfilment.getSellers();
+    }),
+
+    // Get inventory for a seller
+    getInventory: protectedProcedure
+      .input(z.object({ sellerName: z.string() }))
+      .query(async ({ input }) => {
+        return await fulfilment.getInventory(input.sellerName);
+      }),
+
+    // Create task from inventory
+    createTask: protectedProcedure
+      .input(z.object({
+        product: z.object({
+          asin: z.string(),
+          sku: z.string(),
+          product_name: z.string(),
+          condition: z.string(),
+          your_price: z.string(),
+          mfn_fulfillable_quantity: z.number(),
+          afn_fulfillable_quantity: z.number(),
+          afn_unsellable_quantity: z.number(),
+          afn_reserved_quantity: z.number(),
+          afn_total_quantity: z.number(),
+          afn_inbound_working_quantity: z.number(),
+          afn_inbound_shipped_quantity: z.number(),
+          afn_inbound_receiving_quantity: z.number(),
+          snapshot_date: z.string(),
+        }),
+        taskType: z.enum(['Main Image', 'Gallery Images', 'A+ Content', 'Change Price', 'Apply Coupon/Discount']),
+        clientName: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await fulfilment.createInventoryTask(input);
+      }),
+
+    // Get ClickUp clients
+    getClients: protectedProcedure.query(async () => {
+      return await clickup.getClients();
     }),
   }),
 

@@ -26,4 +26,9 @@ export const ENV = {
   eightEmail: process.env.EIGHT_EMAIL ?? "",
   eightPassword: process.env.EIGHT_PASSWORD ?? "",
   eightTimezone: process.env.EIGHT_TIMEZONE ?? "America/Sao_Paulo",
+  // MRP Integration
+  MRP_API_URL: process.env.MRP_API_URL ?? "https://api.myrealprofit.com",
+  MRP_API_KEY: process.env.MRP_API_KEY ?? "",
+  // ClickUp API Key (already exists above but adding for clarity)
+  CLICKUP_API_KEY: process.env.CLICKUP_API_KEY ?? "",
 };
