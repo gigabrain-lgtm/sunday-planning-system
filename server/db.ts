@@ -1,8 +1,8 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency, paymentRequests, InsertPaymentRequest, PaymentRequest } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency, paymentRequests, InsertPaymentRequest, PaymentRequest, recruiters, InsertRecruiter, jobAssignments, InsertJobAssignment, hiringPriorities, InsertHiringPriority, roles, InsertRole, jobPostings, InsertJobPosting, invoices, InsertInvoice, spendHistory, InsertSpendHistory, candidateMetrics, InsertCandidateMetric, jobTitleMappings, InsertJobTitleMapping } from "../drizzle/schema";
 
 // Re-export paymentRequests for use in routers
 export { paymentRequests };
@@ -591,4 +591,280 @@ export async function getPaymentRequestsByUserId(userId: number): Promise<Paymen
   }
 
   return await db.select().from(paymentRequests).where(eq(paymentRequests.userId, userId)).orderBy(desc(paymentRequests.createdAt));
+}
+
+
+// ============================================================================
+// HIRING SYSTEM DATABASE FUNCTIONS
+// ============================================================================
+
+/**
+ * Create a new recruiter with auto-generated code
+ * Code format: First 2 letters of name + 3-digit number (e.g., "KA001", "ST002")
+ */
+export async function createRecruiter(data: Omit<InsertRecruiter, 'recruiterCode'>): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  // Auto-generate recruiter code: first 2 letters of name (uppercase) + 3-digit number
+  const namePrefix = data.name.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
+  
+  // Find the highest existing code with this prefix
+  const existingRecruiters = await db.select().from(recruiters)
+    .where(sql`${recruiters.recruiterCode} LIKE ${namePrefix + '%'}`);
+  
+  let maxNumber = 0;
+  existingRecruiters.forEach(r => {
+    const match = r.recruiterCode.match(/\d+$/);
+    if (match) {
+      const num = parseInt(match[0], 10);
+      if (num > maxNumber) maxNumber = num;
+    }
+  });
+  
+  const recruiterCode = `${namePrefix}${String(maxNumber + 1).padStart(3, '0')}`;
+  
+  const [result] = await db.insert(recruiters)
+    .values({ ...data, recruiterCode })
+    .returning({ id: recruiters.id });
+  
+  return result.id;
+}
+
+export async function getAllRecruiters() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(recruiters).where(eq(recruiters.status, 'active'));
+}
+
+export async function getRecruiterById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(recruiters).where(eq(recruiters.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateRecruiter(id: number, data: Partial<InsertRecruiter>) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  await db.update(recruiters).set(data).where(eq(recruiters.id, id));
+}
+
+// ============================================================================
+// JOB ASSIGNMENTS
+// ============================================================================
+
+export async function createJobAssignment(data: InsertJobAssignment) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  const [result] = await db.insert(jobAssignments)
+    .values(data)
+    .returning({ id: jobAssignments.id });
+  
+  return { insertId: result.id };
+}
+
+export async function getJobAssignmentsByRecruiter(recruiterId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(jobAssignments).where(eq(jobAssignments.recruiterId, recruiterId));
+}
+
+export async function getAllJobAssignments() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(jobAssignments).orderBy(desc(jobAssignments.createdAt));
+}
+
+export async function getJobAssignmentById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(jobAssignments).where(eq(jobAssignments.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateJobAssignment(id: number, data: Partial<InsertJobAssignment>) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  await db.update(jobAssignments).set(data).where(eq(jobAssignments.id, id));
+}
+
+export async function deleteJobAssignment(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  await db.delete(jobAssignments).where(eq(jobAssignments.id, id));
+}
+
+// ============================================================================
+// HIRING PRIORITIES
+// ============================================================================
+
+export async function getAllHiringPriorities() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(hiringPriorities).orderBy(desc(hiringPriorities.createdAt));
+}
+
+export async function getHiringPriorityById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(hiringPriorities).where(eq(hiringPriorities.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createHiringPriority(data: InsertHiringPriority) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  const [result] = await db.insert(hiringPriorities)
+    .values(data)
+    .returning({ id: hiringPriorities.id });
+  
+  return { insertId: result.id };
+}
+
+export async function updateHiringPriority(id: number, data: Partial<InsertHiringPriority>) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  await db.update(hiringPriorities).set(data).where(eq(hiringPriorities.id, id));
+}
+
+export async function deleteHiringPriority(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  await db.delete(hiringPriorities).where(eq(hiringPriorities.id, id));
+}
+
+// ============================================================================
+// ROLES (for LinkedIn Ads tracking)
+// ============================================================================
+
+export async function createRole(data: InsertRole) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const [result] = await db.insert(roles)
+    .values(data)
+    .returning({ id: roles.id });
+  
+  return result;
+}
+
+export async function getAllRoles() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(roles);
+}
+
+export async function getRoleById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(roles).where(eq(roles.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateRole(id: number, data: Partial<InsertRole>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(roles).set(data).where(eq(roles.id, id));
+}
+
+export async function deleteRole(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(roles).where(eq(roles.id, id));
+}
+
+// ============================================================================
+// JOB POSTINGS (LinkedIn Ads)
+// ============================================================================
+
+export async function createJobPosting(data: InsertJobPosting) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const [result] = await db.insert(jobPostings)
+    .values(data)
+    .returning({ id: jobPostings.id });
+  
+  return result;
+}
+
+export async function getAllJobPostings() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(jobPostings);
+}
+
+export async function getJobPostingById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(jobPostings).where(eq(jobPostings.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateJobPosting(id: number, data: Partial<InsertJobPosting>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(jobPostings).set(data).where(eq(jobPostings.id, id));
+}
+
+export async function deleteJobPosting(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(jobPostings).where(eq(jobPostings.id, id));
+}
+
+// ============================================================================
+// JOB TITLE MAPPINGS
+// ============================================================================
+
+export async function createJobTitleMapping(mapping: InsertJobTitleMapping) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  await db.insert(jobTitleMappings).values(mapping);
+  return mapping;
+}
+
+export async function getJobTitleMappingsByRole(roleId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(jobTitleMappings).where(eq(jobTitleMappings.roleId, roleId));
+}
+
+export async function getAllJobTitleMappings() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(jobTitleMappings);
+}
+
+export async function deleteJobTitleMapping(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.delete(jobTitleMappings).where(eq(jobTitleMappings.id, id));
 }

@@ -1767,6 +1767,106 @@ export const appRouter = router({
       }),
   }),
 
+  // Hiring System
+  hiring: router({    // Recruiters
+    recruiters: router({      list: protectedProcedure.query(async () => {
+        return await db.getAllRecruiters();
+      }),
+      
+      create: protectedProcedure
+        .input(z.object({
+          name: z.string().min(1),
+          slackChannelId: z.string().min(1),
+        }))
+        .mutation(async ({ input }) => {
+          const id = await db.createRecruiter(input);
+          const recruiter = await db.getRecruiterById(id);
+          return { id, recruiterCode: recruiter?.recruiterCode };
+        }),
+      
+      update: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          name: z.string().optional(),
+          recruiterCode: z.string().optional(),
+          slackChannelId: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          const { id, ...data } = input;
+          await db.updateRecruiter(id, data);
+          return { success: true };
+        }),
+    }),
+    
+    // Job Assignments
+    jobAssignments: router({      list: protectedProcedure.query(async () => {
+        return await db.getAllJobAssignments();
+      }),
+      
+      create: protectedProcedure
+        .input(z.object({
+          recruiterId: z.number(),
+          jobTitle: z.string(),
+          agencyName: z.string(),
+          nomenclature: z.string().optional(),
+          cultureIndexInternalLink: z.string().optional(),
+          cultureIndexAssessmentLink: z.string().optional(),
+          workableLink: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          return await db.createJobAssignment(input);
+        }),
+      
+      update: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          status: z.enum(['draft', 'culture_index_pending', 'workable_pending', 'completed']).optional(),
+          cultureIndexInternalLink: z.string().optional(),
+          workableLink: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          const { id, ...data } = input;
+          await db.updateJobAssignment(id, data);
+          return { success: true };
+        }),
+      
+      delete: protectedProcedure
+        .input(z.object({ id: z.number() }))
+        .mutation(async ({ input }) => {
+          await db.deleteJobAssignment(input.id);
+          return { success: true };
+        }),
+    }),
+    
+    // Hiring Priorities
+    priorities: router({      list: protectedProcedure.query(async () => {
+        return await db.getAllHiringPriorities();
+      }),
+      
+      create: protectedProcedure
+        .input(z.object({
+          jobTitle: z.string(),
+          description: z.string().optional(),
+          priority: z.enum(['urgent', 'high', 'medium', 'normal', 'low', 'inactive']),
+        }))
+        .mutation(async ({ input }) => {
+          return await db.createHiringPriority(input);
+        }),
+      
+      update: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          priority: z.enum(['urgent', 'high', 'medium', 'normal', 'low', 'inactive']).optional(),
+          description: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          const { id, ...data } = input;
+          await db.updateHiringPriority(id, data);
+          return { success: true };
+        }),
+    }),
+  }),
+
 });
 
 export type AppRouter = typeof appRouter;

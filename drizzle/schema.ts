@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { integer, numeric, pgEnum, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow.
@@ -399,3 +399,208 @@ export const paymentRequests = pgTable("payment_requests", {
 export type PaymentRequest = typeof paymentRequests.$inferSelect;
 export type InsertPaymentRequest = typeof paymentRequests.$inferInsert;
 export type PaymentStatus = "pending" | "approved" | "rejected";
+
+
+// ============================================================================
+// HIRING SYSTEM TABLES
+// ============================================================================
+
+/**
+ * Recruiter status enum
+ */
+export const recruiterStatusEnum = pgEnum("recruiter_status", ["active", "inactive"]);
+
+/**
+ * Job assignment status enum
+ */
+export const jobAssignmentStatusEnum = pgEnum("job_assignment_status", [
+  "draft",
+  "culture_index_pending",
+  "workable_pending",
+  "completed",
+]);
+
+/**
+ * Hiring priority enum
+ */
+export const hiringPriorityEnum = pgEnum("hiring_priority", [
+  "urgent",
+  "high",
+  "medium",
+  "normal",
+  "low",
+  "inactive",
+]);
+
+/**
+ * Job posting status enum
+ */
+export const jobPostingStatusEnum = pgEnum("job_posting_status", ["active", "paused", "closed"]);
+
+/**
+ * Candidate source enum
+ */
+export const candidateSourceEnum = pgEnum("candidate_source", ["linkedin_ads", "headhunting"]);
+
+/**
+ * Recruiters table
+ * Stores recruiter information with auto-generated codes
+ */
+export const recruiters = pgTable("recruiters", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar("name", { length: 255 }).notNull(),
+  recruiterCode: varchar("recruiterCode", { length: 50 }).notNull().unique(),
+  slackChannelId: varchar("slackChannelId", { length: 255 }).notNull(),
+  status: recruiterStatusEnum("status").default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Recruiter = typeof recruiters.$inferSelect;
+export type InsertRecruiter = typeof recruiters.$inferInsert;
+
+/**
+ * Job assignments table
+ * Links recruiters to job postings with Culture Index and Workable integration
+ */
+export const jobAssignments = pgTable("job_assignments", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  recruiterId: integer("recruiterId").notNull(),
+  jobTitle: varchar("jobTitle", { length: 255 }).notNull(),
+  agencyName: varchar("agencyName", { length: 255 }).notNull(),
+  nomenclature: text("nomenclature"),
+  cultureIndexInternalLink: text("cultureIndexInternalLink"),
+  cultureIndexAssessmentLink: text("cultureIndexAssessmentLink"),
+  workableLink: text("workableLink"),
+  workableJobId: varchar("workableJobId", { length: 50 }),
+  workableShortcode: varchar("workableShortcode", { length: 50 }),
+  cultureIndexQuestionAdded: integer("cultureIndexQuestionAdded").default(0).notNull(),
+  status: jobAssignmentStatusEnum("status").default("draft").notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type JobAssignment = typeof jobAssignments.$inferSelect;
+export type InsertJobAssignment = typeof jobAssignments.$inferInsert;
+
+/**
+ * Hiring priorities table
+ * Manages priority levels for different job titles
+ */
+export const hiringPriorities = pgTable("hiring_priorities", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  jobTitle: varchar("jobTitle", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  priority: hiringPriorityEnum("priority").default("normal").notNull(),
+  jobDescription: text("jobDescription"),
+  testQuestions: text("testQuestions"),
+  interviewQuestions: text("interviewQuestions"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type HiringPriority = typeof hiringPriorities.$inferSelect;
+export type InsertHiringPriority = typeof hiringPriorities.$inferInsert;
+
+/**
+ * Roles table (for LinkedIn Ads tracking and split testing)
+ */
+export const roles = pgTable("roles", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  roleName: varchar("roleName", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  technicalInterviewer: varchar("technicalInterviewer", { length: 255 }),
+  finalInterviewer: varchar("finalInterviewer", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = typeof roles.$inferInsert;
+
+/**
+ * Job postings table (LinkedIn Ads tracking)
+ */
+export const jobPostings = pgTable("job_postings", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  roleId: integer("roleId").notNull(),
+  jobTitle: varchar("jobTitle", { length: 255 }).notNull(),
+  location: varchar("location", { length: 255 }).notNull(),
+  dailySpend: numeric("dailySpend", { precision: 10, scale: 2 }).notNull(),
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate"),
+  status: jobPostingStatusEnum("status").default("active").notNull(),
+  totalApplicants: integer("totalApplicants").default(0).notNull(),
+  linkedInJobId: varchar("linkedInJobId", { length: 100 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type JobPosting = typeof jobPostings.$inferSelect;
+export type InsertJobPosting = typeof jobPostings.$inferInsert;
+
+/**
+ * Job title mappings table (for split testing)
+ */
+export const jobTitleMappings = pgTable("job_title_mappings", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  roleId: integer("roleId").notNull(),
+  workableJobTitle: varchar("workableJobTitle", { length: 255 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type JobTitleMapping = typeof jobTitleMappings.$inferSelect;
+export type InsertJobTitleMapping = typeof jobTitleMappings.$inferInsert;
+
+/**
+ * Invoices table (LinkedIn billing tracking)
+ */
+export const invoices = pgTable("invoices", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  roleId: integer("roleId"),
+  location: varchar("location", { length: 255 }),
+  transactionDate: timestamp("transactionDate").notNull(),
+  totalFees: numeric("totalFees", { precision: 10, scale: 2 }).notNull(),
+  invoiceNumber: varchar("invoiceNumber", { length: 100 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+
+/**
+ * Spend history table (daily spend tracking)
+ */
+export const spendHistory = pgTable("spend_history", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  jobPostingId: integer("jobPostingId").notNull(),
+  effectiveDate: timestamp("effectiveDate").notNull(),
+  dailySpend: numeric("dailySpend", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SpendHistory = typeof spendHistory.$inferSelect;
+export type InsertSpendHistory = typeof spendHistory.$inferInsert;
+
+/**
+ * Candidate metrics table (pipeline tracking)
+ */
+export const candidateMetrics = pgTable("candidate_metrics", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  roleId: integer("roleId").notNull(),
+  date: timestamp("date").notNull(),
+  source: candidateSourceEnum("source").notNull(),
+  applicants: integer("applicants").default(0).notNull(),
+  screened: integer("screened").default(0).notNull(),
+  interviewed: integer("interviewed").default(0).notNull(),
+  offered: integer("offered").default(0).notNull(),
+  hired: integer("hired").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CandidateMetric = typeof candidateMetrics.$inferSelect;
+export type InsertCandidateMetric = typeof candidateMetrics.$inferInsert;
