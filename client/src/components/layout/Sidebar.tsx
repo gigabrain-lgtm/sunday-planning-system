@@ -11,7 +11,8 @@ import {
   Building2,
   DollarSign,
   Users,
-  CheckCircle
+  CheckCircle,
+  Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -79,6 +80,11 @@ const navItems = [
     name: "Hiring",
     path: "/hiring",
     icon: Users,
+  },
+  {
+    name: "Fulfilment",
+    path: "/fulfilment",
+    icon: Package,
   },
 ];
 

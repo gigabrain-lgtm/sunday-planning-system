@@ -37,6 +37,7 @@ import WorkableJobs from "./pages/WorkableJobs";
 import JobCoverageMatrix from "./pages/JobCoverageMatrix";
 import HiringPriority from "./pages/HiringPriority";
 import Invoices from "./pages/Invoices";
+import Fulfilment from "./pages/Fulfilment";
 
 function Router() {
   return (
@@ -169,12 +170,17 @@ function Router() {
           <Invoices />
         </ProtectedRoute>
       </Route>
-      <Route path={"/payment-completion"}>
+      <Route path="/payment-completion">
         <ProtectedRoute>
           <PaymentCompletion />
         </ProtectedRoute>
       </Route>
-      <Route path={"/home"}>
+      <Route path="/fulfilment">
+        <ProtectedRoute>
+          <Fulfilment />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/home">
         <ProtectedRoute>
           <Home />
         </ProtectedRoute>
