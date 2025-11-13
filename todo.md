@@ -334,3 +334,42 @@
 - [x] Add backend mutation to update payment request
 - [x] Allow editing amount, email, and other details
 - [x] Display email in admin table and details view
+
+
+## Bookkeeping Completion Form
+- [x] Add payment completion fields to payment_requests table (completionPaymentLink, completionAmount, completedAt, completedBy)
+- [x] Create database migration for completion fields
+- [x] Create PaymentCompletion.tsx page for bookkeeping team
+- [x] Add route for /payment-completion
+- [x] Add sidebar menu item for bookkeeping completion
+- [x] Show only approved ACH/Wire requests in completion form
+- [x] Verify last 4 digits of account number match original request
+- [x] Verify payment amount matches requested amount (with tolerance)
+- [x] Create backend mutation to mark payment as completed
+- [x] Create ClickUp task in personal finance list when completed
+- [x] Update original payment request status to "completed"
+- [ ] Add completion details to admin view
+
+
+## Payment Completion UX Fix
+- [x] Add confirmation dialog before marking payment as completed
+- [x] Show verification results in confirmation dialog
+- [x] Show what will happen (create ClickUp task, update status)
+
+
+## Receipt Upload Feature
+- [x] Add receiptUrl field to payment_requests table
+- [x] Create database migration for receiptUrl
+- [x] Add file upload input to payment completion form
+- [x] Upload receipt to S3 when completing payment
+- [x] Store S3 URL in database
+- [ ] Display receipt in admin view (image preview or download link)
+- [x] Include receipt link in ClickUp task description
+
+
+## Clipboard Paste for Receipts
+- [x] Add paste area for receipt upload
+- [x] Handle Ctrl+V / Cmd+V paste events
+- [x] Convert pasted image to file
+- [x] Show image preview after paste
+- [x] Keep file upload option as alternative

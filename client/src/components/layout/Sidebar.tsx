@@ -10,7 +10,8 @@ import {
   Briefcase,
   Building2,
   DollarSign,
-  Users
+  Users,
+  CheckCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -86,6 +87,11 @@ const adminNavItems = [
     name: "Payment Requests Admin",
     path: "/payment-requests-admin",
     icon: DollarSign,
+  },
+  {
+    name: "Payment Completion",
+    path: "/payment-completion",
+    icon: CheckCircle,
   },
 ];
 

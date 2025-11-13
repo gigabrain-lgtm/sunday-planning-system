@@ -24,6 +24,7 @@ import TestCustomFields from "./pages/TestCustomFields";
 import PaymentRequestsPublic from "./pages/PaymentRequestsPublic";
 import PaymentRequestsAdmin from "./pages/PaymentRequestsAdmin";
 import Hiring from "./pages/Hiring";
+import PaymentCompletion from "./pages/PaymentCompletion";
 
 function Router() {
   return (
@@ -102,6 +103,11 @@ function Router() {
       <Route path={"/hiring"}>
         <ProtectedRoute>
           <Hiring />
+        </ProtectedRoute>
+      </Route>
+      <Route path={"/payment-completion"}>
+        <ProtectedRoute>
+          <PaymentCompletion />
         </ProtectedRoute>
       </Route>
       <Route path={"/home"}>
