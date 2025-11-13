@@ -38,6 +38,11 @@ import JobCoverageMatrix from "./pages/JobCoverageMatrix";
 import HiringPriority from "./pages/HiringPriority";
 import Invoices from "./pages/Invoices";
 import Fulfilment from "./pages/Fulfilment";
+import FulfilmentDashboard from "./pages/fulfilment/Dashboard";
+import FulfilmentClients from "./pages/fulfilment/Clients";
+import FulfilmentProducts from "./pages/fulfilment/Products";
+import FulfilmentInventory from "./pages/fulfilment/Inventory";
+import FulfilmentImageKitchen from "./pages/fulfilment/ImageKitchen";
 
 function Router() {
   return (
@@ -178,6 +183,31 @@ function Router() {
       <Route path="/fulfilment">
         <ProtectedRoute>
           <Fulfilment />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/fulfilment/dashboard">
+        <ProtectedRoute>
+          <FulfilmentDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/fulfilment/clients">
+        <ProtectedRoute>
+          <FulfilmentClients />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/fulfilment/products">
+        <ProtectedRoute>
+          <FulfilmentProducts />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/fulfilment/inventory">
+        <ProtectedRoute>
+          <FulfilmentInventory />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/fulfilment/image-kitchen">
+        <ProtectedRoute>
+          <FulfilmentImageKitchen />
         </ProtectedRoute>
       </Route>
       <Route path="/home">
