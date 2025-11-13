@@ -1,9 +1,29 @@
 /**
  * MRP (My Real Profit) Integration
- * Handles inventory data from MRP API
+ * Handles inventory data from MRP PostgreSQL database
  */
 
+import { Pool } from 'pg';
 import { ENV } from "./_core/env";
+
+// MRP Database connection pool
+let mrpPool: Pool | null = null;
+
+function getMRPPool(): Pool {
+  if (!mrpPool) {
+    mrpPool = new Pool({
+      host: ENV.MRP_DB_HOST,
+      port: parseInt(ENV.MRP_DB_PORT || '5432'),
+      user: ENV.MRP_DB_USER,
+      password: ENV.MRP_DB_PASSWORD,
+      database: ENV.MRP_DB_NAME,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+  }
+  return mrpPool;
+}
 
 export interface MRPInventoryItem {
   asin: string;
@@ -29,60 +49,82 @@ export interface MRPInventoryResponse {
 }
 
 export interface MRPSeller {
-  seller_name: string;
+  id: number;
+  name: string;
+  selling_partner_id: string;
+  state: string;
+  advertising_data_initialized: boolean;
+  financial_data_initialized: boolean;
 }
 
 /**
- * Fetch inventory from MRP API
+ * Fetch inventory from MRP database
  */
 export async function getMRPInventory(sellerName: string): Promise<MRPInventoryResponse> {
-  const mrpApiUrl = ENV.MRP_API_URL || 'https://api.myrealprofit.com';
-  const mrpApiKey = ENV.MRP_API_KEY;
+  const pool = getMRPPool();
 
-  if (!mrpApiKey) {
-    throw new Error('MRP_API_KEY not configured');
+  // First, get the amazon_selling_partner_id for this seller
+  const sellerResult = await pool.query(`
+    SELECT id, name FROM v1_amazon_selling_partner_view
+    WHERE name = $1
+    LIMIT 1
+  `, [sellerName]);
+
+  if (sellerResult.rows.length === 0) {
+    throw new Error('Seller not found');
   }
 
-  const url = `${mrpApiUrl}/inventory?seller=${encodeURIComponent(sellerName)}`;
-  
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${mrpApiKey}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  const sellerId = sellerResult.rows[0].id;
 
-  if (!response.ok) {
-    throw new Error(`MRP API error: ${response.statusText}`);
-  }
+  // Query to get inventory data for the seller
+  const result = await pool.query(`
+    SELECT 
+      sku,
+      asin,
+      product_name,
+      condition,
+      your_price,
+      mfn_fulfillable_quantity,
+      afn_fulfillable_quantity,
+      afn_unsellable_quantity,
+      afn_reserved_quantity,
+      afn_total_quantity,
+      afn_inbound_working_quantity,
+      afn_inbound_shipped_quantity,
+      afn_inbound_receiving_quantity,
+      snapshot_date
+    FROM v1_amazon_inventory_unsuppressed_view
+    WHERE amazon_selling_partner_id = $1
+    AND snapshot_date = (SELECT MAX(snapshot_date) FROM v1_amazon_inventory_unsuppressed_view WHERE amazon_selling_partner_id = $1)
+    ORDER BY afn_total_quantity DESC
+    LIMIT 100
+  `, [sellerId]);
 
-  return await response.json();
+  return {
+    products: result.rows,
+    count: result.rows.length,
+    seller: sellerName
+  };
 }
 
 /**
- * Fetch list of sellers from MRP API
+ * Fetch list of sellers from MRP database
  */
 export async function getMRPSellers(): Promise<MRPSeller[]> {
-  const mrpApiUrl = ENV.MRP_API_URL || 'https://api.myrealprofit.com';
-  const mrpApiKey = ENV.MRP_API_KEY;
+  const pool = getMRPPool();
 
-  if (!mrpApiKey) {
-    throw new Error('MRP_API_KEY not configured');
-  }
+  const result = await pool.query(`
+    SELECT 
+      id,
+      name,
+      selling_partner_id,
+      state,
+      advertising_data_initialized,
+      financial_data_initialized
+    FROM v1_amazon_selling_partner_view
+    WHERE name IS NOT NULL
+    ORDER BY name;
+  `);
 
-  const url = `${mrpApiUrl}/sellers`;
-  
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${mrpApiKey}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`MRP API error: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.sellers || [];
+  return result.rows;
 }

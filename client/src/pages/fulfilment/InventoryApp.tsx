@@ -24,7 +24,12 @@ interface MRPInventoryItem {
 }
 
 interface MRPSeller {
-  seller_name: string;
+  id: number;
+  name: string;
+  selling_partner_id: string;
+  state: string;
+  advertising_data_initialized: boolean;
+  financial_data_initialized: boolean;
 }
 
 type TaskType = 'Main Image' | 'Gallery Images' | 'A+ Content' | 'Change Price' | 'Apply Coupon/Discount';
@@ -108,8 +113,8 @@ export default function InventoryApp() {
             </SelectTrigger>
             <SelectContent>
               {sellers?.map((seller) => (
-                <SelectItem key={seller.seller_name} value={seller.seller_name}>
-                  {seller.seller_name}
+                <SelectItem key={seller.id} value={seller.name}>
+                  {seller.name}
                 </SelectItem>
               ))}
             </SelectContent>
