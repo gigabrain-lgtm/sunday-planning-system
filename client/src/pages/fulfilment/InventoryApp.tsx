@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Loader2 } from "lucide-react";
@@ -81,7 +82,8 @@ export default function InventoryApp() {
   }, 0);
 
   return (
-    <div className="space-y-6">
+    <Sidebar>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">
@@ -232,6 +234,7 @@ export default function InventoryApp() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </Sidebar>
   );
 }

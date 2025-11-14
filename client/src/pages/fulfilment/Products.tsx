@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,8 @@ export default function FulfilmentProducts() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <Sidebar>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -225,6 +227,7 @@ export default function FulfilmentProducts() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </Sidebar>
   );
 }

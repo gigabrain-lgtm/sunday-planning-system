@@ -1,10 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Image as ImageIcon, Sparkles, Wand2, Upload } from "lucide-react";
 
 export default function FulfilmentImageKitchen() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <Sidebar>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -120,6 +122,7 @@ export default function FulfilmentImageKitchen() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </Sidebar>
   );
 }

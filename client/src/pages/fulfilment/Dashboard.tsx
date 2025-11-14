@@ -1,9 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, TrendingUp, DollarSign, AlertCircle } from "lucide-react";
+import { Sidebar } from "@/components/layout/Sidebar";
 
 export default function FulfilmentDashboard() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <Sidebar>
+      <div className="container mx-auto p-6 space-y-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Fulfilment Dashboard</h1>
         <p className="text-muted-foreground">
@@ -104,6 +106,7 @@ export default function FulfilmentDashboard() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </Sidebar>
   );
 }

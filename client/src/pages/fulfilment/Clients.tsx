@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,21 +30,32 @@ export default function FulfilmentClients() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [defconFilter, setDefconFilter] = useState("all");
 
-  // Fetch clients using React Query (will use tRPC when backend is ready)
-  const { data: clients = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['clickup-clients', search, statusFilter, defconFilter],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-      if (defconFilter !== 'all') params.append('defcon', defconFilter);
+  // Fetch clients using tRPC
+  const { data: allClients = [], isLoading, error, refetch } = trpc.fulfilment.getClients.useQuery();
 
-      const response = await fetch(`/api/clickup-clients?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch clients');
-      const data = await response.json();
-      return data.data || [];
-    },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  // Client-side filtering
+  const clients = allClients.filter((client: ClickUpClient) => {
+    // Search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      const matchesSearch = 
+        client.client_name?.toLowerCase().includes(searchLower) ||
+        client.brand_name?.toLowerCase().includes(searchLower) ||
+        client.company?.toLowerCase().includes(searchLower);
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter
+    if (statusFilter !== 'all' && client.status !== statusFilter) {
+      return false;
+    }
+
+    // Defcon filter
+    if (defconFilter !== 'all' && client.defcon.toString() !== defconFilter) {
+      return false;
+    }
+
+    return true;
   });
 
   const getDefconBadge = (defcon: number) => {
@@ -66,7 +78,8 @@ export default function FulfilmentClients() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <Sidebar>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -225,6 +238,7 @@ export default function FulfilmentClients() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </Sidebar>
   );
 }
