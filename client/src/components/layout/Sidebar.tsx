@@ -12,7 +12,11 @@ import {
   DollarSign,
   Users,
   CheckCircle,
-  Package
+  Package,
+  BarChart3,
+  UsersIcon,
+  ShoppingBag,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +43,34 @@ function LogoutButton() {
     </button>
   );
 }
+
+const fulfilmentSubItems = [
+  {
+    name: "Dashboard",
+    path: "/fulfilment/dashboard",
+    icon: BarChart3,
+  },
+  {
+    name: "Clients",
+    path: "/fulfilment/clients",
+    icon: UsersIcon,
+  },
+  {
+    name: "Products",
+    path: "/fulfilment/products",
+    icon: ShoppingBag,
+  },
+  {
+    name: "Inventory",
+    path: "/fulfilment/inventory",
+    icon: Package,
+  },
+  {
+    name: "Image Kitchen",
+    path: "/fulfilment/image-kitchen",
+    icon: Sparkles,
+  },
+];
 
 const navItems = [
   {
@@ -83,7 +115,7 @@ const navItems = [
   },
   {
     name: "Fulfilment",
-    path: "/fulfilment",
+    path: "/fulfilment/dashboard",
     icon: Package,
   },
 ];
@@ -103,10 +135,11 @@ const adminNavItems = [
 
 export function Sidebar({ children }: SidebarProps) {
   const [location] = useLocation();
+  const isFulfilmentSection = location.startsWith('/fulfilment');
 
   return (
     <div className="flex h-screen bg-white">
-      {/* Sidebar */}
+      {/* Main Sidebar */}
       <div className="w-64 bg-black text-white flex flex-col">
         {/* Logo */}
         <div className="p-6 border-b border-gray-800">
@@ -121,7 +154,9 @@ export function Sidebar({ children }: SidebarProps) {
           <ul className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location === item.path;
+              const isActive = item.name === "Fulfilment" 
+                ? location.startsWith('/fulfilment')
+                : location === item.path;
               
               return (
                 <li key={item.path}>
@@ -180,6 +215,41 @@ export function Sidebar({ children }: SidebarProps) {
           <LogoutButton />
         </div>
       </div>
+
+      {/* Second-Level Sidebar for Fulfilment */}
+      {isFulfilmentSection && (
+        <div className="w-56 bg-gray-900 text-white flex flex-col border-r border-gray-800">
+          <div className="p-4 border-b border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-400 uppercase">Fulfilment</h3>
+          </div>
+          <nav className="flex-1 p-4">
+            <ul className="space-y-1">
+              {fulfilmentSubItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.path;
+                
+                return (
+                  <li key={item.path}>
+                    <Link href={item.path}>
+                      <a
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
+                          isActive
+                            ? "bg-gray-800 text-white"
+                            : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="font-medium">{item.name}</span>
+                      </a>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
