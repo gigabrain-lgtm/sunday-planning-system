@@ -605,3 +605,29 @@ export const candidateMetrics = pgTable("candidate_metrics", {
 
 export type CandidateMetric = typeof candidateMetrics.$inferSelect;
 export type InsertCandidateMetric = typeof candidateMetrics.$inferInsert;
+
+/**
+ * ClickUp Clients - Fulfilment section
+ * Stores client information from ClickUp for the Fulfilment dashboard
+ */
+export const clickupClients = pgTable("clickup_clients", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  clickupTaskId: varchar("clickup_task_id", { length: 64 }).notNull().unique(),
+  clickupUrl: text("clickup_url"),
+  clientName: text("client_name").notNull(),
+  brandName: text("brand_name"),
+  company: text("company"),
+  status: varchar("status", { length: 64 }),
+  defcon: integer("defcon").notNull().default(3),
+  amOwner: text("am_owner"),
+  ppcOwner: text("ppc_owner"),
+  creativeOwner: text("creative_owner"),
+  podOwner: text("pod_owner"),
+  totalAsinsFam: text("total_asins_fam"),
+  totalAsinsPpc: text("total_asins_ppc"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type ClickUpClient = typeof clickupClients.$inferSelect;
+export type InsertClickUpClient = typeof clickupClients.$inferInsert;

@@ -1,4 +1,7 @@
 import { ENV } from "./_core/env";
+import { getDb } from "./db";
+import { clickupClients } from "../drizzle/schema";
+import { eq, and, or, sql } from "drizzle-orm";
 
 const CLICKUP_API_URL = "https://api.clickup.com/api/v2";
 
@@ -339,43 +342,75 @@ export async function markTaskComplete(taskId: string): Promise<void> {
   }
 }
 
-// Fulfilment - Get clients from listing-optimization Supabase
+// Fulfilment - Get clients from local PostgreSQL database
 export async function getClients(params?: { search?: string; status?: string; defcon?: string }): Promise<any> {
-  const supabaseUrl = 'https://qmtlcqvjdgwdlzxnvjxn.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtdGxjcXZqZGd3ZGx6eG52anhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0NjIxMzksImV4cCI6MjA1MjAzODEzOX0.4-lsQaKZxQDdqxNNL8-dOLRxOeQTmPHDfBjLKPyIXME';
-  
-  const { search, status, defcon } = params || {};
-  
-  let url = `${supabaseUrl}/rest/v1/clickup_clients?select=*&order=defcon.asc,client_status.asc&limit=100`;
-  
-  if (search) {
-    url += `&or=(client_name.ilike.%25${encodeURIComponent(search)}%25,brand_name.ilike.%25${encodeURIComponent(search)}%25,company.ilike.%25${encodeURIComponent(search)}%25)`;
+  try {
+    const { search, status, defcon } = params || {};
+    
+    const db = await getDb();
+    if (!db) {
+      console.error('[ClickUp] Database not available');
+      return [];
+    }
+    
+    console.log(`[ClickUp] Fetching clients from database with params:`, params);
+    
+    // Build query with filters
+    let query = db.select().from(clickupClients);
+    
+    // Apply filters using Drizzle ORM
+    const conditions = [];
+    
+    if (search) {
+      const searchLower = `%${search.toLowerCase()}%`;
+      conditions.push(
+        or(
+          sql`LOWER(${clickupClients.clientName}) LIKE ${searchLower}`,
+          sql`LOWER(${clickupClients.brandName}) LIKE ${searchLower}`,
+          sql`LOWER(${clickupClients.company}) LIKE ${searchLower}`
+        )
+      );
+    }
+    
+    if (status && status !== 'all') {
+      conditions.push(eq(clickupClients.status, status));
+    }
+    
+    if (defcon) {
+      conditions.push(eq(clickupClients.defcon, parseInt(defcon)));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    // Order by defcon (priority) and status
+    const clients = await query.orderBy(clickupClients.defcon, clickupClients.status);
+    
+    console.log(`[ClickUp] Successfully fetched ${clients.length} clients from database`);
+    
+    // Transform to match frontend interface
+    return clients.map(client => ({
+      id: client.id.toString(),
+      clickup_task_id: client.clickupTaskId,
+      clickup_url: client.clickupUrl,
+      client_name: client.clientName,
+      brand_name: client.brandName,
+      company: client.company,
+      status: client.status,
+      defcon: client.defcon,
+      am_owner: client.amOwner,
+      ppc_owner: client.ppcOwner,
+      creative_owner: client.creativeOwner,
+      pod_owner: client.podOwner,
+      total_asins_fam: client.totalAsinsFam,
+      total_asins_ppc: client.totalAsinsPpc,
+    }));
+  } catch (error: any) {
+    console.error(`[ClickUp] Error in getClients:`, error);
+    // Return empty array instead of throwing to prevent UI from breaking
+    return [];
   }
-  
-  if (status && status !== 'all') {
-    url += `&client_status=eq.${status}`;
-  }
-  
-  if (defcon) {
-    url += `&defcon=eq.${defcon}`;
-  }
-  
-  const response = await fetch(url, {
-    headers: {
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[ClickUp] Failed to fetch clients: ${response.status} - ${errorText}`);
-    throw new Error(`Failed to fetch clients: ${errorText}`);
-  }
-  
-  const clients = await response.json();
-  return clients;
 }
 
 export async function getTeamMembers(listId: string): Promise<TeamMember[]> {
@@ -387,7 +422,6 @@ export async function getTeamMembers(listId: string): Promise<TeamMember[]> {
   const response = await fetch(`${CLICKUP_API_URL}/list/${listId}/member`, {
     headers: {
       Authorization: ENV.clickupApiKey,
-      "Content-Type": "application/json",
     },
   });
 

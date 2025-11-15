@@ -2,10 +2,10 @@ import { eq, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from 'pg';
 const { Pool } = pkg;
-import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency, paymentRequests, InsertPaymentRequest, PaymentRequest, recruiters, InsertRecruiter, jobAssignments, InsertJobAssignment, hiringPriorities, InsertHiringPriority, roles, InsertRole, jobPostings, InsertJobPosting, invoices, InsertInvoice, spendHistory, InsertSpendHistory, candidateMetrics, InsertCandidateMetric, jobTitleMappings, InsertJobTitleMapping } from "../drizzle/schema";
+import { InsertUser, users, weeklyPlannings, manifestations, InsertWeeklyPlanning, InsertManifestation, keyResultObjectiveMappings, InsertKeyResultObjectiveMapping, visualizations, InsertVisualization, visualizationHistory, InsertVisualizationHistory, sleepSessions, agencies, InsertAgency, Agency, paymentRequests, InsertPaymentRequest, PaymentRequest, recruiters, InsertRecruiter, jobAssignments, InsertJobAssignment, hiringPriorities, InsertHiringPriority, roles, InsertRole, jobPostings, InsertJobPosting, invoices, InsertInvoice, spendHistory, InsertSpendHistory, candidateMetrics, InsertCandidateMetric, jobTitleMappings, InsertJobTitleMapping, clickupClients, InsertClickUpClient, ClickUpClient } from "../drizzle/schema";
 
-// Re-export paymentRequests for use in routers
-export { paymentRequests };
+// Re-export tables for use in routers
+export { paymentRequests, clickupClients };
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
