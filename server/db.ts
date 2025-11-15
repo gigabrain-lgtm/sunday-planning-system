@@ -716,6 +716,23 @@ export async function getAllHiringPriorities() {
   return await db.select().from(hiringPriorities).orderBy(desc(hiringPriorities.createdAt));
 }
 
+export async function getHiringPrioritiesByRecruiter(recruiterId: number | null) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  if (recruiterId === null) {
+    // Master list: recruiterId IS NULL
+    return await db.select().from(hiringPriorities)
+      .where(sql`${hiringPriorities.recruiterId} IS NULL`)
+      .orderBy(desc(hiringPriorities.createdAt));
+  } else {
+    // Specific recruiter
+    return await db.select().from(hiringPriorities)
+      .where(eq(hiringPriorities.recruiterId, recruiterId))
+      .orderBy(desc(hiringPriorities.createdAt));
+  }
+}
+
 export async function getHiringPriorityById(id: number) {
   const db = await getDb();
   if (!db) return undefined;

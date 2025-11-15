@@ -491,12 +491,13 @@ export type InsertJobAssignment = typeof jobAssignments.$inferInsert;
  */
 export const hiringPriorities = pgTable("hiring_priorities", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  jobTitle: varchar("jobTitle", { length: 255 }).notNull().unique(),
+  jobTitle: varchar("jobTitle", { length: 255 }).notNull(),
   description: text("description"),
   priority: hiringPriorityEnum("priority").default("normal").notNull(),
   jobDescription: text("jobDescription"),
   testQuestions: text("testQuestions"),
   interviewQuestions: text("interviewQuestions"),
+  recruiterId: integer("recruiterId"), // NULL = Master list, otherwise specific recruiter
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

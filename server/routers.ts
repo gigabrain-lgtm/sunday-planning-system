@@ -2353,9 +2353,14 @@ export const appRouter = router({
   }),
 
   hiringPriorities: router({
-    list: protectedProcedure.query(async () => {
-      return await db.getAllHiringPriorities();
-    }),
+    list: protectedProcedure
+      .input(z.object({
+        recruiterId: z.number().nullable().optional(), // NULL = Master list
+      }).optional())
+      .query(async ({ input }) => {
+        const recruiterId = input?.recruiterId ?? null;
+        return await db.getHiringPrioritiesByRecruiter(recruiterId);
+      }),
 
     create: protectedProcedure
       .input(z.object({
@@ -2365,6 +2370,7 @@ export const appRouter = router({
         jobDescription: z.string().optional(),
         testQuestions: z.string().optional(),
         interviewQuestions: z.string().optional(),
+        recruiterId: z.number().nullable().optional(),
       }))
       .mutation(async ({ input }) => {
         const result = await db.createHiringPriority(input);
@@ -2380,6 +2386,7 @@ export const appRouter = router({
         jobDescription: z.string().optional(),
         testQuestions: z.string().optional(),
         interviewQuestions: z.string().optional(),
+        recruiterId: z.number().nullable().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;

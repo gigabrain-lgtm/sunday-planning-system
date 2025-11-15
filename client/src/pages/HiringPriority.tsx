@@ -74,8 +74,11 @@ interface RoleFormData {
 }
 
 export default function HiringPriority() {
-  const { data: priorities, isLoading: prioritiesLoading } = trpc.hiringPriorities.list.useQuery();
+  const [selectedRecruiterId, setSelectedRecruiterId] = useState<number | null>(null); // null = Master
+  
+  const { data: priorities, isLoading: prioritiesLoading } = trpc.hiringPriorities.list.useQuery({ recruiterId: selectedRecruiterId });
   const { data: jobAssignments, isLoading: assignmentsLoading } = trpc.jobAssignments.list.useQuery();
+  const { data: recruiters } = trpc.recruiters.list.useQuery();
   
   const createPriorityMutation = trpc.hiringPriorities.create.useMutation();
   const updatePriorityMutation = trpc.hiringPriorities.update.useMutation();
@@ -176,11 +179,15 @@ export default function HiringPriority() {
         await updatePriorityMutation.mutateAsync({
           id: editingRole.id,
           ...formData,
+          recruiterId: selectedRecruiterId,
         });
         toast.success("Role updated successfully");
       } else {
         // Create new role
-        await createPriorityMutation.mutateAsync(formData);
+        await createPriorityMutation.mutateAsync({
+          ...formData,
+          recruiterId: selectedRecruiterId,
+        });
         toast.success("Role added successfully");
       }
 
@@ -230,10 +237,28 @@ export default function HiringPriority() {
             Manage priority levels for job titles across all agencies
           </p>
         </div>
-        <Button onClick={handleAddRole}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Role
-        </Button>
+        <div className="flex gap-4 items-center">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="recruiter-select" className="text-sm text-muted-foreground">View List:</Label>
+            <Select value={selectedRecruiterId === null ? "master" : String(selectedRecruiterId)} onValueChange={(value) => setSelectedRecruiterId(value === "master" ? null : Number(value))}>
+              <SelectTrigger id="recruiter-select" className="w-[200px]">
+                <SelectValue placeholder="Select list" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="master">🌟 Master List</SelectItem>
+                {recruiters?.map((recruiter) => (
+                  <SelectItem key={recruiter.id} value={String(recruiter.id)}>
+                    {recruiter.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleAddRole}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Role
+          </Button>
+        </div>
       </div>
 
       {/* Active Priority Roles */}
