@@ -339,6 +339,45 @@ export async function markTaskComplete(taskId: string): Promise<void> {
   }
 }
 
+// Fulfilment - Get clients from listing-optimization Supabase
+export async function getClients(params?: { search?: string; status?: string; defcon?: string }): Promise<any> {
+  const supabaseUrl = 'https://qmtlcqvjdgwdlzxnvjxn.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtdGxjcXZqZGd3ZGx6eG52anhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0NjIxMzksImV4cCI6MjA1MjAzODEzOX0.4-lsQaKZxQDdqxNNL8-dOLRxOeQTmPHDfBjLKPyIXME';
+  
+  const { search, status, defcon } = params || {};
+  
+  let url = `${supabaseUrl}/rest/v1/clickup_clients?select=*&order=defcon.asc,client_status.asc&limit=100`;
+  
+  if (search) {
+    url += `&or=(client_name.ilike.%25${encodeURIComponent(search)}%25,brand_name.ilike.%25${encodeURIComponent(search)}%25,company.ilike.%25${encodeURIComponent(search)}%25)`;
+  }
+  
+  if (status && status !== 'all') {
+    url += `&client_status=eq.${status}`;
+  }
+  
+  if (defcon) {
+    url += `&defcon=eq.${defcon}`;
+  }
+  
+  const response = await fetch(url, {
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[ClickUp] Failed to fetch clients: ${response.status} - ${errorText}`);
+    throw new Error(`Failed to fetch clients: ${errorText}`);
+  }
+  
+  const clients = await response.json();
+  return clients;
+}
+
 export async function getTeamMembers(listId: string): Promise<TeamMember[]> {
   if (!ENV.clickupApiKey) {
     console.warn("[ClickUp] API key not configured");
