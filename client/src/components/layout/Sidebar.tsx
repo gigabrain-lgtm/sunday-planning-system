@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
@@ -12,7 +13,17 @@ import {
   DollarSign,
   Users,
   CheckCircle,
-  Package
+  Package,
+  UserCheck,
+  UserPlus,
+  UsersRound,
+  FolderKanban,
+  Grid3x3,
+  AlertCircle,
+  FileText,
+  ShoppingCart,
+  Box,
+  Image as ImageIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -80,12 +91,36 @@ const navItems = [
     name: "Hiring",
     path: "/hiring",
     icon: Users,
+    hasSubmenu: true,
   },
   {
     name: "Fulfilment",
     path: "/fulfilment",
     icon: Package,
+    hasSubmenu: true,
   },
+];
+
+const hiringSubItems = [
+  { name: "Dashboard", path: "/hiring", icon: LayoutDashboard },
+  { name: "Roles", path: "/hiring/roles", icon: Briefcase },
+  { name: "Recruitment Funnel", path: "/hiring/recruitment-funnel", icon: TrendingUp },
+  { name: "CEO Review", path: "/hiring/ceo-review", icon: UserCheck },
+  { name: "Recruiter Management", path: "/hiring/recruiter-management", icon: UsersRound },
+  { name: "Recruiter Onboarding", path: "/hiring/recruiter-onboarding", icon: UserPlus },
+  { name: "Jobs", path: "/hiring/jobs", icon: FolderKanban },
+  { name: "Workable Jobs", path: "/hiring/workable-jobs", icon: Briefcase },
+  { name: "Job Coverage Matrix", path: "/hiring/job-coverage", icon: Grid3x3 },
+  { name: "Hiring Priority", path: "/hiring/priorities", icon: AlertCircle },
+  { name: "Invoices", path: "/hiring/invoices", icon: FileText },
+];
+
+const fulfilmentSubItems = [
+  { name: "Dashboard", path: "/fulfilment", icon: LayoutDashboard },
+  { name: "Clients", path: "/fulfilment/clients", icon: Users },
+  { name: "Products", path: "/fulfilment/products", icon: ShoppingCart },
+  { name: "Inventory", path: "/fulfilment/inventory", icon: Box },
+  { name: "Image Kitchen", path: "/fulfilment/image-kitchen", icon: ImageIcon },
 ];
 
 const adminNavItems = [
@@ -103,11 +138,40 @@ const adminNavItems = [
 
 export function Sidebar({ children }: SidebarProps) {
   const [location] = useLocation();
+  const [expandedSection, setExpandedSection] = useState<string | null>(() => {
+    // Auto-expand based on current location
+    if (location.startsWith('/hiring')) return 'hiring';
+    if (location.startsWith('/fulfilment')) return 'fulfilment';
+    return null;
+  });
+
+  const handleSectionClick = (sectionName: string, path: string) => {
+    if (expandedSection === sectionName.toLowerCase()) {
+      setExpandedSection(null);
+    } else {
+      setExpandedSection(sectionName.toLowerCase());
+    }
+  };
+
+  const getSubItems = (sectionName: string) => {
+    switch (sectionName.toLowerCase()) {
+      case 'hiring':
+        return hiringSubItems;
+      case 'fulfilment':
+        return fulfilmentSubItems;
+      default:
+        return [];
+    }
+  };
+
+  const isInSection = (sectionName: string) => {
+    return location.startsWith(`/${sectionName.toLowerCase()}`);
+  };
 
   return (
     <div className="flex h-screen bg-white">
-      {/* Sidebar */}
-      <div className="w-64 bg-black text-white flex flex-col">
+      {/* Main Sidebar */}
+      <div className="w-64 bg-black text-white flex flex-col flex-shrink-0">
         {/* Logo */}
         <div className="p-6 border-b border-gray-800">
           <div className="flex items-center gap-2">
@@ -117,18 +181,19 @@ export function Sidebar({ children }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location === item.path;
+              const isActive = location === item.path || isInSection(item.name);
               
               return (
                 <li key={item.path}>
-                  <Link href={item.path}>
-                    <a
+                  {item.hasSubmenu ? (
+                    <button
+                      onClick={() => handleSectionClick(item.name, item.path)}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left",
                         isActive
                           ? "bg-gray-800 text-white"
                           : "text-gray-400 hover:bg-gray-900 hover:text-white"
@@ -136,8 +201,22 @@ export function Sidebar({ children }: SidebarProps) {
                     >
                       <Icon className="w-5 h-5" />
                       <span className="font-medium">{item.name}</span>
-                    </a>
-                  </Link>
+                    </button>
+                  ) : (
+                    <Link href={item.path}>
+                      <a
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                          isActive
+                            ? "bg-gray-800 text-white"
+                            : "text-gray-400 hover:bg-gray-900 hover:text-white"
+                        )}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="font-medium">{item.name}</span>
+                      </a>
+                    </Link>
+                  )}
                 </li>
               );
             })}
@@ -160,8 +239,8 @@ export function Sidebar({ children }: SidebarProps) {
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
                           isActive
-                            ? "bg-white text-black"
-                            : "text-gray-300 hover:bg-gray-900 hover:text-white"
+                            ? "bg-gray-800 text-white"
+                            : "text-gray-400 hover:bg-gray-900 hover:text-white"
                         )}
                       >
                         <Icon className="w-5 h-5" />
@@ -180,6 +259,46 @@ export function Sidebar({ children }: SidebarProps) {
           <LogoutButton />
         </div>
       </div>
+
+      {/* Expandable Section Panel */}
+      {expandedSection && (
+        <div className="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0 border-r border-gray-800">
+          {/* Section Header */}
+          <div className="p-6 border-b border-gray-800">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              {expandedSection}
+            </h2>
+          </div>
+
+          {/* Section Navigation */}
+          <nav className="flex-1 p-4 overflow-y-auto">
+            <ul className="space-y-1">
+              {getSubItems(expandedSection).map((subItem) => {
+                const Icon = subItem.icon;
+                const isActive = location === subItem.path;
+                
+                return (
+                  <li key={subItem.path}>
+                    <Link href={subItem.path}>
+                      <a
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                          isActive
+                            ? "bg-gray-800 text-white"
+                            : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="font-medium text-sm">{subItem.name}</span>
+                      </a>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">

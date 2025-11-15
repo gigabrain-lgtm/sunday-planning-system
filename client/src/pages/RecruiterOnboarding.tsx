@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import HiringDashboardLayout from "@/components/HiringDashboardLayout";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -278,7 +278,7 @@ export default function RecruiterOnboarding() {
   };
   
   return (
-    <HiringDashboardLayout>
+    <Sidebar>
       <div className="container max-w-4xl py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Recruiter Onboarding</h1>
@@ -578,6 +578,6 @@ export default function RecruiterOnboarding() {
           </Card>
         )}
       </div>
-    </HiringDashboardLayout>
+    </Sidebar>
   );
 }

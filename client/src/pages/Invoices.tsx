@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import HiringDashboardLayout from "@/components/HiringDashboardLayout";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -348,8 +348,8 @@ function Invoices() {
 
 export default function InvoicesPage() {
   return (
-    <HiringDashboardLayout>
+    <Sidebar>
       <Invoices />
-    </HiringDashboardLayout>
+    </Sidebar>
   );
 }

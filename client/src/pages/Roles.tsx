@@ -1,4 +1,4 @@
-import HiringDashboardLayout from "@/components/HiringDashboardLayout";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -93,16 +93,16 @@ export default function Roles() {
 
   if (isLoading) {
     return (
-      <HiringDashboardLayout>
+      <Sidebar>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </HiringDashboardLayout>
+      </Sidebar>
     );
   }
 
   return (
-    <HiringDashboardLayout>
+    <Sidebar>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -288,6 +288,6 @@ export default function Roles() {
           </CardContent>
         </Card>
       </div>
-    </HiringDashboardLayout>
+    </Sidebar>
   );
 }

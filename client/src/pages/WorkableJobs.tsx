@@ -1,4 +1,4 @@
-import HiringDashboardLayout from "@/components/HiringDashboardLayout";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -23,7 +23,7 @@ export default function WorkableJobs() {
   };
 
   return (
-    <HiringDashboardLayout>
+    <Sidebar>
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -136,6 +136,6 @@ export default function WorkableJobs() {
           </CardContent>
         </Card>
       </div>
-    </HiringDashboardLayout>
+    </Sidebar>
   );
 }
