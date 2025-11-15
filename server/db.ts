@@ -869,3 +869,55 @@ export async function deleteJobTitleMapping(id: number) {
   
   await db.delete(jobTitleMappings).where(eq(jobTitleMappings.id, id));
 }
+
+// ===== HIRING ANALYTICS FUNCTIONS =====
+
+export async function getSpendingByRole() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db
+    .select({
+      roleId: jobPostings.roleId,
+      roleName: roles.roleName,
+      postingCount: sql<number>`COUNT(${jobPostings.id})`,
+      totalSpending: sql<number>`SUM(${jobPostings.dailySpend} * (CURRENT_DATE - ${jobPostings.startDate}))`,
+      totalApplicants: sql<number>`SUM(${jobPostings.totalApplicants})`,
+    })
+    .from(jobPostings)
+    .leftJoin(roles, eq(jobPostings.roleId, roles.id))
+    .groupBy(jobPostings.roleId, roles.roleName);
+  
+  return result;
+}
+
+export async function getSpendingByLocation() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db
+    .select({
+      location: jobPostings.location,
+      postingCount: sql<number>`COUNT(${jobPostings.id})`,
+      totalSpending: sql<number>`SUM(${jobPostings.dailySpend} * (CURRENT_DATE - ${jobPostings.startDate}))`,
+    })
+    .from(jobPostings)
+    .groupBy(jobPostings.location);
+  
+  return result;
+}
+
+export async function getTotalStats() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db
+    .select({
+      totalSpending: sql<number>`COALESCE(SUM(${jobPostings.dailySpend} * (CURRENT_DATE - ${jobPostings.startDate})), 0)`,
+      totalApplicants: sql<number>`COALESCE(SUM(${jobPostings.totalApplicants}), 0)`,
+      activePostings: sql<number>`COUNT(CASE WHEN ${jobPostings.status} = 'active' THEN 1 END)`,
+    })
+    .from(jobPostings);
+  
+  return result[0] || { totalSpending: 0, totalApplicants: 0, activePostings: 0 };
+}
