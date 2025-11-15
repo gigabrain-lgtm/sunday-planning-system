@@ -2349,8 +2349,56 @@ export const appRouter = router({
         const { syncCandidateMetrics } = await import('./workable');
         const metrics = await syncCandidateMetrics(input.forceRefresh || false);
         return { success: true, metrics };
+       }),
+  }),
+
+  hiringPriorities: router({
+    list: protectedProcedure.query(async () => {
+      return await db.getAllHiringPriorities();
+    }),
+
+    create: protectedProcedure
+      .input(z.object({
+        jobTitle: z.string(),
+        description: z.string().optional(),
+        priority: z.enum(["critical", "high", "normal", "low"]),
+        jobDescription: z.string().optional(),
+        testQuestions: z.string().optional(),
+        interviewQuestions: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await db.createHiringPriority(input);
+        return result;
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        jobTitle: z.string().optional(),
+        description: z.string().optional(),
+        priority: z.enum(["critical", "high", "normal", "low"]).optional(),
+        jobDescription: z.string().optional(),
+        testQuestions: z.string().optional(),
+        interviewQuestions: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateHiringPriority(id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteHiringPriority(input.id);
+        return { success: true };
       }),
   }),
-});
 
+  jobAssignments: router({
+    list: protectedProcedure.query(async () => {
+      return await db.getAllJobAssignments();
+    }),
+  }),
+});
 export type AppRouter = typeof appRouter;
