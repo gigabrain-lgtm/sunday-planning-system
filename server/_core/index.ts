@@ -42,14 +42,14 @@ async function startServer() {
     console.error("[Server] Failed to run migrations, continuing anyway:", error);
   }
 
-  // Run ClickUp clients migration (one-time, safe to run multiple times)
+  // Seed sample client data (for testing, safe to run multiple times)
   try {
-    console.log('[Server] Running ClickUp clients migration...');
-    const { migrateClients } = await import('../migrate-clickup-clients');
-    await migrateClients();
-    console.log('[Server] ClickUp clients migration completed');
+    console.log('[Server] Seeding client data...');
+    const { seedClients } = await import('../seed-clients');
+    await seedClients();
+    console.log('[Server] Client data seeding completed');
   } catch (error) {
-    console.error("[Server] Failed to run ClickUp clients migration:", error);
+    console.error("[Server] Failed to seed client data:", error);
   }
 
   const app = express();

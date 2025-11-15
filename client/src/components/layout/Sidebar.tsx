@@ -111,7 +111,7 @@ const hiringSubItems = [
 ];
 
 const fulfilmentSubItems = [
-  { name: "Dashboard", path: "/fulfilment", icon: LayoutDashboard },
+  { name: "Dashboard", path: "/fulfilment/dashboard", icon: LayoutDashboard },
   { name: "Clients", path: "/fulfilment/clients", icon: Users },
   { name: "Products", path: "/fulfilment/products", icon: ShoppingCart },
   { name: "Inventory", path: "/fulfilment/inventory", icon: Box },
