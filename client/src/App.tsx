@@ -43,6 +43,7 @@ import FulfilmentClients from "./pages/fulfilment/Clients";
 import FulfilmentProducts from "./pages/fulfilment/Products";
 import FulfilmentInventory from "./pages/fulfilment/Inventory";
 import FulfilmentImageKitchen from "./pages/fulfilment/ImageKitchen";
+import AdminMigration from "./pages/AdminMigration";
 
 function Router() {
   return (
@@ -208,6 +209,11 @@ function Router() {
       <Route path="/fulfilment/image-kitchen">
         <ProtectedRoute>
           <FulfilmentImageKitchen />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/migration">
+        <ProtectedRoute>
+          <AdminMigration />
         </ProtectedRoute>
       </Route>
       <Route path="/home">

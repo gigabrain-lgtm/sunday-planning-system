@@ -1971,6 +1971,13 @@ export const appRouter = router({
     getClients: protectedProcedure.query(async () => {
       return await clickup.getClients();
     }),
+
+    // Run migration from Supabase to PostgreSQL (admin only)
+    migrateClients: protectedProcedure.mutation(async () => {
+      const { migrateClients } = await import('./migrate-clickup-clients');
+      await migrateClients();
+      return { success: true, message: 'Migration completed successfully' };
+    }),
   }),
 
   // ===== HIRING SYSTEM ROUTERS (from LinkedIn Ads Tracker) =====
