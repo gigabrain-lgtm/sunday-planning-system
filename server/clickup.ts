@@ -389,23 +389,8 @@ export async function getClients(params?: { search?: string; status?: string; de
     
     console.log(`[ClickUp] Successfully fetched ${clients.length} clients from database`);
     
-    // Transform to match frontend interface
-    return clients.map(client => ({
-      id: client.id.toString(),
-      clickup_task_id: client.clickupTaskId,
-      clickup_url: client.clickupUrl,
-      client_name: client.clientName,
-      brand_name: client.brandName,
-      company: client.company,
-      status: client.status,
-      defcon: client.defcon,
-      am_owner: client.amOwner,
-      ppc_owner: client.ppcOwner,
-      creative_owner: client.creativeOwner,
-      pod_owner: client.podOwner,
-      total_asins_fam: client.totalAsinsFam,
-      total_asins_ppc: client.totalAsinsPpc,
-    }));
+    // Return clients directly - they already match the frontend interface
+    return clients;
   } catch (error: any) {
     console.error(`[ClickUp] Error in getClients:`, error);
     // Return empty array instead of throwing to prevent UI from breaking
