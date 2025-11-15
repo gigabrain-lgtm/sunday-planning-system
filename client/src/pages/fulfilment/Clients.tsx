@@ -8,14 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { Users, RefreshCw, ExternalLink } from "lucide-react";
 
 interface ClickUpClient {
-  id: string;
-  name: string;
-  brand: string | null;
+  id: number;
+  clickupTaskId: string;
+  clickupUrl: string | null;
+  clientName: string;
+  brandName: string | null;
   company: string | null;
-  mrpSeller: string | null;
-  status: string;
+  status: string | null;
   defcon: number;
-  notes: string | null;
+  amOwner: string | null;
+  ppcOwner: string | null;
+  creativeOwner: string | null;
+  podOwner: string | null;
+  totalAsinsFam: string | null;
+  totalAsinsPpc: string | null;
 }
 
 export default function FulfilmentClients() {
@@ -32,8 +38,8 @@ export default function FulfilmentClients() {
     if (search) {
       const searchLower = search.toLowerCase();
       const matchesSearch = 
-        client.name?.toLowerCase().includes(searchLower) ||
-        client.brand?.toLowerCase().includes(searchLower) ||
+        client.clientName?.toLowerCase().includes(searchLower) ||
+        client.brandName?.toLowerCase().includes(searchLower) ||
         client.company?.toLowerCase().includes(searchLower);
       if (!matchesSearch) return false;
     }
@@ -152,7 +158,7 @@ export default function FulfilmentClients() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Client Name</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Brand</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Company</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">MRP Seller</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">AM Owner</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Priority</th>
                   </tr>
@@ -165,19 +171,21 @@ export default function FulfilmentClients() {
                     return (
                       <tr key={client.id} className="hover:bg-gray-800/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-white">{client.name}</div>
-                          {client.notes && (
-                            <div className="text-xs text-gray-400">{client.notes}</div>
+                          <div className="text-sm font-medium text-white">{client.clientName}</div>
+                          {client.clickupUrl && (
+                            <a href={client.clickupUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">
+                              View in ClickUp
+                            </a>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {client.brand || '-'}
+                          {client.brandName || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                           {client.company || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {client.mrpSeller || '-'}
+                          {client.amOwner || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Badge className={statusBadge.className}>
