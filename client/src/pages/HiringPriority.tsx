@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -220,7 +221,8 @@ export default function HiringPriority() {
   const inactiveRoles = sortedPriorities.filter((role) => role.priority === "inactive");
 
   return (
-    <div className="container mx-auto py-8">
+    <Sidebar>
+      <div className="container mx-auto py-8">
       <div className="mb-8 flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold mb-2">Hiring Priority</h1>
@@ -547,5 +549,6 @@ export default function HiringPriority() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </Sidebar>
   );
 }
