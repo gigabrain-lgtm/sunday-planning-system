@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
@@ -139,6 +139,15 @@ export function Sidebar({ children }: SidebarProps) {
     if (location.startsWith('/fulfilment')) return 'fulfilment';
     return null;
   });
+
+  // Keep expanded section in sync with location
+  useEffect(() => {
+    if (location.startsWith('/hiring')) {
+      setExpandedSection('hiring');
+    } else if (location.startsWith('/fulfilment')) {
+      setExpandedSection('fulfilment');
+    }
+  }, [location]);
 
   const handleSectionClick = (sectionName: string, path: string) => {
     // Always expand the section, don't toggle it closed
