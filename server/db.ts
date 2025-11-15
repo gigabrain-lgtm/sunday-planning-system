@@ -17,7 +17,7 @@ export async function getDb() {
     try {
       _pool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        ssl: { rejectUnauthorized: false }
       });
       _db = drizzle(_pool);
     } catch (error) {
