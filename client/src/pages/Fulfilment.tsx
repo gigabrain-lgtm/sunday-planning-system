@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Package, Users, ShoppingCart, Image, BarChart3 } from "lucide-react";
 
 export default function Fulfilment() {
@@ -47,7 +48,8 @@ export default function Fulfilment() {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <Sidebar>
+      <div className="container mx-auto p-6 space-y-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Fulfilment</h1>
         <p className="text-muted-foreground">
@@ -100,5 +102,6 @@ export default function Fulfilment() {
         </CardContent>
       </Card>
     </div>
+    </Sidebar>
   );
 }
