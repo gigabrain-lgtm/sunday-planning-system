@@ -1,7 +1,7 @@
 import { ENV } from "./_core/env";
 import { getDb } from "./db";
 import { clickupClients } from "../drizzle/schema";
-import { eq, and, or, sql } from "drizzle-orm";
+import { eq, and, or, sql, asc } from "drizzle-orm";
 
 const CLICKUP_API_URL = "https://api.clickup.com/api/v2";
 
@@ -384,8 +384,8 @@ export async function getClients(params?: { search?: string; status?: string; de
       query = query.where(and(...conditions));
     }
     
-    // Order by defcon (priority) and status
-    const clients = await query.orderBy(clickupClients.defcon, clickupClients.status);
+    // Order by defcon (priority) ascending
+    const clients = await query.orderBy(asc(clickupClients.defcon));
     
     console.log(`[ClickUp] Successfully fetched ${clients.length} clients from database`);
     
@@ -393,8 +393,10 @@ export async function getClients(params?: { search?: string; status?: string; de
     return clients;
   } catch (error: any) {
     console.error(`[ClickUp] Error in getClients:`, error);
-    // Return empty array instead of throwing to prevent UI from breaking
-    return [];
+    console.error(`[ClickUp] Error stack:`, error.stack);
+    console.error(`[ClickUp] Error message:`, error.message);
+    // Throw the error so tRPC can return proper error response
+    throw new Error(`Failed to fetch clients: ${error.message}`);
   }
 }
 
