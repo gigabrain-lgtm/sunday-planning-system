@@ -83,11 +83,6 @@ const navItems = [
     icon: Building2,
   },
   {
-    name: "Payment Requests",
-    path: "/payment-requests",
-    icon: DollarSign,
-  },
-  {
     name: "Hiring",
     path: "/hiring",
     icon: Users,

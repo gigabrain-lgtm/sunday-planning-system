@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, XCircle, ExternalLink, Pencil } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, ExternalLink, Pencil, Copy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -174,8 +174,23 @@ export default function PaymentRequestsAdmin() {
       <div className="flex-1 overflow-auto bg-gray-50">
         <div className="container mx-auto p-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Payment Requests Admin</h1>
-            <p className="text-gray-600 mt-2">Review and approve payment requests</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Payment Requests Admin</h1>
+                <p className="text-gray-600 mt-2">Review and approve payment requests</p>
+              </div>
+              <Button
+                onClick={() => {
+                  const link = `${window.location.origin}/payment-requests`;
+                  navigator.clipboard.writeText(link);
+                  toast.success("Payment request link copied!");
+                }}
+                className="flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Copy Payment Request Link
+              </Button>
+            </div>
           </div>
 
           {!requests || requests.length === 0 ? (
