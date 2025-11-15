@@ -74,12 +74,12 @@ interface RoleFormData {
 }
 
 export function HiringPriorities() {
-  const { data: priorities, isLoading: prioritiesLoading } = trpc.hiringPriorities.list.useQuery();
-  const { data: jobAssignments, isLoading: assignmentsLoading } = trpc.jobAssignments.list.useQuery();
+  const { data: priorities, isLoading: prioritiesLoading } = trpc.hiring.priorities.list.useQuery();
+  const { data: jobAssignments, isLoading: assignmentsLoading } = trpc.hiring.jobAssignments.list.useQuery();
   
-  const createPriorityMutation = trpc.hiringPriorities.create.useMutation();
-  const updatePriorityMutation = trpc.hiringPriorities.update.useMutation();
-  const deletePriorityMutation = trpc.hiringPriorities.delete.useMutation();
+  const createPriorityMutation = trpc.hiring.priorities.create.useMutation();
+  const updatePriorityMutation = trpc.hiring.priorities.update.useMutation();
+  const deletePriorityMutation = trpc.hiring.priorities.delete.useMutation();
   const utils = trpc.useUtils();
 
   const [editingJobTitle, setEditingJobTitle] = useState<string | null>(null);
@@ -126,7 +126,7 @@ export function HiringPriorities() {
         });
       }
       
-      await utils.hiringPriorities.list.invalidate();
+      await utils.hiring.priorities.list.invalidate();
       toast.success("Priority updated successfully");
       setEditingJobTitle(null);
     } catch (error) {
@@ -184,7 +184,7 @@ export function HiringPriorities() {
         toast.success("Role added successfully");
       }
 
-      await utils.hiringPriorities.list.invalidate();
+      await utils.hiring.priorities.list.invalidate();
       setIsDialogOpen(false);
     } catch (error) {
       toast.error("Failed to save role");
@@ -198,7 +198,7 @@ export function HiringPriorities() {
 
     try {
       await deletePriorityMutation.mutateAsync({ id: deleteRoleId });
-      await utils.hiringPriorities.list.invalidate();
+      await utils.hiring.priorities.list.invalidate();
       toast.success("Role deleted successfully");
       setDeleteRoleId(null);
     } catch (error) {
