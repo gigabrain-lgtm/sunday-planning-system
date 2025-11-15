@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
@@ -133,26 +133,13 @@ const adminNavItems = [
 
 export function Sidebar({ children }: SidebarProps) {
   const [location] = useLocation();
-  const [expandedSection, setExpandedSection] = useState<string | null>(() => {
-    // Auto-expand based on current location
+  
+  // Determine expanded section directly from location (no state needed)
+  const expandedSection = (() => {
     if (location.startsWith('/hiring')) return 'hiring';
     if (location.startsWith('/fulfilment')) return 'fulfilment';
     return null;
-  });
-
-  // Keep expanded section in sync with location
-  useEffect(() => {
-    if (location.startsWith('/hiring')) {
-      setExpandedSection('hiring');
-    } else if (location.startsWith('/fulfilment')) {
-      setExpandedSection('fulfilment');
-    }
-  }, [location]);
-
-  const handleSectionClick = (sectionName: string, path: string) => {
-    // Always expand the section, don't toggle it closed
-    setExpandedSection(sectionName.toLowerCase());
-  };
+  })();
 
   const getSubItems = (sectionName: string) => {
     switch (sectionName.toLowerCase()) {
@@ -191,18 +178,19 @@ export function Sidebar({ children }: SidebarProps) {
               return (
                 <li key={item.path}>
                   {item.hasSubmenu ? (
-                    <button
-                      onClick={() => handleSectionClick(item.name, item.path)}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left",
-                        isActive
-                          ? "bg-gray-800 text-white"
-                          : "text-gray-400 hover:bg-gray-900 hover:text-white"
-                      )}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium">{item.name}</span>
-                    </button>
+                    <Link href={item.path}>
+                      <a
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                          isActive
+                            ? "bg-gray-800 text-white"
+                            : "text-gray-400 hover:bg-gray-900 hover:text-white"
+                        )}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="font-medium">{item.name}</span>
+                      </a>
+                    </Link>
                   ) : (
                     <Link href={item.path}>
                       <a
