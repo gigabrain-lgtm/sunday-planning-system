@@ -151,6 +151,28 @@ export async function runMigrations() {
       );
     `);
 
+    // Create clickup_clients table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS clickup_clients (
+        id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+        "clickupTaskId" varchar(64) NOT NULL UNIQUE,
+        "clickupUrl" text,
+        "clientName" text NOT NULL,
+        "brandName" text,
+        company text,
+        status varchar(64),
+        defcon integer DEFAULT 3 NOT NULL,
+        "amOwner" text,
+        "ppcOwner" text,
+        "creativeOwner" text,
+        "podOwner" text,
+        "totalAsinsFam" text,
+        "totalAsinsPpc" text,
+        "createdAt" timestamp DEFAULT now() NOT NULL,
+        "updatedAt" timestamp DEFAULT now() NOT NULL
+      );
+    `);
+
     // Create sleep_sessions table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS sleep_sessions (
