@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
@@ -10,19 +9,13 @@ import { Users, RefreshCw, ExternalLink } from "lucide-react";
 
 interface ClickUpClient {
   id: string;
-  clickup_task_id: string;
-  clickup_url: string;
-  client_name: string;
-  brand_name: string | null;
+  name: string;
+  brand: string | null;
   company: string | null;
+  mrpSeller: string | null;
   status: string;
   defcon: number;
-  am_owner: string | null;
-  ppc_owner: string | null;
-  creative_owner: string | null;
-  pod_owner: string | null;
-  total_asins_fam: string | null;
-  total_asins_ppc: string | null;
+  notes: string | null;
 }
 
 export default function FulfilmentClients() {
@@ -39,8 +32,8 @@ export default function FulfilmentClients() {
     if (search) {
       const searchLower = search.toLowerCase();
       const matchesSearch = 
-        client.client_name?.toLowerCase().includes(searchLower) ||
-        client.brand_name?.toLowerCase().includes(searchLower) ||
+        client.name?.toLowerCase().includes(searchLower) ||
+        client.brand?.toLowerCase().includes(searchLower) ||
         client.company?.toLowerCase().includes(searchLower);
       if (!matchesSearch) return false;
     }
@@ -60,174 +53,141 @@ export default function FulfilmentClients() {
 
   const getDefconBadge = (defcon: number) => {
     const variants = {
-      1: { variant: "destructive" as const, label: "🔴 Urgent" },
-      2: { variant: "default" as const, label: "🟡 High" },
-      3: { variant: "secondary" as const, label: "🟢 Normal" },
+      1: { className: "bg-red-900/50 text-red-200 border-red-800", label: "DEFCON 1" },
+      2: { className: "bg-yellow-900/50 text-yellow-200 border-yellow-800", label: "DEFCON 2" },
+      3: { className: "bg-green-900/50 text-green-200 border-green-800", label: "DEFCON 3" },
     };
     return variants[defcon as keyof typeof variants] || variants[3];
   };
 
-  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
-    if (!status) return "secondary";
+  const getStatusBadge = (status: string) => {
+    if (!status) return { className: "bg-gray-800 text-gray-300 border-gray-700", label: "Unknown" };
     const lower = status.toLowerCase();
-    if (lower.includes('live')) return "default";
-    if (lower.includes('onboarding')) return "outline";
-    if (lower.includes('paused')) return "secondary";
-    if (lower.includes('churned')) return "destructive";
-    return "secondary";
+    if (lower === 'active') return { className: "bg-green-900/50 text-green-200 border-green-800", label: "Active" };
+    if (lower === 'paused') return { className: "bg-yellow-900/50 text-yellow-200 border-yellow-800", label: "Paused" };
+    if (lower === 'churned') return { className: "bg-red-900/50 text-red-200 border-red-800", label: "Churned" };
+    return { className: "bg-gray-800 text-gray-300 border-gray-700", label: status };
   };
 
   return (
     <Sidebar>
-      <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Users className="h-8 w-8" />
-            Clients
-          </h1>
-          <p className="text-muted-foreground">
-            Manage ClickUp clients and MRP seller mappings
-          </p>
+      <div className="min-h-screen bg-gray-950 p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 text-white">
+              <Users className="h-8 w-8" />
+              Clients
+            </h1>
+            <p className="text-gray-400">
+              Manage ClickUp clients and MRP seller mappings
+            </p>
+          </div>
+          <Button onClick={() => refetch()} variant="default" className="bg-blue-600 hover:bg-blue-700">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
-        <Button onClick={() => refetch()} variant="default">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                type="text"
-                placeholder="Search clients by name, brand, company..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+        {/* Filters */}
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Input
+              placeholder="Search clients by name, brand, company..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+            />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="onboarding">Onboarding</SelectItem>
-                <SelectItem value="live">Live</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-                <SelectItem value="churned">Churned</SelectItem>
+              <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectItem value="all" className="text-white">All Status</SelectItem>
+                <SelectItem value="active" className="text-white">Active</SelectItem>
+                <SelectItem value="paused" className="text-white">Paused</SelectItem>
+                <SelectItem value="churned" className="text-white">Churned</SelectItem>
               </SelectContent>
             </Select>
             <Select value={defconFilter} onValueChange={setDefconFilter}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                 <SelectValue placeholder="All Priority" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="1">🔴 Urgent</SelectItem>
-                <SelectItem value="2">🟡 High</SelectItem>
-                <SelectItem value="3">🟢 Normal</SelectItem>
+              <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectItem value="all" className="text-white">All Priority</SelectItem>
+                <SelectItem value="1" className="text-white">DEFCON 1</SelectItem>
+                <SelectItem value="2" className="text-white">DEFCON 2</SelectItem>
+                <SelectItem value="3" className="text-white">DEFCON 3</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Error Message */}
-      {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-sm text-destructive">
-              Error loading clients: {error instanceof Error ? error.message : 'Unknown error'}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+        {/* Client List */}
+        <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="p-4 border-b border-gray-800">
+            <h2 className="text-lg font-semibold text-white">Client List</h2>
+            <p className="text-sm text-gray-400">{clients.length} clients found</p>
+          </div>
 
-      {/* Clients Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Client List</CardTitle>
-          <CardDescription>
-            {isLoading ? 'Loading...' : `${clients.length} clients found`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
           {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-muted animate-pulse rounded"></div>
-              ))}
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12 text-red-400">
+              <p>Error loading clients: {error.message}</p>
             </div>
           ) : clients.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No clients found</h3>
-              <p className="text-muted-foreground">
-                {search || statusFilter !== 'all' || defconFilter !== 'all'
-                  ? 'Try adjusting your filters or search terms.'
-                  : 'No clients have been synced from ClickUp yet.'}
-              </p>
+            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+              <Users className="h-12 w-12 mb-4" />
+              <p className="font-medium">No clients found</p>
+              <p className="text-sm">No clients have been synced from ClickUp yet.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-3 text-sm font-medium">Priority</th>
-                    <th className="text-left p-3 text-sm font-medium">Client / Brand</th>
-                    <th className="text-left p-3 text-sm font-medium">Status</th>
-                    <th className="text-left p-3 text-sm font-medium">AM Owner</th>
-                    <th className="text-left p-3 text-sm font-medium">PPC Owner</th>
-                    <th className="text-left p-3 text-sm font-medium">Total ASINs</th>
-                    <th className="text-right p-3 text-sm font-medium">Actions</th>
+                <thead className="bg-gray-800 border-b border-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Client Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Brand</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Company</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">MRP Seller</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Priority</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-800">
                   {clients.map((client: ClickUpClient) => {
-                    const defconInfo = getDefconBadge(client.defcon);
+                    const defconBadge = getDefconBadge(client.defcon);
+                    const statusBadge = getStatusBadge(client.status);
+                    
                     return (
-                      <tr key={client.id} className="border-b hover:bg-muted/50">
-                        <td className="p-3">
-                          <Badge variant={defconInfo.variant}>
-                            {defconInfo.label}
+                      <tr key={client.id} className="hover:bg-gray-800/50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-white">{client.name}</div>
+                          {client.notes && (
+                            <div className="text-xs text-gray-400">{client.notes}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {client.brand || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {client.company || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {client.mrpSeller || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge className={statusBadge.className}>
+                            {statusBadge.label}
                           </Badge>
                         </td>
-                        <td className="p-3">
-                          <div>
-                            <div className="font-medium">{client.client_name}</div>
-                            {client.brand_name && (
-                              <div className="text-sm text-muted-foreground">{client.brand_name}</div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <Badge variant={getStatusVariant(client.status)}>
-                            {client.status || 'Unknown'}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge className={defconBadge.className}>
+                            {defconBadge.label}
                           </Badge>
-                        </td>
-                        <td className="p-3 text-sm">{client.am_owner || '-'}</td>
-                        <td className="p-3 text-sm">{client.ppc_owner || '-'}</td>
-                        <td className="p-3 text-sm">
-                          {client.total_asins_fam || client.total_asins_ppc || '-'}
-                        </td>
-                        <td className="p-3 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                          >
-                            <a
-                              href={client.clickup_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </Button>
                         </td>
                       </tr>
                     );
@@ -236,8 +196,7 @@ export default function FulfilmentClients() {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
       </div>
     </Sidebar>
   );

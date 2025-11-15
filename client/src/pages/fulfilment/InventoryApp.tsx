@@ -82,30 +82,30 @@ export default function InventoryApp() {
   }, 0);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-gray-950 p-6 space-y-6">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">
-          <Package className="w-8 h-8 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-900">MRP Inventory</h1>
+          <Package className="w-8 h-8 text-blue-500" />
+          <h1 className="text-3xl font-bold text-white">MRP Inventory</h1>
         </div>
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           View product inventory and create optimization tasks
         </p>
       </div>
 
       {/* Seller Selector */}
-      <Card>
+      <Card className="bg-gray-900 border-gray-800">
         <CardHeader>
-          <CardTitle>Select Seller</CardTitle>
-          <CardDescription>Choose an MRP seller to view their inventory</CardDescription>
+          <CardTitle className="text-white">Select Seller</CardTitle>
+          <CardDescription className="text-gray-400">Choose an MRP seller to view their inventory</CardDescription>
         </CardHeader>
         <CardContent>
           <Select value={selectedSeller} onValueChange={setSelectedSeller} disabled={loadingSellers}>
-            <SelectTrigger className="w-full max-w-md">
+            <SelectTrigger className="w-full max-w-md bg-gray-800 border-gray-700 text-white">
               <SelectValue placeholder={loadingSellers ? "Loading sellers..." : "-- Select a seller --"} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-gray-800 border-gray-700">
               {sellers?.map((seller) => (
                 <SelectItem key={seller.id} value={seller.name}>
                   {seller.name}
@@ -118,60 +118,60 @@ export default function InventoryApp() {
 
       {/* Inventory Table */}
       {selectedSeller && (
-        <Card>
+        <Card className="bg-gray-900 border-gray-800">
           <CardHeader>
-            <CardTitle>Inventory for {selectedSeller}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-white">Inventory for {selectedSeller}</CardTitle>
+            <CardDescription className="text-gray-400">
               {inventory.length > 0 && `Showing ${inventory.length} products | Total Value: $${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {loadingInventory ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
               </div>
             ) : inventory.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No inventory found for this seller.</p>
+              <p className="text-center text-gray-400 py-8">No inventory found for this seller.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-gray-50 border-b">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">ASIN</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">SKU</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Price</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Sellable</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Reserved</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Value</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+                    <tr className="bg-gray-800 border-b border-gray-700">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ASIN</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">SKU</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Title</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Price</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Sellable</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Reserved</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Total</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Value</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {inventory.map((item: MRPInventoryItem) => {
                       const value = parseFloat(item.your_price) * item.afn_fulfillable_quantity;
                       return (
-                        <tr key={item.asin + item.sku} className="border-b hover:bg-gray-50">
+                        <tr key={item.asin + item.sku} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                           <td className="px-4 py-3">
                             <a
                               href={`https://www.amazon.com/dp/${item.asin}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline text-sm"
+                              className="text-blue-400 hover:underline text-sm"
                             >
                               {item.asin}
                             </a>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.sku}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700 max-w-xs truncate" title={item.product_name}>
+                          <td className="px-4 py-3 text-sm text-gray-300">{item.sku}</td>
+                          <td className="px-4 py-3 text-sm text-gray-300 max-w-xs truncate" title={item.product_name}>
                             {item.product_name}
                           </td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-700">${item.your_price}</td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-700">{item.afn_fulfillable_quantity.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-700">{item.afn_reserved_quantity.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-700">{item.afn_total_quantity.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                          <td className="px-4 py-3 text-right text-sm text-gray-300">${item.your_price}</td>
+                          <td className="px-4 py-3 text-right text-sm text-gray-300">{item.afn_fulfillable_quantity.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right text-sm text-gray-300">{item.afn_reserved_quantity.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right text-sm text-gray-300">{item.afn_total_quantity.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right text-sm font-medium text-white">
                             ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td className="px-4 py-3">
@@ -179,7 +179,7 @@ export default function InventoryApp() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="text-xs bg-blue-50 hover:bg-blue-100 border-blue-200"
+                                className="text-xs bg-blue-900/50 hover:bg-blue-800 border-blue-700 text-blue-200"
                                 onClick={() => handleCreateTask(item, 'Main Image')}
                                 disabled={createTaskMutation.isPending}
                               >
@@ -188,7 +188,7 @@ export default function InventoryApp() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="text-xs bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
+                                className="text-xs bg-indigo-900/50 hover:bg-indigo-800 border-indigo-700 text-indigo-200"
                                 onClick={() => handleCreateTask(item, 'Gallery Images')}
                                 disabled={createTaskMutation.isPending}
                               >
@@ -197,7 +197,7 @@ export default function InventoryApp() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="text-xs bg-green-50 hover:bg-green-100 border-green-200"
+                                className="text-xs bg-green-900/50 hover:bg-green-800 border-green-700 text-green-200"
                                 onClick={() => handleCreateTask(item, 'A+ Content')}
                                 disabled={createTaskMutation.isPending}
                               >
