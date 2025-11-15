@@ -42,6 +42,16 @@ async function startServer() {
     console.error("[Server] Failed to run migrations, continuing anyway:", error);
   }
 
+  // Run ClickUp clients migration (one-time, safe to run multiple times)
+  try {
+    console.log('[Server] Running ClickUp clients migration...');
+    const { migrateClients } = await import('../migrate-clickup-clients');
+    await migrateClients();
+    console.log('[Server] ClickUp clients migration completed');
+  } catch (error) {
+    console.error("[Server] Failed to run ClickUp clients migration:", error);
+  }
+
   const app = express();
   const server = createServer(app);
   // Configure body parser with larger size limit for file uploads
