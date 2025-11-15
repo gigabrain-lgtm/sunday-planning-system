@@ -19,7 +19,19 @@ function getMRPPool(): Pool {
       database: ENV.MRP_DB_NAME,
       ssl: {
         rejectUnauthorized: false
-      }
+      },
+      // Connection timeouts
+      connectionTimeoutMillis: 5000, // 5 seconds to establish connection
+      query_timeout: 10000, // 10 seconds for queries
+      statement_timeout: 10000, // 10 seconds for statements
+      // Connection pool settings
+      max: 5, // Maximum number of clients
+      idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+    });
+    
+    // Handle connection errors
+    mrpPool.on('error', (err) => {
+      console.error('[MRP] Unexpected database error:', err);
     });
   }
   return mrpPool;
@@ -111,20 +123,28 @@ export async function getMRPInventory(sellerName: string): Promise<MRPInventoryR
  * Fetch list of sellers from MRP database
  */
 export async function getMRPSellers(): Promise<MRPSeller[]> {
-  const pool = getMRPPool();
+  try {
+    console.log('[MRP] Fetching sellers from MRP database...');
+    const pool = getMRPPool();
 
-  const result = await pool.query(`
-    SELECT 
-      id,
-      name,
-      selling_partner_id,
-      state,
-      advertising_data_initialized,
-      financial_data_initialized
-    FROM v1_amazon_selling_partner_view
-    WHERE name IS NOT NULL
-    ORDER BY name;
-  `);
+    const result = await pool.query(`
+      SELECT 
+        id,
+        name,
+        selling_partner_id,
+        state,
+        advertising_data_initialized,
+        financial_data_initialized
+      FROM v1_amazon_selling_partner_view
+      WHERE name IS NOT NULL
+      ORDER BY name;
+    `);
 
-  return result.rows;
+    console.log(`[MRP] Successfully fetched ${result.rows.length} sellers`);
+    return result.rows;
+  } catch (error: any) {
+    console.error('[MRP] Failed to fetch sellers:', error.message);
+    // Return empty array instead of throwing to prevent UI from breaking
+    return [];
+  }
 }
