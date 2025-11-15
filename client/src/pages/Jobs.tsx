@@ -24,11 +24,11 @@ export default function Jobs() {
   const [editForm, setEditForm] = useState({ cultureIndexInternalLink: "", cultureIndexAssessmentLink: "", workableLink: "" });
   const [syncing, setSyncing] = useState(false);
   
-  const { data: jobAssignments, isLoading: assignmentsLoading } = trpc.hiring.jobAssignments.list.useQuery();
+  const { data: jobAssignments, isLoading: assignmentsLoading } = trpc.jobAssignments.list.useQuery();
   const { data: recruiters, isLoading: recruitersLoading } = trpc.recruiters.list.useQuery();
   const utils = trpc.useUtils();
   
-  const syncFromWorkable = trpc.hiring.jobAssignments.syncFromWorkable.useMutation({
+  const syncFromWorkable = trpc.jobAssignments.syncFromWorkable.useMutation({
     onSuccess: (data) => {
       utils.jobAssignments.list.invalidate();
       toast.success(`Synced ${data.created} new jobs from Workable (${data.skipped} skipped, ${data.total} total)`);
@@ -40,7 +40,7 @@ export default function Jobs() {
     },
   });
   
-  const updateJobAssignment = trpc.hiring.jobAssignments.update.useMutation({
+  const updateJobAssignment = trpc.jobAssignments.update.useMutation({
     onSuccess: () => {
       utils.jobAssignments.list.invalidate();
       toast.success("Job assignment updated successfully");
@@ -51,7 +51,7 @@ export default function Jobs() {
     },
   });
   
-  const deleteJobAssignment = trpc.hiring.jobAssignments.delete.useMutation({
+  const deleteJobAssignment = trpc.jobAssignments.delete.useMutation({
     onSuccess: () => {
       utils.jobAssignments.list.invalidate();
       toast.success("Job assignment deleted successfully");

@@ -19,12 +19,12 @@ export default function Roles() {
     finalInterviewer: string;
   }>({ technicalInterviewer: "", finalInterviewer: "" });
   
-  const { data: roles, isLoading } = trpc.hiring.roles.list.useQuery();
+  const { data: roles, isLoading } = trpc.roles.list.useQuery();
   const utils = trpc.useUtils();
 
-  const createMutation = trpc.hiring.roles.create.useMutation({
+  const createMutation = trpc.roles.create.useMutation({
     onSuccess: () => {
-      utils.hiring.roles.list.invalidate();
+      utils.roles.list.invalidate();
       setIsCreateOpen(false);
       toast.success("Role created successfully");
     },
@@ -33,9 +33,9 @@ export default function Roles() {
     },
   });
 
-  const updateMutation = trpc.hiring.roles.update.useMutation({
+  const updateMutation = trpc.roles.update.useMutation({
     onSuccess: () => {
-      utils.hiring.roles.list.invalidate();
+      utils.roles.list.invalidate();
       setEditingRole(null);
       toast.success("Interviewers updated successfully");
     },
@@ -44,9 +44,9 @@ export default function Roles() {
     },
   });
 
-  const deleteMutation = trpc.hiring.roles.delete.useMutation({
+  const deleteMutation = trpc.roles.delete.useMutation({
     onSuccess: () => {
-      utils.hiring.roles.list.invalidate();
+      utils.roles.list.invalidate();
       toast.success("Role deleted successfully");
     },
     onError: (error) => {
