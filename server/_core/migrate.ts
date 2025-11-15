@@ -151,25 +151,27 @@ export async function runMigrations() {
       );
     `);
 
-    // Create clickup_clients table
+    // Drop and recreate clickup_clients table with correct column names
+    await pool.query(`DROP TABLE IF EXISTS clickup_clients;`);
+    
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS clickup_clients (
+      CREATE TABLE clickup_clients (
         id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-        "clickupTaskId" varchar(64) NOT NULL UNIQUE,
-        "clickupUrl" text,
-        "clientName" text NOT NULL,
-        "brandName" text,
+        clickup_task_id varchar(64) NOT NULL UNIQUE,
+        clickup_url text,
+        client_name text NOT NULL,
+        brand_name text,
         company text,
         status varchar(64),
         defcon integer DEFAULT 3 NOT NULL,
-        "amOwner" text,
-        "ppcOwner" text,
-        "creativeOwner" text,
-        "podOwner" text,
-        "totalAsinsFam" text,
-        "totalAsinsPpc" text,
-        "createdAt" timestamp DEFAULT now() NOT NULL,
-        "updatedAt" timestamp DEFAULT now() NOT NULL
+        am_owner text,
+        ppc_owner text,
+        creative_owner text,
+        pod_owner text,
+        total_asins_fam text,
+        total_asins_ppc text,
+        created_at timestamp DEFAULT now() NOT NULL,
+        updated_at timestamp DEFAULT now() NOT NULL
       );
     `);
 
