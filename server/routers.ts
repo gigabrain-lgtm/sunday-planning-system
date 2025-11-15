@@ -2299,15 +2299,50 @@ export const appRouter = router({
       return await getWorkableJobs();
     }),
     
+    listJobs: protectedProcedure.query(async () => {
+      const { fetchWorkableJobs } = await import('./workable');
+      return await fetchWorkableJobs();
+    }),
+    
+    syncAllJobs: protectedProcedure
+      .input(z.object({
+        forceRefresh: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { syncAllWorkableJobs } = await import('./workable');
+        const jobMetrics = await syncAllWorkableJobs(input.forceRefresh || false);
+        return { success: true, jobs: jobMetrics };
+      }),
+    
     getAllCandidates: protectedProcedure.query(async () => {
       const { getWorkableCandidates } = await import('./workable');
       return await getWorkableCandidates();
     }),
     
-    getCEOReviewCandidates: protectedProcedure.query(async () => {
-      const { getCEOReviewCandidates } = await import('./workable');
-      return await getCEOReviewCandidates();
-    }),
+    getCEOReviewCandidates: protectedProcedure
+      .input(z.object({
+        forceRefresh: z.boolean().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        try {
+          const { getCEOReviewCandidates } = await import('./workable');
+          const candidates = await getCEOReviewCandidates(input?.forceRefresh || false);
+          return candidates;
+        } catch (error: any) {
+          console.error('[CEO Review] Error fetching candidates:', error.message);
+          return [];
+        }
+      }),
+    
+    syncMetrics: protectedProcedure
+      .input(z.object({
+        forceRefresh: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { syncCandidateMetrics } = await import('./workable');
+        const metrics = await syncCandidateMetrics(input.forceRefresh || false);
+        return { success: true, metrics };
+      }),
   }),
 });
 

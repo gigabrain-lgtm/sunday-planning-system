@@ -141,11 +141,8 @@ export function Sidebar({ children }: SidebarProps) {
   });
 
   const handleSectionClick = (sectionName: string, path: string) => {
-    if (expandedSection === sectionName.toLowerCase()) {
-      setExpandedSection(null);
-    } else {
-      setExpandedSection(sectionName.toLowerCase());
-    }
+    // Always expand the section, don't toggle it closed
+    setExpandedSection(sectionName.toLowerCase());
   };
 
   const getSubItems = (sectionName: string) => {
